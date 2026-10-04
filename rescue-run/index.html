@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rescue Run Virtual Engineering Lab</title>
+  <style>
+    :root {
+      --ink: #153047;
+      --muted: #516273;
+      --line: #c9d6df;
+      --paper: #ffffff;
+      --bg: #f3f7fa;
+      --gold: #f4b942;
+      --teal: #287c8e;
+      --green: #4f8a5b;
+      --red: #c84a3a;
+      --soft-blue: #eaf5f8;
+      --soft-gold: #fff5d6;
+      --soft-green: #eaf6ec;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.4;
+    }
+
+    header {
+      background: var(--ink);
+      color: white;
+      padding: 24px clamp(16px, 4vw, 48px);
+      border-bottom: 8px solid var(--gold);
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: clamp(30px, 5vw, 48px);
+      line-height: 1.05;
+    }
+
+    header p {
+      margin: 0;
+      max-width: 900px;
+      font-size: 18px;
+      color: #d8eef4;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 12px 0 18px;
+    }
+
+    .tabs button,
+    .action {
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tabs button.active,
+    .action.primary {
+      background: var(--teal);
+      color: white;
+      border-color: var(--teal);
+    }
+
+    .action.warn {
+      background: var(--gold);
+      border-color: var(--gold);
+    }
+
+    .panel {
+      display: none;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: clamp(16px, 3vw, 24px);
+      box-shadow: 0 6px 20px rgba(21, 48, 71, .08);
+    }
+
+    .panel.active { display: block; }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 28px;
+    }
+
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .note {
+      background: var(--soft-blue);
+      border-left: 5px solid var(--teal);
+      padding: 12px;
+      margin: 12px 0;
+    }
+
+    .warning {
+      background: #fff1ee;
+      border-left: 5px solid var(--red);
+      padding: 12px;
+      margin: 12px 0;
+    }
+
+    .success {
+      background: var(--soft-green);
+      border-left: 5px solid var(--green);
+      padding: 12px;
+      margin: 12px 0;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin: 10px 0 5px;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px;
+      font: inherit;
+      background: white;
+      color: var(--ink);
+    }
+
+    textarea { min-height: 86px; resize: vertical; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      background: white;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--ink);
+      color: white;
+    }
+
+    .materials {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .material {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: white;
+    }
+
+    .material strong { display: block; }
+
+    .qty {
+      display: grid;
+      grid-template-columns: 38px 1fr 38px;
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .qty button {
+      min-height: 36px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: var(--soft-blue);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .meters {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    .meter {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: white;
+    }
+
+    .meter span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .meter strong {
+      font-size: 22px;
+    }
+
+    .track {
+      position: relative;
+      height: 190px;
+      background:
+        linear-gradient(90deg, rgba(21,48,71,.12) 1px, transparent 1px) 0 0 / 20% 100%,
+        linear-gradient(#dbe7ed, #dbe7ed) 0 88px / 100% 6px no-repeat,
+        white;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 12px 0;
+    }
+
+    .target {
+      position: absolute;
+      left: 80%;
+      top: 40px;
+      width: 90px;
+      height: 104px;
+      border: 3px dashed var(--green);
+      background: rgba(79, 138, 91, .08);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .car {
+      position: absolute;
+      left: 22px;
+      top: 72px;
+      width: 92px;
+      height: 42px;
+      transition: transform 900ms ease;
+    }
+
+    .car .body {
+      position: absolute;
+      left: 8px;
+      top: 6px;
+      width: 76px;
+      height: 24px;
+      border-radius: 5px;
+      background: var(--teal);
+      border: 2px solid var(--ink);
+    }
+
+    .car .package {
+      position: absolute;
+      left: 36px;
+      top: -2px;
+      width: 22px;
+      height: 16px;
+      background: var(--gold);
+      border: 2px solid var(--ink);
+    }
+
+    .wheel {
+      position: absolute;
+      top: 26px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #29394a;
+      border: 3px solid #111;
+    }
+
+    .wheel.left { left: 14px; }
+    .wheel.right { right: 14px; }
+
+    svg {
+      width: 100%;
+      max-width: 720px;
+      min-height: 260px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+    }
+
+    .print-summary {
+      white-space: pre-wrap;
+      background: #f7fafc;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 240px;
+    }
+
+    .small { color: var(--muted); font-size: 13px; }
+
+    @media (max-width: 820px) {
+      .grid, .grid.three, .materials, .meters {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      header, .tabs, .no-print { display: none; }
+      body { background: white; }
+      main { max-width: none; padding: 0; }
+      .panel { display: block; box-shadow: none; border: 0; page-break-after: always; }
+      .panel:not(#writeup) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" style="color:#f4b942;font-weight:700;text-decoration:none;display:inline-block;margin-bottom:8px">&larr; All Labs</a>
+    <h1>Rescue Run Virtual Engineering Lab</h1>
+    <p>Replacement major-grade pathway: research, build a gravity-powered rescue vehicle, stay within budget, run trials, revise the design, graph motion data, and complete a final engineering write-up.</p>
+  </header>
+
+  <main>
+    <nav class="tabs" aria-label="Lab sections">
+      <button class="active" data-tab="overview">1 Overview</button>
+      <button data-tab="research">2 Research</button>
+      <button data-tab="build">3 Build</button>
+      <button data-tab="test">4 Test</button>
+      <button data-tab="redesign">5 Redesign</button>
+      <button data-tab="writeup">6 Final Write-Up</button>
+    </nav>
+
+    <section id="overview" class="panel active">
+      <h2>Major Grade Expectations</h2>
+      <div class="note">
+        This virtual assignment replaces the full build project only when a student cannot participate in the classroom build. Students still complete the engineering cycle and must support final claims with data.
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>Challenge</h3>
+          <p>A storm has damaged the road to a remote community. You must design a gravity-powered vehicle that carries one rescue package toward a target 200 cm east of the starting line.</p>
+        </div>
+        <div class="card">
+          <h3>Success Criteria</h3>
+          <ul>
+            <li>Stay at or under the $200 budget.</li>
+            <li>Carry the package during the trial.</li>
+            <li>Travel at least 200 cm toward the target.</li>
+            <li>Collect three official trials.</li>
+            <li>Calculate speed and velocity correctly.</li>
+            <li>Use data to justify a redesign.</li>
+          </ul>
+        </div>
+      </div>
+      <h3>Suggested Major Grade Breakdown</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Points</th>
+            <th>Evidence students must provide</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Research</td>
+            <td>20</td>
+            <td>Three research notes with sources connected to wheels/axles, friction, and package security.</td>
+          </tr>
+          <tr>
+            <td>Design and budget</td>
+            <td>20</td>
+            <td>Complete vehicle design, budget at or under $200, sketch notes, and prediction.</td>
+          </tr>
+          <tr>
+            <td>Testing and data</td>
+            <td>25</td>
+            <td>Three official trials with distance, time, speed, velocity, package result, and target result.</td>
+          </tr>
+          <tr>
+            <td>Graph and analysis</td>
+            <td>15</td>
+            <td>Distance-time graph interpretation and explanation of what the data shows.</td>
+          </tr>
+          <tr>
+            <td>Redesign and final write-up</td>
+            <td>20</td>
+            <td>Evidence-based redesign, tradeoff, final CER, limitations, and presentation script.</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>Student Information</h3>
+      <div class="grid three">
+        <label>Name <input id="studentName" placeholder="Student name"></label>
+        <label>Period <input id="studentPeriod" placeholder="Period"></label>
+        <label>Date <input id="studentDate" type="date"></label>
+      </div>
+      <label>Why are you completing the virtual version?</label>
+      <textarea id="reason" placeholder="ISS, homebound, absence, late start, or other approved reason"></textarea>
+    </section>
+
+    <section id="research" class="panel">
+      <h2>Research Before Building</h2>
+      <p>Use class notes, Schoology resources, articles, or approved science websites. Record enough information to show that your design choices are based on research, not guessing.</p>
+      <div class="grid">
+        <div>
+          <label>Research Question 1: How do wheels and axles affect vehicle motion?</label>
+          <textarea id="research1" placeholder="Write notes in your own words."></textarea>
+          <label>Source 1</label>
+          <input id="source1" placeholder="Title, link, class notes, or video name">
+        </div>
+        <div>
+          <label>Research Question 2: How does friction affect speed and distance?</label>
+          <textarea id="research2" placeholder="Write notes in your own words."></textarea>
+          <label>Source 2</label>
+          <input id="source2" placeholder="Title, link, class notes, or video name">
+        </div>
+      </div>
+      <label>Research Question 3: How can engineers keep a package secure while a vehicle moves?</label>
+      <textarea id="research3" placeholder="Include ideas about balance, mass, stability, center of mass, or securing the package."></textarea>
+      <label>Source 3</label>
+      <input id="source3" placeholder="Title, link, class notes, or video name">
+      <label>Initial design claim based on research</label>
+      <textarea id="initialClaim" placeholder="Example: I think my vehicle should use ___ because research shows ___."></textarea>
+    </section>
+
+    <section id="build" class="panel">
+      <h2>Build Within Budget</h2>
+      <p>Choose materials for the virtual vehicle. Each material changes mass, friction, stability, alignment, or package security. Stay at or under $200.</p>
+      <div class="meters">
+        <div class="meter"><span>Budget Used</span><strong id="budgetUsed">$0</strong></div>
+        <div class="meter"><span>Mass</span><strong id="massScore">0</strong></div>
+        <div class="meter"><span>Friction</span><strong id="frictionScore">0</strong></div>
+        <div class="meter"><span>Stability</span><strong id="stabilityScore">0</strong></div>
+        <div class="meter"><span>Package Security</span><strong id="securityScore">0</strong></div>
+      </div>
+      <div id="budgetMessage" class="note">Budget limit: $200. A complete design needs a body, wheels, axles, and a way to secure the package.</div>
+      <div id="materials" class="materials"></div>
+      <h3>Design Plan</h3>
+      <label>Sketch notes or labeled description</label>
+      <textarea id="sketchNotes" placeholder="Describe your body, wheels, axles, package holder, and ramp direction."></textarea>
+      <label>Prediction before testing</label>
+      <textarea id="prediction" placeholder="Predict distance, time, speed, direction, and whether the package will stay secure."></textarea>
+    </section>
+
+    <section id="test" class="panel">
+      <h2>Official Test Trials</h2>
+      <p>Run three official trials. The vehicle starts at the same ramp height each time and moves east toward the 200 cm target.</p>
+      <div class="track" aria-label="Virtual test lane from 0 cm to 250 cm">
+        <div class="target">Target<br>200 cm</div>
+        <div id="car" class="car" aria-hidden="true">
+          <div class="package"></div>
+          <div class="body"></div>
+          <div class="wheel left"></div>
+          <div class="wheel right"></div>
+        </div>
+      </div>
+      <div class="no-print">
+        <button class="action primary" id="runTrial">Run Trial</button>
+        <button class="action" id="resetTrials">Reset Trials</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Trial</th>
+            <th>Distance</th>
+            <th>Time</th>
+            <th>Speed</th>
+            <th>Velocity</th>
+            <th>Package</th>
+            <th>Meets Target?</th>
+          </tr>
+        </thead>
+        <tbody id="trialRows"></tbody>
+      </table>
+      <h3>Distance-Time Graph</h3>
+      <svg id="graph" viewBox="0 0 720 300" role="img" aria-label="Distance-time graph for official trials"></svg>
+      <label>Data interpretation</label>
+      <textarea id="dataInterpretation" placeholder="Use the graph and calculations to explain how your vehicle moved."></textarea>
+    </section>
+
+    <section id="redesign" class="panel">
+      <h2>Redesign and Improvement</h2>
+      <p>Use your official trial data to choose one improvement. Then update materials in the Build tab and run trials again if your teacher requires a second test set.</p>
+      <label>What problem did the data show?</label>
+      <textarea id="problemShown" placeholder="Example: The car was fast but missed the target, or the package fell off."></textarea>
+      <label>What design change would you make?</label>
+      <textarea id="designChange" placeholder="Explain the exact change."></textarea>
+      <label>Why should this change improve motion?</label>
+      <textarea id="changeReason" placeholder="Connect the change to friction, mass, stability, distance, speed, or direction."></textarea>
+      <label>Tradeoff</label>
+      <textarea id="tradeoff" placeholder="What might improve, and what might get worse?"></textarea>
+    </section>
+
+    <section id="writeup" class="panel">
+      <h2>Final Engineering Write-Up</h2>
+      <div class="warning">
+        A strong major-grade response includes research, design choices, budget evidence, trial data, calculations, graph interpretation, redesign reasoning, and a final CER paragraph.
+      </div>
+      <div class="grid">
+        <div>
+          <label>Final Claim</label>
+          <textarea id="finalClaim" placeholder="Did your design meet the challenge?"></textarea>
+          <label>Evidence</label>
+          <textarea id="finalEvidence" placeholder="Use at least three numbers from your trials or budget."></textarea>
+          <label>Reasoning</label>
+          <textarea id="finalReasoning" placeholder="Explain how the evidence proves your claim."></textarea>
+        </div>
+        <div>
+          <label>Presentation Script</label>
+          <textarea id="presentationScript" placeholder="Write what you would say if presenting your vehicle to the class."></textarea>
+          <label>Limitations and Next Steps</label>
+          <textarea id="limitations" placeholder="What is one limitation of your design or the virtual model? What would you test next?"></textarea>
+        </div>
+      </div>
+      <div class="no-print" style="margin: 14px 0;">
+        <button class="action primary" id="compile">Compile Write-Up</button>
+        <button class="action warn" onclick="window.print()">Print Final Write-Up</button>
+      </div>
+      <h3>Compiled Student Work</h3>
+      <div id="summary" class="print-summary">Click Compile Write-Up when finished.</div>
+    </section>
+  </main>
+
+  <script>
+    const materials = [
+      { id: "cardboard", name: "Cardboard body", unit: "4x6 inch square", price: 15, type: "body", mass: 12, friction: 1, stability: 8, security: 2, alignment: 1 },
+      { id: "index", name: "Index card body", unit: "3x5 inch card", price: 10, type: "body", mass: 6, friction: 0, stability: 3, security: 1, alignment: 0 },
+      { id: "sticks", name: "Craft sticks", unit: "2 sticks", price: 3, type: "support", mass: 4, friction: 0, stability: 5, security: 2, alignment: 3 },
+      { id: "caps", name: "Bottle-cap wheels", unit: "4 caps", price: 6, type: "wheels", mass: 5, friction: 6, stability: 4, security: 0, alignment: 1 },
+      { id: "cds", name: "CD wheels", unit: "2 CDs", price: 25, type: "wheels", mass: 9, friction: 3, stability: 7, security: 0, alignment: 4 },
+      { id: "straws", name: "Straws", unit: "2 straws", price: 4, type: "axles", mass: 1, friction: 2, stability: 2, security: 0, alignment: 3 },
+      { id: "dowels", name: "Wooden dowels", unit: "2 dowels", price: 5, type: "axles", mass: 4, friction: 3, stability: 5, security: 0, alignment: 5 },
+      { id: "tape", name: "Masking tape", unit: "30 cm", price: 15, type: "secure", mass: 2, friction: 1, stability: 2, security: 8, alignment: 0 },
+      { id: "rubber", name: "Rubber bands", unit: "2 bands", price: 7, type: "secure", mass: 2, friction: 5, stability: 4, security: 7, alignment: 1 },
+      { id: "clips", name: "Paper clips", unit: "1 clip", price: 1, type: "weight", mass: 3, friction: 0, stability: 1, security: 3, alignment: 0 },
+      { id: "foil", name: "Aluminum foil", unit: "25 cm", price: 12, type: "secure", mass: 2, friction: 2, stability: 2, security: 5, alignment: 0 },
+      { id: "string", name: "String", unit: "25 cm", price: 8, type: "secure", mass: 1, friction: 1, stability: 1, security: 6, alignment: 0 }
+    ];
+
+    const state = {
+      quantities: Object.fromEntries(materials.map(m => [m.id, 0])),
+      trials: [],
+      trialSet: 1
+    };
+
+    function byId(id) { return document.getElementById(id); }
+
+    function getText(id) {
+      const el = byId(id);
+      return el ? el.value.trim() : "";
+    }
+
+    function money(n) { return "$" + n.toFixed(0); }
+
+    function designStats() {
+      const selected = materials.map(m => ({ ...m, qty: state.quantities[m.id] })).filter(m => m.qty > 0);
+      const total = selected.reduce((sum, m) => sum + m.price * m.qty, 0);
+      const mass = selected.reduce((sum, m) => sum + m.mass * m.qty, 0);
+      const friction = selected.reduce((sum, m) => sum + m.friction * m.qty, 0);
+      const stability = selected.reduce((sum, m) => sum + m.stability * m.qty, 0);
+      const security = selected.reduce((sum, m) => sum + m.security * m.qty, 0);
+      const alignment = selected.reduce((sum, m) => sum + m.alignment * m.qty, 0);
+      const hasBody = selected.some(m => m.type === "body");
+      const hasWheels = selected.some(m => m.type === "wheels");
+      const hasAxles = selected.some(m => m.type === "axles");
+      const hasSecure = selected.some(m => m.type === "secure");
+      return { selected, total, mass, friction, stability, security, alignment, hasBody, hasWheels, hasAxles, hasSecure };
+    }
+
+    function renderMaterials() {
+      const holder = byId("materials");
+      holder.innerHTML = "";
+      materials.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "material";
+        div.innerHTML = `
+          <strong>${item.name}</strong>
+          <span class="small">${item.unit} - ${money(item.price)}</span>
+          <div class="qty">
+            <button type="button" aria-label="Decrease ${item.name}" data-change="-1" data-id="${item.id}">-</button>
+            <input aria-label="${item.name} quantity" value="${state.quantities[item.id]}" data-id="${item.id}" inputmode="numeric">
+            <button type="button" aria-label="Increase ${item.name}" data-change="1" data-id="${item.id}">+</button>
+          </div>
+        `;
+        holder.appendChild(div);
+      });
+      holder.querySelectorAll("button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.id;
+          const change = Number(btn.dataset.change);
+          state.quantities[id] = Math.max(0, state.quantities[id] + change);
+          renderMaterials();
+          updateStats();
+        });
+      });
+      holder.querySelectorAll("input").forEach(input => {
+        input.addEventListener("change", () => {
+          state.quantities[input.dataset.id] = Math.max(0, Math.min(9, Number(input.value) || 0));
+          renderMaterials();
+          updateStats();
+        });
+      });
+    }
+
+    function updateStats() {
+      const stats = designStats();
+      byId("budgetUsed").textContent = money(stats.total);
+      byId("massScore").textContent = stats.mass.toFixed(0);
+      byId("frictionScore").textContent = stats.friction.toFixed(0);
+      byId("stabilityScore").textContent = stats.stability.toFixed(0);
+      byId("securityScore").textContent = stats.security.toFixed(0);
+      const message = byId("budgetMessage");
+      const missing = [];
+      if (!stats.hasBody) missing.push("body");
+      if (!stats.hasWheels) missing.push("wheels");
+      if (!stats.hasAxles) missing.push("axles");
+      if (!stats.hasSecure) missing.push("package securement");
+      if (stats.total > 200) {
+        message.className = "warning";
+        message.textContent = "Over budget. Remove materials until the total is $200 or less.";
+      } else if (missing.length) {
+        message.className = "warning";
+        message.textContent = "Incomplete design. Add: " + missing.join(", ") + ".";
+      } else {
+        message.className = "success";
+        message.textContent = "Ready to test. Your design is within budget and includes the required systems.";
+      }
+    }
+
+    function canTest() {
+      const stats = designStats();
+      return stats.total <= 200 && stats.hasBody && stats.hasWheels && stats.hasAxles && stats.hasSecure;
+    }
+
+    function trialResult(trialNumber) {
+      const s = designStats();
+      const baseDistance = 95 + s.alignment * 7 + s.stability * 2.6 + s.security * 1.3 - s.mass * 1.3 - s.friction * 1.8;
+      const wheelBonus = state.quantities.cds > 0 ? 30 : 12;
+      const bodyPenalty = state.quantities.index > 0 && state.quantities.cardboard === 0 ? -12 : 0;
+      const deterministicVariation = ((trialNumber * 13 + s.total * 3 + s.mass) % 21) - 10;
+      const distance = Math.max(45, Math.min(255, baseDistance + wheelBonus + bodyPenalty + deterministicVariation));
+      const time = Math.max(2.2, 7.2 + s.mass * 0.035 + s.friction * 0.045 - s.alignment * 0.035 + (trialNumber - 2) * 0.18);
+      const speed = distance / time;
+      const drift = Math.max(0, 28 - s.alignment * 1.8 - s.stability * .7 + s.friction * .4);
+      const secureChance = s.security + s.stability * .35 - speed * .16 - (s.mass > 40 ? 2 : 0);
+      const packageSecure = secureChance > 8 || trialNumber === 2 && secureChance > 6;
+      const meets = distance >= 200 && drift < 22 && packageSecure;
+      return {
+        trial: trialNumber,
+        distance: Math.round(distance),
+        time: Number(time.toFixed(2)),
+        speed: Number(speed.toFixed(2)),
+        velocity: Number(speed.toFixed(2)) + " cm/s east",
+        drift: Number(drift.toFixed(1)),
+        packageSecure,
+        meets
+      };
+    }
+
+    function renderTrials() {
+      const rows = byId("trialRows");
+      rows.innerHTML = "";
+      state.trials.forEach(t => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${t.trial}</td>
+          <td>${t.distance} cm</td>
+          <td>${t.time} s</td>
+          <td>${t.speed} cm/s</td>
+          <td>${t.velocity}</td>
+          <td>${t.packageSecure ? "stayed on" : "fell off"}</td>
+          <td>${t.meets ? "yes" : "no"}</td>
+        `;
+        rows.appendChild(tr);
+      });
+      drawGraph();
+    }
+
+    function runTrial() {
+      if (!canTest()) {
+        alert("Your design must be within budget and include a body, wheels, axles, and a package securement material before testing.");
+        return;
+      }
+      if (state.trials.length >= 3) {
+        alert("You already have three official trials. Reset trials only if your teacher approves a retest.");
+        return;
+      }
+      const result = trialResult(state.trials.length + 1);
+      state.trials.push(result);
+      const car = byId("car");
+      const track = document.querySelector(".track");
+      const maxTravel = track.clientWidth - 130;
+      const px = Math.min(maxTravel, (result.distance / 255) * maxTravel);
+      car.style.transform = `translateX(${px}px) rotate(${result.drift > 18 ? 3 : 0}deg)`;
+      renderTrials();
+    }
+
+    function drawGraph() {
+      const svg = byId("graph");
+      const w = 720, h = 300;
+      const left = 64, right = 24, top = 24, bottom = 52;
+      const plotW = w - left - right;
+      const plotH = h - top - bottom;
+      svg.innerHTML = "";
+      function line(x1, y1, x2, y2, color, width = 1) {
+        const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        l.setAttribute("x1", x1); l.setAttribute("y1", y1);
+        l.setAttribute("x2", x2); l.setAttribute("y2", y2);
+        l.setAttribute("stroke", color); l.setAttribute("stroke-width", width);
+        svg.appendChild(l);
+      }
+      function text(x, y, value, anchor = "middle", size = 12) {
+        const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        t.setAttribute("x", x); t.setAttribute("y", y);
+        t.setAttribute("text-anchor", anchor);
+        t.setAttribute("font-size", size);
+        t.setAttribute("fill", "#153047");
+        t.textContent = value;
+        svg.appendChild(t);
+      }
+      line(left, top, left, top + plotH, "#153047", 2);
+      line(left, top + plotH, left + plotW, top + plotH, "#153047", 2);
+      [0, 50, 100, 150, 200, 250].forEach(d => {
+        const y = top + plotH - (d / 250) * plotH;
+        line(left, y, left + plotW, y, "#d6e0e7");
+        text(left - 10, y + 4, d, "end");
+      });
+      [0, 2, 4, 6, 8].forEach(sec => {
+        const x = left + (sec / 8) * plotW;
+        line(x, top, x, top + plotH, "#eef3f6");
+        text(x, top + plotH + 20, sec);
+      });
+      text(left + plotW / 2, h - 12, "Time (s)");
+      text(18, top + plotH / 2, "Distance (cm)", "middle");
+      if (!state.trials.length) {
+        text(left + plotW / 2, top + plotH / 2, "Run trials to plot data", "middle", 16);
+        return;
+      }
+      const points = state.trials.map(t => ({
+        x: left + (t.time / 8) * plotW,
+        y: top + plotH - (t.distance / 250) * plotH,
+        label: `T${t.trial}`
+      }));
+      for (let i = 0; i < points.length - 1; i++) {
+        line(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y, "#287c8e", 3);
+      }
+      points.forEach(p => {
+        const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        c.setAttribute("cx", p.x);
+        c.setAttribute("cy", p.y);
+        c.setAttribute("r", 6);
+        c.setAttribute("fill", "#f4b942");
+        c.setAttribute("stroke", "#153047");
+        c.setAttribute("stroke-width", 2);
+        svg.appendChild(c);
+        text(p.x + 14, p.y - 8, p.label, "start");
+      });
+    }
+
+    function compile() {
+      const stats = designStats();
+      const selected = stats.selected.map(m => `${m.qty} x ${m.name} (${money(m.price * m.qty)})`).join("; ") || "No materials selected";
+      const trialText = state.trials.map(t => `Trial ${t.trial}: ${t.distance} cm in ${t.time} s, speed ${t.speed} cm/s, velocity ${t.velocity}, package ${t.packageSecure ? "stayed on" : "fell off"}, target ${t.meets ? "met" : "not met"}`).join("\n") || "No trials completed";
+      const summary = `RESCUE RUN VIRTUAL ENGINEERING LAB
+
+Name: ${getText("studentName")}
+Period: ${getText("studentPeriod")}
+Date: ${getText("studentDate")}
+Reason for virtual version: ${getText("reason")}
+
+RESEARCH
+1. Wheels and axles: ${getText("research1")}
+Source: ${getText("source1")}
+
+2. Friction: ${getText("research2")}
+Source: ${getText("source2")}
+
+3. Package security: ${getText("research3")}
+Source: ${getText("source3")}
+
+Initial design claim: ${getText("initialClaim")}
+
+BUDGET AND DESIGN
+Budget used: ${money(stats.total)} out of $200
+Materials: ${selected}
+Sketch notes: ${getText("sketchNotes")}
+Prediction: ${getText("prediction")}
+
+OFFICIAL TRIAL DATA
+${trialText}
+
+Data interpretation: ${getText("dataInterpretation")}
+
+REDESIGN
+Problem shown by data: ${getText("problemShown")}
+Design change: ${getText("designChange")}
+Why it should improve motion: ${getText("changeReason")}
+Tradeoff: ${getText("tradeoff")}
+
+FINAL CER
+Claim: ${getText("finalClaim")}
+Evidence: ${getText("finalEvidence")}
+Reasoning: ${getText("finalReasoning")}
+
+Presentation script: ${getText("presentationScript")}
+Limitations and next steps: ${getText("limitations")}`;
+      byId("summary").textContent = summary;
+    }
+
+    document.querySelectorAll(".tabs button").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+        button.classList.add("active");
+        byId(button.dataset.tab).classList.add("active");
+      });
+    });
+
+    byId("runTrial").addEventListener("click", runTrial);
+    byId("resetTrials").addEventListener("click", () => {
+      state.trials = [];
+      byId("car").style.transform = "translateX(0)";
+      renderTrials();
+    });
+    byId("compile").addEventListener("click", compile);
+
+    renderMaterials();
+    updateStats();
+    renderTrials();
+  </script>
+</body>
+</html>
