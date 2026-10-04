@@ -1,2 +1,765 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CCR Challenge</title><style>body{margin:0;font-family:Arial;background:#f5f7fb;color:#172033}header{background:#202838;color:#fff;text-align:center;padding:18px}.w{max-width:900px;margin:auto;padding:16px}.card{background:white;border:1px solid #d9e1ea;border-radius:16px;padding:18px}.top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px}.pill{background:white;border:1px solid #d9e1ea;border-radius:99px;padding:8px 12px;font-weight:bold}.scene{height:340px;border:2px solid #d9e1ea;border-radius:15px;position:relative;overflow:hidden;background:linear-gradient(#eef6fc,#fff);display:flex;align-items:center;justify-content:center}.title{position:absolute;top:12px;left:0;right:0;text-align:center;font-size:21px;font-weight:bold}.visual{font-size:90px}.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}.b{padding:13px;border:1px solid #d9e1ea;border-radius:11px;background:white;font-weight:bold;cursor:pointer}.primary{background:#7c3aed;color:white}.feedback{padding:13px;background:#f8fafc;border-radius:10px;margin-top:12px;min-height:50px}.good{background:#f0fdf4;color:#166534}.bad{background:#fef2f2;color:#991b1b}.hidden{display:none}.arrow{position:absolute;font-size:44px;color:#ef7d32;animation:r 1.4s infinite}.a1{left:38%;bottom:45px}.a2{left:55%;bottom:100px}.wave{position:absolute;width:135px;height:16px;border-top:5px solid #f59e0b;border-radius:50%;animation:w 1s infinite}.contact{position:absolute;width:110px;height:8px;background:#ef4444;border-radius:9px;left:44%;top:58%}.lava{width:140px;height:240px;border:9px solid #4b5563;border-radius:48% 48% 25% 25%;background:#f7d7a7;position:relative;overflow:hidden}.blob{position:absolute;width:50px;height:65px;border-radius:50%;background:#ef7d32;left:42px;animation:l 3s infinite}.b2{width:35px;height:45px;left:20px;animation-delay:1.1s}@keyframes r{from{transform:translateY(45px);opacity:.2}to{transform:translateY(-120px);opacity:.9}}@keyframes w{50%{transform:translateX(20px);opacity:.3}}@keyframes l{0%,100%{bottom:-50px}50%{bottom:160px}}@media(max-width:650px){.choices{grid-template-columns:1fr}}</style></head><body><header><a href="../" style="color:#c4b5fd;font-weight:bold;text-decoration:none;display:block;text-align:left;margin-bottom:6px">&larr; All Labs</a><h1>🔥 CCR Challenge</h1><p>How Is Thermal Energy Moving?</p></header><main class="w"><div class="top"><div class="pill">Question <span id="num">1</span>/10</div><div class="pill">Score: <span id="score">0</span></div><div class="pill">Streak: <span id="streak">0</span> 🔥</div></div><section id="game" class="card"><h2>Study the animation. Which type of heat transfer is highlighted?</h2><div class="scene"><div id="title" class="title"></div><div id="art"></div></div><div class="choices"><button class="b ans" data-a="conduction">♨️ Conduction<br><small>direct contact</small></button><button class="b ans" data-a="convection">💨 Convection<br><small>moving fluid</small></button><button class="b ans" data-a="radiation">☀️ Radiation<br><small>energy waves</small></button></div><div id="fb" class="feedback">Choose an answer.</div><button id="next" class="b primary hidden" style="margin-top:10px">Next Example →</button></section><section id="finish" class="card hidden" style="text-align:center"><h1><span id="final">0</span>/10</h1><h2>Challenge Complete!</h2><p>Conduction = contact • Convection = moving fluid • Radiation = energy waves</p><button id="again" class="b primary">🔀 Play Again</button></section></main><script>
-const E=[{t:"Lava Lamp",a:"convection",w:"Heated fluid becomes less dense and rises; cooler fluid sinks, creating a convection current.",v:`<div class="lava"><span class="blob"></span><span class="blob b2"></span></div>`},{t:"Metal Spoon in Hot Soup",a:"conduction",w:"The spoon directly touches the hot soup, so energy transfers by contact.",v:`<div class="visual">🥣🥄</div><div class="contact"></div>`},{t:"Sun Warming Pavement",a:"radiation",w:"Energy travels from the Sun to the pavement by electromagnetic waves.",v:`<div class="visual">☀️　🛣️</div><span class="wave" style="left:40%;top:48%"></span>`},{t:"Convection Oven",a:"convection",w:"A fan circulates hot air, and the moving gas carries thermal energy.",v:`<div class="visual">🌀🍪</div><span class="arrow a1">↑</span><span class="arrow a2">↗</span>`},{t:"Hand Touching a Hot Pan",a:"conduction",w:"The hand and pan touch, so energy transfers by direct contact.",v:`<div class="visual">✋🍳</div><div class="contact"></div>`},{t:"Heat Lamp Warming Food",a:"radiation",w:"The lamp transfers energy to the food by electromagnetic waves.",v:`<div class="visual">💡　🍟</div><span class="wave" style="left:40%;top:48%"></span>`},{t:"Boiling Water Circulating",a:"convection",w:"Warmer water rises while cooler water sinks, forming convection currents.",v:`<div class="visual">🍲</div><span class="arrow a1">↑</span><span class="arrow a2">↓</span>`},{t:"Iron Touching a Shirt",a:"conduction",w:"The hot iron directly touches the fabric.",v:`<div class="visual">👕 ♨️</div><div class="contact"></div>`},{t:"Feeling Warmth From a Campfire",a:"radiation",w:"Energy travels from the fire across space without touching you.",v:`<div class="visual">🔥　🧍</div><span class="wave" style="left:40%;top:48%"></span>`},{t:"Warm Air Rising From a Heater",a:"convection",w:"Heated air becomes less dense and rises.",v:`<div class="visual">♨️</div><span class="arrow a1">↑</span><span class="arrow a2">↗</span>`},{t:"Egg on a Hot Griddle",a:"conduction",w:"The egg directly contacts the hot griddle.",v:`<div class="visual">🍳</div><div class="contact"></div>`},{t:"Toaster Heating Bread",a:"radiation",w:"Glowing heating elements emit infrared radiation toward the bread.",v:`<div class="visual">🍞 ♨️</div><span class="wave" style="left:40%;top:48%"></span>`}];const q=s=>document.querySelector(s),qa=s=>[...document.querySelectorAll(s)];let order,i,score,streak,answered;function start(){order=[...E].sort(()=>Math.random()-.5).slice(0,10);i=score=streak=0;q("#game").classList.remove("hidden");q("#finish").classList.add("hidden");show()}function show(){answered=false;let e=order[i];q("#num").textContent=i+1;q("#score").textContent=score;q("#streak").textContent=streak;q("#title").textContent=e.t;q("#art").innerHTML=e.v;q("#fb").className="feedback";q("#fb").textContent="Choose an answer.";q("#next").classList.add("hidden");qa(".ans").forEach(b=>b.disabled=false)}qa(".ans").forEach(b=>b.onclick=()=>{if(answered)return;answered=true;let e=order[i],ok=b.dataset.a===e.a;if(ok){score++;streak++;q("#fb").className="feedback good";q("#fb").innerHTML="<b>✅ Correct!</b> "+e.w}else{streak=0;q("#fb").className="feedback bad";q("#fb").innerHTML="<b>Not this time. This is "+e.a+".</b> "+e.w}q("#score").textContent=score;q("#streak").textContent=streak;qa(".ans").forEach(x=>x.disabled=true);q("#next").classList.remove("hidden")});q("#next").onclick=()=>{if(++i>=10){q("#game").classList.add("hidden");q("#finish").classList.remove("hidden");q("#final").textContent=score}else show()};q("#again").onclick=start;start();</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCR Challenge</title>
+<style>
+  :root { --ink:#153047; --muted:#516273; --line:#c9d6df; --bg:#f3f7fa; --gold:#f4b942; --teal:#287c8e; --green:#4f8a5b; --red:#c84a3a;
+          --cond:#d9534f; --conv:#e08a1e; --rad:#7b4fc9; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Arial, Helvetica, sans-serif; background:var(--bg); color:var(--ink); line-height:1.4; }
+  header { background:var(--ink); color:#fff; padding:18px clamp(16px,4vw,48px); border-bottom:8px solid var(--gold); display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+  header a { color:var(--gold); font-weight:700; text-decoration:none; }
+  header h1 { margin:4px 0 0; font-size:clamp(26px,5vw,40px); }
+  header p { margin:2px 0 0; color:#d8eef4; }
+  main { max-width:1100px; margin:0 auto; padding:16px; }
+  button { border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer; font-size:15px; }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  .primary { background:var(--teal); color:#fff; border-color:var(--teal); }
+  .gold { background:var(--gold); border-color:var(--gold); }
+  .big { font-size:18px; padding:13px 22px; }
+  .screen { display:none; } .screen.active { display:block; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:clamp(14px,3vw,22px); box-shadow:0 6px 20px rgba(21,48,71,.08); margin-bottom:14px; }
+  .levels { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+  .level { position:relative; text-align:left; border:2px solid var(--line); border-radius:14px; padding:16px; background:#fff; }
+  .level h3 { margin:6px 0; font-size:20px; } .level p { margin:0 0 10px; color:var(--muted); font-size:14px; }
+  .level.locked { background:#eef2f5; color:#8a99a6; }
+  .lvnum { display:inline-block; background:var(--ink); color:#fff; border-radius:20px; padding:2px 10px; font-size:13px; font-weight:700; }
+  .stars { color:#e0a100; font-size:22px; letter-spacing:2px; }
+  .badges { display:flex; flex-wrap:wrap; gap:8px; }
+  .badge { border:1px solid var(--line); border-radius:20px; padding:6px 12px; font-weight:700; font-size:14px; background:#f7fafc; color:#9aa7b2; }
+  .badge.got { background:#fff5d6; border-color:var(--gold); color:var(--ink); }
+  .hud { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  .pill { color:var(--ink); background:#fff; border:1px solid var(--line); border-radius:99px; padding:7px 13px; font-weight:700; }
+  .timer { height:12px; background:#e3eaef; border-radius:10px; overflow:hidden; margin:6px 0 12px; }
+  .timer div { height:100%; width:100%; background:var(--teal); transition:width .1s linear; }
+  canvas { display:block; width:100%; height:auto; border-radius:12px; border:1px solid var(--line); background:#fff; }
+  .bins { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:14px; }
+  .bin { border:3px dashed var(--line); border-radius:14px; padding:14px 8px; text-align:center; font-weight:800; font-size:18px; background:#fff; min-height:96px; cursor:pointer; user-select:none; }
+  .bin small { display:block; font-weight:400; color:var(--muted); font-size:13px; }
+  .bin.cond { border-color:var(--cond); } .bin.conv { border-color:var(--conv); } .bin.rad { border-color:var(--rad); }
+  .bin.hover { transform:scale(1.04); background:#f3fbfd; }
+  .bin .count { font-size:13px; color:var(--muted); }
+  .dragwrap { display:flex; justify-content:center; min-height:270px; align-items:center; }
+  .dragcard { width:min(380px,100%); background:#fff; border:2px solid var(--ink); border-radius:14px; padding:10px; box-shadow:0 10px 26px rgba(21,48,71,.2); cursor:grab; touch-action:none; user-select:none; }
+  .dragcard.dragging { cursor:grabbing; position:fixed; z-index:50; pointer-events:none; transform:rotate(3deg) scale(.55); opacity:.92; }
+  .dragcard h4 { margin:8px 2px 2px; font-size:18px; text-align:center; }
+  .feedback { border-radius:12px; padding:12px 14px; margin-top:12px; min-height:48px; background:#f7fafc; }
+  .feedback.good { background:#eaf6ec; border-left:6px solid var(--green); }
+  .feedback.bad { background:#fff1ee; border-left:6px solid var(--red); }
+  .answers { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:12px; }
+  .answers button { padding:16px 8px; font-size:17px; border-width:3px; }
+  .a-cond { border-color:var(--cond) !important; } .a-conv { border-color:var(--conv) !important; } .a-rad { border-color:var(--rad) !important; }
+  .hearts { font-size:22px; letter-spacing:2px; }
+  .flame { font-weight:800; }
+  .prompt { font-size:20px; font-weight:800; margin:6px 0 10px; }
+  .overlay { position:fixed; inset:0; background:rgba(21,48,71,.55); display:none; align-items:center; justify-content:center; z-index:100; padding:16px; }
+  .overlay.show { display:flex; }
+  .modal { background:#fff; border-radius:16px; padding:24px; max-width:520px; width:100%; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,.3); }
+  .modal h2 { margin:0 0 8px; } .modal .stars { font-size:40px; }
+  table { width:100%; border-collapse:collapse; margin:10px 0; }
+  th, td { border:1px solid var(--line); padding:8px; text-align:left; }
+  th { background:var(--ink); color:#fff; }
+  label { display:block; font-weight:700; margin:12px 0 5px; }
+  input, textarea { width:100%; border:1px solid var(--line); border-radius:8px; padding:9px; font:inherit; }
+  textarea { min-height:76px; }
+  .summary { white-space:pre-wrap; background:#f7fafc; border:1px solid var(--line); border-radius:8px; padding:12px; min-height:160px; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .small { color:var(--muted); font-size:13px; }
+  .dir { display:flex; gap:14px; justify-content:center; margin-top:12px; }
+  .dir button { font-size:30px; padding:10px 30px; }
+  .toast { position:fixed; top:16px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; padding:10px 18px; border-radius:30px; font-weight:700; z-index:200; display:none; }
+  @media (max-width:760px) { .levels { grid-template-columns:1fr; } .answers button { font-size:15px; } }
+  @media print { header, .noprint { display:none !important; } .screen { display:none !important; } #results { display:block !important; } body { background:#fff; } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <a href="https://theunexpectedscienceteacher-blip.github.io/virtual-labs/">&larr; All Labs</a>
+    <h1>🔥 CCR Challenge</h1>
+    <p>Conduction • Convection • Radiation</p>
+  </div>
+  <div class="row noprint">
+    <span class="pill">🏆 Best: <span id="hiScore">0</span></span>
+    <button id="soundBtn">🔊 Sound on</button>
+  </div>
+</header>
+<div class="toast" id="toast"></div>
+
+<main>
+  <!-- MENU -->
+  <section id="menu" class="screen active">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div><h2 style="margin:0">Choose a Level</h2><p class="small" style="margin:4px 0 0">Beat a level to unlock the next one. Earn up to 3 stars on each.</p></div>
+        <button class="gold" id="toResults">📋 My Results &amp; Submit</button>
+      </div>
+      <div class="row" style="margin:14px 0">
+        <span style="flex:1;min-width:180px"><label style="margin:0 0 4px">Name</label><input id="sName"></span>
+        <span style="width:120px"><label style="margin:0 0 4px">Period</label><input id="sPeriod"></span>
+      </div>
+      <div class="levels">
+        <div class="level" id="lv1"><span class="lvnum">Level 1</span><h3>🗂️ Sort It</h3><p>Drag each example into the right bin before time runs out.</p><div class="stars" id="st1">☆☆☆</div><button class="primary" data-play="1">Play</button></div>
+        <div class="level" id="lv2"><span class="lvnum">Level 2</span><h3>🔍 Spot the Transfer</h3><p>Hunt for heat transfers hidden in a kitchen and a campsite.</p><div class="stars" id="st2">☆☆☆</div><button class="primary" data-play="2">Play</button></div>
+        <div class="level" id="lv3"><span class="lvnum">Level 3</span><h3>⚡ Speed Round</h3><p>Boss level! Answer fast, build your streak, and don't lose all 3 lives.</p><div class="stars" id="st3">☆☆☆</div><button class="primary" data-play="3">Play</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">🏅 Badges</h3>
+      <div class="badges" id="badgeList"></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">How to tell them apart</h3>
+      <div class="levels">
+        <div><strong style="color:var(--cond)">♨️ Conduction</strong><br>Energy moves by <strong>direct contact</strong>. Look for two things <em>touching</em>.</div>
+        <div><strong style="color:var(--conv)">💨 Convection</strong><br>Energy is carried by a <strong>moving fluid</strong> (liquid or gas). Look for <em>currents</em>: warm rises, cool sinks.</div>
+        <div><strong style="color:var(--rad)">☀️ Radiation</strong><br>Energy travels as <strong>electromagnetic waves</strong>. <em>No contact</em> needed. It can even cross empty space.</div>
+      </div>
+      <p class="small" style="margin-bottom:0">Remember: thermal energy always flows from <strong>hotter</strong> to <strong>colder</strong>.</p>
+    </div>
+  </section>
+
+  <!-- LEVEL 1 -->
+  <section id="level1" class="screen">
+    <div class="card">
+      <div class="hud">
+        <button class="noprint" data-quit>← Menu</button>
+        <span class="pill">🗂️ Level 1: Sort It</span>
+        <span class="pill">Card <span id="l1n">1</span>/12</span>
+        <span class="pill">Score: <span id="l1score">0</span></span>
+        <span class="pill flame">Streak: <span id="l1streak">0</span> 🔥</span>
+      </div>
+      <div class="timer"><div id="l1timer"></div></div>
+      <div class="dragwrap" id="l1wrap"></div>
+      <p class="small" style="text-align:center;margin:4px 0 0">Drag the card into a bin, or tap a bin.</p>
+      <div class="bins">
+        <div class="bin cond" data-bin="conduction">♨️ Conduction<small>direct contact</small><span class="count" id="c-conduction"></span></div>
+        <div class="bin conv" data-bin="convection">💨 Convection<small>moving fluid</small><span class="count" id="c-convection"></span></div>
+        <div class="bin rad" data-bin="radiation">☀️ Radiation<small>energy waves</small><span class="count" id="c-radiation"></span></div>
+      </div>
+      <div class="feedback" id="l1fb">Look at what is happening in the picture, then sort it.</div>
+    </div>
+  </section>
+
+  <!-- LEVEL 2 -->
+  <section id="level2" class="screen">
+    <div class="card">
+      <div class="hud">
+        <button class="noprint" data-quit>← Menu</button>
+        <span class="pill">🔍 Level 2: Spot the Transfer</span>
+        <span class="pill" id="l2scene">Scene 1 of 2</span>
+        <span class="pill">Score: <span id="l2score">0</span></span>
+        <span class="pill">Mistakes: <span id="l2miss">0</span></span>
+      </div>
+      <div class="prompt" id="l2prompt"></div>
+      <canvas id="l2canvas" width="960" height="520" aria-label="Scene with heat transfers to find"></canvas>
+      <div class="feedback" id="l2fb">Click on the thing in the picture.</div>
+    </div>
+  </section>
+
+  <!-- LEVEL 3 -->
+  <section id="level3" class="screen">
+    <div class="card">
+      <div class="hud">
+        <button class="noprint" data-quit>← Menu</button>
+        <span class="pill">⚡ Level 3: Speed Round</span>
+        <span class="pill">Question <span id="l3n">1</span>/15</span>
+        <span class="pill">Score: <span id="l3score">0</span></span>
+        <span class="pill flame" id="l3mult">x1 🔥</span>
+        <span class="hearts" id="l3hearts">❤️❤️❤️</span>
+      </div>
+      <div class="timer"><div id="l3timer"></div></div>
+      <div class="prompt" id="l3title"></div>
+      <canvas id="l3canvas" width="900" height="330" aria-label="Example to identify"></canvas>
+      <div id="l3answers" class="answers">
+        <button class="a-cond" data-ans="conduction">♨️ Conduction</button>
+        <button class="a-conv" data-ans="convection">💨 Convection</button>
+        <button class="a-rad" data-ans="radiation">☀️ Radiation</button>
+      </div>
+      <div id="l3dir" class="dir" style="display:none">
+        <button data-dir="-1">⬅️</button><button data-dir="1">➡️</button>
+      </div>
+      <div class="feedback" id="l3fb">Get ready...</div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results" class="screen">
+    <div class="card">
+      <div class="row noprint" style="justify-content:space-between"><button data-quit>← Menu</button><span></span></div>
+      <h2>My Results</h2>
+      <table><thead><tr><th>Level</th><th>Stars</th><th>Best score</th></tr></thead><tbody id="resLevels"></tbody></table>
+      <h3>Accuracy by type</h3>
+      <table><thead><tr><th>Type</th><th>Correct</th><th>Accuracy</th></tr></thead><tbody id="resTypes"></tbody></table>
+      <div id="resConfuse" class="feedback"></div>
+      <h3>Badges</h3><div class="badges" id="resBadges"></div>
+      <h3>Reflection</h3>
+      <label>1. Which type of heat transfer was hardest for you to identify? Why?</label><textarea id="r1"></textarea>
+      <label>2. Explain the difference between conduction and radiation using one example from the game.</label><textarea id="r2"></textarea>
+      <label>3. Describe one example of heat transfer you see at home or school. Which type is it, and how do you know?</label><textarea id="r3"></textarea>
+      <div class="row noprint" style="margin-top:12px">
+        <button class="primary" id="compile">Compile My Work</button>
+        <button class="gold" onclick="window.print()">Print / Save as PDF</button>
+      </div>
+      <p class="small noprint">After compiling, highlight everything in the box, copy it (Ctrl+C), and paste it into your Schoology assignment.</p>
+      <div class="summary" id="summary">Click Compile My Work when you are finished.</div>
+      <div class="noprint" style="margin-top:16px"><button id="wipe">Start Over (erase my saved progress)</button></div>
+    </div>
+  </section>
+</main>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const TYPES = ["conduction", "convection", "radiation"];
+const TNAME = { conduction: "Conduction", convection: "Convection", radiation: "Radiation" };
+const TCOL = { conduction: "#d9534f", convection: "#e08a1e", radiation: "#7b4fc9" };
+const HINT = {
+  conduction: "Hint: look for two things TOUCHING. Energy passes directly from one to the other.",
+  convection: "Hint: look for a moving liquid or gas. Warm fluid rises, cool fluid sinks, making a current.",
+  radiation: "Hint: is there a gap with NO contact? Energy can travel as waves, even through empty space."
+};
+
+/* ---------- example bank ---------- */
+// k: drawing kind; s: source emoji; g: target emoji; c: cold source (energy flows into s); box: convection container
+const BANK = [
+  { t: "Metal spoon in hot soup", a: "conduction", k: "contact", s: "🥣", g: "🥄", w: "The spoon touches the hot soup, so energy moves into the spoon by direct contact." },
+  { t: "Hand touching a hot pan", a: "conduction", k: "contact", s: "🍳", g: "✋", w: "The hand touches the hot pan. Energy moves by direct contact." },
+  { t: "Bare feet on hot pavement in July", a: "conduction", k: "contact", s: "🛣️", g: "🦶", w: "Your feet touch the hot pavement, so energy flows into them by contact." },
+  { t: "Sitting on a hot car seat", a: "conduction", k: "contact", s: "💺", g: "🧍", w: "Your legs touch the hot seat. That's direct contact: conduction." },
+  { t: "Holding an ice cube", a: "conduction", k: "contact", s: "✋", g: "🧊", c: true, w: "Energy flows from your warm hand into the cold ice by direct contact. Your hand feels cold because it's losing energy." },
+  { t: "Cold soda can in your hand", a: "conduction", k: "contact", s: "✋", g: "🥤", c: true, w: "Your hand touches the can, so energy flows from your hand to the cold can by contact." },
+  { t: "Egg cooking on a hot griddle", a: "conduction", k: "contact", s: "🔥", g: "🍳", w: "The egg sits directly on the hot griddle. Energy moves by contact." },
+  { t: "Grilled cheese in a hot pan", a: "conduction", k: "contact", s: "🍳", g: "🥪", w: "The bread touches the hot pan, so it toasts by conduction." },
+  { t: "Hot cocoa warming your hands through the mug", a: "conduction", k: "contact", s: "☕", g: "🙌", w: "Your hands touch the warm mug. Energy moves by direct contact." },
+  { t: "Metal slide burning your legs on a sunny day", a: "conduction", k: "contact", s: "🛝", g: "🦵", w: "Your legs touch the hot metal slide. That transfer is conduction (the sun heated the slide by radiation first!)." },
+  { t: "Boiling water circulating in a pot", a: "convection", k: "conv", box: "pot", s: "🔥", w: "Hot water at the bottom rises and cooler water sinks, forming a convection current." },
+  { t: "Lava lamp blobs rising and sinking", a: "convection", k: "conv", box: "lamp", s: "💡", w: "Heated wax becomes less dense and rises, then cools and sinks. That moving fluid is convection." },
+  { t: "Hot air balloon rising", a: "convection", k: "conv", box: "balloon", s: "🔥", w: "The burner heats the air inside. Hot air is less dense and rises, carrying the balloon up." },
+  { t: "Space heater warming a whole room", a: "convection", k: "conv", box: "room", s: "♨️", w: "The heater warms the air, the warm air rises and circulates, carrying energy around the room." },
+  { t: "AC vent cooling a room", a: "convection", k: "conv", box: "room", s: "❄️", c: true, w: "Cool air from the vent sinks and warm air rises, so moving air carries energy around the room." },
+  { t: "Sea breeze at the beach", a: "convection", k: "conv", box: "ocean", s: "☀️", w: "Air over warm land rises and cooler air from the sea moves in. Moving air = convection." },
+  { t: "Convection oven fan baking cookies", a: "convection", k: "conv", box: "room", s: "🍪", w: "A fan moves hot air around the cookies. The moving gas carries the energy." },
+  { t: "Hair dryer blowing hot air", a: "convection", k: "conv", box: "dryer", s: "💇", w: "The dryer pushes moving hot air onto your hair. Moving air carries the energy." },
+  { t: "Smoke and hot air rising above a campfire", a: "convection", k: "conv", box: "sky", s: "🔥", w: "Air heated by the fire becomes less dense and rises, carrying smoke with it." },
+  { t: "Ocean currents carrying warm water", a: "convection", k: "conv", box: "ocean", s: "🌊", w: "Warm and cool water move in giant currents, carrying thermal energy around the planet." },
+  { t: "Sun warming the pavement", a: "radiation", k: "rad", s: "☀️", g: "🛣️", w: "Energy travels from the Sun as electromagnetic waves. Nothing touches." },
+  { t: "Feeling warmth from a campfire", a: "radiation", k: "rad", s: "🔥", g: "🧍", w: "You're not touching the fire. Energy reaches you as infrared waves." },
+  { t: "Heat lamp keeping fries warm", a: "radiation", k: "rad", s: "💡", g: "🍟", w: "The lamp sends energy to the fries as waves, without touching them." },
+  { t: "Toaster browning bread", a: "radiation", k: "rad", s: "🟥", g: "🍞", w: "The glowing coils give off infrared radiation that toasts the bread without touching it." },
+  { t: "Sunlight heating a parked car", a: "radiation", k: "rad", s: "☀️", g: "🚗", w: "Sunlight travels as waves through the windshield and heats the inside of the car." },
+  { t: "Getting a sunburn at the pool", a: "radiation", k: "rad", s: "☀️", g: "🏊", w: "The Sun's energy reaches your skin as electromagnetic waves (including UV)." },
+  { t: "Warmth from a light bulb on your hand", a: "radiation", k: "rad", s: "💡", g: "✋", w: "Your hand doesn't touch the bulb. Energy arrives as waves." },
+  { t: "Glowing stove coil warming your face", a: "radiation", k: "rad", s: "⭕", g: "🙂", w: "Even from a distance you feel the coil's infrared radiation." },
+  { t: "The Sun warming Earth across space", a: "radiation", k: "rad", s: "☀️", g: "🌎", w: "Space is empty, so conduction and convection can't happen. Only radiation travels through it." },
+  { t: "A black T-shirt getting hot in the sun", a: "radiation", k: "rad", s: "☀️", g: "👕", w: "Dark colors absorb more of the Sun's radiation, so the shirt heats up." }
+];
+const FLOW = [
+  { a: ["☕", "Hot cocoa", 80], b: ["✋", "Your hand", 34] },
+  { a: ["🧊", "Ice cube", 0], b: ["🥤", "Lemonade", 22] },
+  { a: ["🍪", "Cookie dough", 20], b: ["♨️", "Oven air", 180] },
+  { a: ["🛣️", "Pavement", 60], b: ["🦶", "Your foot", 34] },
+  { a: ["✋", "Your hand", 34], b: ["🥫", "Cold soda", 4] },
+  { a: ["☀️", "The Sun", 5500], b: ["🌎", "Earth", 15] },
+  { a: ["🍲", "Soup", 70], b: ["🥄", "Metal spoon", 22] },
+  { a: ["❄️", "AC air", 16], b: ["🧍", "You", 37] }
+];
+
+/* ---------- state & save ---------- */
+const SAVE = "ccrChallenge_v2";
+const S = { stars: [0, 0, 0], best: [0, 0, 0], hi: 0, badges: [], stats: {}, sound: true, inputs: {} };
+TYPES.forEach(t => { S.stats[t] = { right: 0, total: 0, as: { conduction: 0, convection: 0, radiation: 0 } }; });
+function save() {
+  try { document.querySelectorAll("input[id], textarea[id]").forEach(el => S.inputs[el.id] = el.value); localStorage.setItem(SAVE, JSON.stringify(S)); } catch (e) {}
+}
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(SAVE) || "null"); if (!d) return;
+    Object.assign(S, d);
+    Object.entries(S.inputs || {}).forEach(([k, v]) => { const el = $(k); if (el) el.value = v; });
+  } catch (e) {}
+}
+document.addEventListener("input", e => { if (e.target.matches("input[id], textarea[id]")) save(); });
+function record(truth, ans) { const st = S.stats[truth]; st.total++; st.as[ans]++; if (truth === ans) st.right++; }
+
+/* ---------- sound ---------- */
+let AC = null;
+function beep(type) {
+  if (!S.sound) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const notes = type === "good" ? [660, 880] : type === "bad" ? [220, 160] : type === "win" ? [523, 659, 784, 1047] : [440];
+    notes.forEach((f, i) => {
+      const o = AC.createOscillator(), g = AC.createGain();
+      o.type = type === "bad" ? "sawtooth" : "triangle"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, AC.currentTime + i * 0.09); g.gain.exponentialRampToValueAtTime(0.18, AC.currentTime + i * 0.09 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + i * 0.09 + 0.2);
+      o.connect(g); g.connect(AC.destination); o.start(AC.currentTime + i * 0.09); o.stop(AC.currentTime + i * 0.09 + 0.22);
+    });
+  } catch (e) {}
+}
+function setSoundBtn() { $("soundBtn").textContent = S.sound ? "🔊 Sound on" : "🔇 Sound off"; }
+$("soundBtn").addEventListener("click", () => { S.sound = !S.sound; setSoundBtn(); save(); });
+
+/* ---------- helpers ---------- */
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function starStr(n) { return "★".repeat(n) + "☆".repeat(3 - n); }
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(toast.h); toast.h = setTimeout(() => t.style.display = "none", 2200); }
+function show(id) { document.querySelectorAll(".screen").forEach(s => s.classList.toggle("active", s.id === id)); window.scrollTo({ top: 0, behavior: "smooth" }); }
+function modal(html) { $("modal").innerHTML = html; $("overlay").classList.add("show"); }
+function closeModal() { $("overlay").classList.remove("show"); }
+
+const BADGES = [
+  ["sort3", "🗂️ Sorting Star", "3 stars on Sort It"],
+  ["eagle", "🦅 Eagle Eye", "Spot the Transfer with no mistakes"],
+  ["speed", "⚡ Speed Demon", "Score 9000+ in the Speed Round"],
+  ["streak10", "🔥 Perfect Streak", "10 correct in a row"],
+  ["flow", "🧭 Flow Master", "Get every energy-flow bonus right in a Speed Round"],
+  ["pro_conduction", "♨️ Conduction Pro", "8+ conduction correct, 90%+ accuracy"],
+  ["pro_convection", "💨 Convection Pro", "8+ convection correct, 90%+ accuracy"],
+  ["pro_radiation", "☀️ Radiation Pro", "8+ radiation correct, 90%+ accuracy"]
+];
+function award(id) {
+  if (S.badges.includes(id)) return;
+  S.badges.push(id); const b = BADGES.find(x => x[0] === id); toast("Badge earned: " + b[1]); beep("win"); save();
+}
+function checkPro() { TYPES.forEach(t => { const s = S.stats[t]; if (s.right >= 8 && s.right / s.total >= 0.9) award("pro_" + t); }); }
+
+/* ---------- scene drawing for examples ---------- */
+function emoji(ctx, e, x, y, size) { ctx.font = `${size}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(e, x, y); }
+function arrow(ctx, x1, y1, x2, y2, col, w = 4) {
+  const a = Math.atan2(y2 - y1, x2 - x1);
+  ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - 14 * Math.cos(a - 0.45), y2 - 14 * Math.sin(a - 0.45)); ctx.lineTo(x2 - 14 * Math.cos(a + 0.45), y2 - 14 * Math.sin(a + 0.45)); ctx.closePath(); ctx.fill();
+}
+function drawExample(ctx, W, H, ex, t) {
+  ctx.clearRect(0, 0, W, H);
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#eef6fb"); g.addColorStop(1, "#ffffff"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const cx = W / 2, cy = H / 2, u = Math.min(W / 300, H / 170);
+  if (ex.k === "contact") {
+    const hot = ex.c ? "#3f8fd8" : "#e2452f";
+    // contact glow
+    const pulse = 0.5 + 0.5 * Math.sin(t * 4);
+    const rg = ctx.createRadialGradient(cx, cy + 6 * u, 4, cx, cy + 6 * u, (40 + 22 * pulse) * u);
+    rg.addColorStop(0, ex.c ? "rgba(80,150,230,.65)" : "rgba(240,90,50,.7)"); rg.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(cx, cy + 6 * u, (62 + 22 * pulse) * u, 0, 7); ctx.fill();
+    emoji(ctx, ex.s, cx - 36 * u, cy, 78 * u);
+    emoji(ctx, ex.g, cx + 30 * u, cy - 4 * u, 70 * u);
+    // energy dots flowing across the contact
+    for (let k = 0; k < 6; k++) {
+      const p = ((t * 0.7 + k / 6) % 1), x = cx - 20 * u + p * 46 * u, y = cy + Math.sin(k * 2.1) * 18 * u;
+      ctx.fillStyle = hot; ctx.globalAlpha = 1 - p * 0.6; ctx.beginPath(); ctx.arc(x, y, 5 * u, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+    }
+    ctx.fillStyle = "#153047"; ctx.font = `bold ${13 * u}px Arial`; ctx.textAlign = "center"; ctx.fillText("touching", cx, H - 14 * u);
+  } else if (ex.k === "rad") {
+    const sx = cx - 95 * u, tx = cx + 95 * u;
+    const glow = ctx.createRadialGradient(sx, cy, 4, sx, cy, 60 * u); glow.addColorStop(0, "rgba(255,200,60,.6)"); glow.addColorStop(1, "rgba(255,200,60,0)");
+    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(sx, cy, 60 * u, 0, 7); ctx.fill();
+    emoji(ctx, ex.s, sx, cy, 70 * u); emoji(ctx, ex.g, tx, cy, 66 * u);
+    ctx.strokeStyle = "rgba(230,120,30,.85)"; ctx.lineWidth = 3 * u;
+    for (let w = 0; w < 4; w++) {
+      const p = ((t * 0.55 + w / 4) % 1), x0 = sx + 40 * u + p * (tx - sx - 90 * u);
+      ctx.globalAlpha = 1 - p * 0.5; ctx.beginPath();
+      for (let k = 0; k <= 24; k++) { const yy = cy - 34 * u + k * 2.9 * u; const xx = x0 + Math.sin(k * 0.9 + t * 7) * 4 * u; k ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy); }
+      ctx.stroke(); ctx.globalAlpha = 1;
+    }
+    ctx.fillStyle = "#153047"; ctx.font = `bold ${13 * u}px Arial`; ctx.textAlign = "center"; ctx.fillText("no contact", cx, H - 14 * u);
+  } else {
+    // convection: container + circulating current
+    const bw = 170 * u, bh = 110 * u, bx = cx - bw / 2, by = cy - bh / 2 - 6 * u;
+    ctx.lineWidth = 4 * u; ctx.strokeStyle = "#516273";
+    if (ex.box === "pot") { ctx.fillStyle = "rgba(125,200,240,.35)"; ctx.fillRect(bx, by + 18 * u, bw, bh - 18 * u); ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by); ctx.stroke(); emoji(ctx, ex.s, cx, by + bh + 18 * u, 30 * u); }
+    else if (ex.box === "lamp") { ctx.fillStyle = "rgba(255,210,150,.6)"; ctx.beginPath(); ctx.ellipse(cx, cy - 4 * u, 46 * u, 66 * u, 0, 0, 7); ctx.fill(); ctx.stroke(); emoji(ctx, ex.s, cx, cy + 70 * u, 24 * u); }
+    else if (ex.box === "balloon") { ctx.fillStyle = "rgba(240,120,90,.25)"; ctx.beginPath(); ctx.ellipse(cx, cy - 10 * u, 62 * u, 62 * u, 0, 0, 7); ctx.fill(); ctx.stroke(); emoji(ctx, "🧺", cx, cy + 70 * u, 26 * u); emoji(ctx, ex.s, cx, cy + 50 * u, 20 * u); }
+    else if (ex.box === "ocean") { ctx.fillStyle = "rgba(60,140,210,.35)"; ctx.fillRect(bx - 30 * u, cy + 18 * u, bw + 60 * u, 50 * u); ctx.fillStyle = "rgba(230,200,140,.6)"; ctx.fillRect(cx + 30 * u, cy + 10 * u, bw / 2 + 30 * u, 58 * u); emoji(ctx, ex.s, bx - 10 * u, by + 4 * u, 34 * u); }
+    else if (ex.box === "sky") { emoji(ctx, ex.s, cx, cy + 56 * u, 48 * u); }
+    else if (ex.box === "dryer") { emoji(ctx, "🧑", cx + 70 * u, cy, 64 * u); emoji(ctx, "🔫", cx - 80 * u, cy, 46 * u); }
+    else { ctx.fillStyle = "rgba(230,238,244,.7)"; ctx.fillRect(bx, by, bw, bh); ctx.strokeRect(bx, by, bw, bh); emoji(ctx, ex.s, bx + 24 * u, by + bh - 20 * u, 30 * u); }
+    if (ex.box === "dryer") {
+      for (let k = 0; k < 8; k++) { const p = ((t * 0.9 + k / 8) % 1), x = cx - 55 * u + p * 95 * u, y = cy - 6 * u + Math.sin(k * 1.7 + t * 5) * 14 * u; ctx.fillStyle = "rgba(226,110,40,.85)"; ctx.globalAlpha = 1 - p * 0.5; ctx.beginPath(); ctx.arc(x, y, 5 * u, 0, 7); ctx.fill(); ctx.globalAlpha = 1; }
+    } else if (ex.box === "sky") {
+      for (let k = 0; k < 9; k++) { const p = ((t * 0.5 + k / 9) % 1), x = cx + Math.sin(k * 2 + t * 2) * 30 * u * (1 - p), y = cy + 30 * u - p * 110 * u; ctx.fillStyle = `rgba(${p < .5 ? "226,110,40" : "140,140,150"},${0.9 - p * 0.6})`; ctx.beginPath(); ctx.arc(x, y, (6 + p * 8) * u, 0, 7); ctx.fill(); }
+    } else {
+      // loop path: up the left (warm) and down the right (cool)
+      const rx = ex.box === "lamp" ? 28 * u : 58 * u, ry = ex.box === "lamp" ? 46 * u : 32 * u, ox = cx, oy = ex.box === "ocean" ? cy - 10 * u : cy + (ex.box === "pot" ? 12 * u : 0);
+      for (let k = 0; k < 12; k++) {
+        const ang = -((t * 0.9 + k / 12) * Math.PI * 2);
+        const x = ox + Math.cos(ang) * rx, y = oy + Math.sin(ang) * ry;
+        const warm = Math.cos(ang) < 0 ? !ex.c : !!ex.c;
+        ctx.fillStyle = warm ? "rgba(226,69,47,.9)" : "rgba(63,143,216,.9)";
+        const dx = -Math.sin(ang) * rx, dy = Math.cos(ang) * ry, a = Math.atan2(-dy, -dx);
+        ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.beginPath(); ctx.moveTo(9 * u, 0); ctx.lineTo(-6 * u, -6 * u); ctx.lineTo(-6 * u, 6 * u); ctx.closePath(); ctx.fill(); ctx.restore();
+      }
+    }
+    ctx.fillStyle = "#153047"; ctx.font = `bold ${13 * u}px Arial`; ctx.textAlign = "center"; ctx.fillText("moving fluid", cx, H - 10 * u);
+  }
+}
+
+/* ---------- animation loop ---------- */
+let clock = 0, last = performance.now();
+const anim = [];
+function loop(now) {
+  const dt = Math.min(0.25, (now - last) / 1000); last = now; clock += dt;
+  anim.forEach(f => f(dt));
+  requestAnimationFrame(loop);
+}
+
+/* ---------- MENU ---------- */
+function unlocked(n) { return n === 1 || S.stars[n - 2] >= 1 || /teacher/i.test(location.search); }
+function renderMenu() {
+  [1, 2, 3].forEach(n => {
+    const el = $("lv" + n), ok = unlocked(n);
+    el.classList.toggle("locked", !ok);
+    $("st" + n).textContent = starStr(S.stars[n - 1]);
+    el.querySelector("button").disabled = !ok;
+    el.querySelector("button").textContent = ok ? (S.stars[n - 1] ? "Play again" : "Play") : "🔒 Locked";
+  });
+  $("hiScore").textContent = S.hi;
+  $("badgeList").innerHTML = BADGES.map(b => `<span class="badge ${S.badges.includes(b[0]) ? "got" : ""}" title="${b[2]}">${b[1]}</span>`).join("");
+}
+document.querySelectorAll("[data-play]").forEach(b => b.addEventListener("click", () => { beep("tick"); ({ 1: startL1, 2: startL2, 3: startL3 })[b.dataset.play](); }));
+document.querySelectorAll("[data-quit]").forEach(b => b.addEventListener("click", () => { stopAll(); renderMenu(); show("menu"); }));
+$("toResults").addEventListener("click", () => { renderResults(); show("results"); });
+function finishLevel(n, score, stars, extra) {
+  stopAll();
+  const better = stars > S.stars[n - 1];
+  S.stars[n - 1] = Math.max(S.stars[n - 1], stars);
+  S.best[n - 1] = Math.max(S.best[n - 1], score);
+  if (score > S.hi) S.hi = score;
+  checkPro(); save(); beep(stars ? "win" : "bad");
+  const next = n < 3 && stars >= 1 ? `<button class="primary big" id="mNext">Level ${n + 1} ▶</button>` : "";
+  modal(`<h2>${stars ? "Level complete!" : "Keep practicing!"}</h2><div class="stars">${starStr(stars)}</div>
+    <p style="font-size:20px"><strong>Score: ${score}</strong></p><p>${extra || ""}</p>
+    ${stars === 0 ? "<p>You need at least 1 star to unlock the next level.</p>" : ""}${better && n < 3 && stars >= 1 && S.stars[n] === 0 ? "<p>🔓 <strong>Level " + (n + 1) + " unlocked!</strong></p>" : ""}
+    <div class="row" style="justify-content:center;margin-top:12px"><button id="mRetry">↻ Try again</button><button id="mMenu">Menu</button>${next}</div>`);
+  $("mRetry").onclick = () => { closeModal(); ({ 1: startL1, 2: startL2, 3: startL3 })[n](); };
+  $("mMenu").onclick = () => { closeModal(); renderMenu(); show("menu"); };
+  if ($("mNext")) $("mNext").onclick = () => { closeModal(); ({ 2: startL2, 3: startL3 })[n + 1](); };
+}
+let timers = [];
+function stopAll() { timers.forEach(clearInterval); timers = []; anim.length = 0; }
+
+/* ---------- LEVEL 1: SORT IT ---------- */
+const L1 = { q: [], i: 0, score: 0, streak: 0, right: 0, time: 0, total: 90, busy: false, counts: {} };
+function startL1() {
+  stopAll(); show("level1");
+  Object.assign(L1, { q: shuffle(TYPES.flatMap(t => shuffle(BANK.filter(b => b.a === t)).slice(0, 4))), i: 0, score: 0, streak: 0, right: 0, time: 90, busy: false, counts: { conduction: 0, convection: 0, radiation: 0 } });
+  updL1(); l1Card(); $("l1fb").className = "feedback"; $("l1fb").textContent = "Look at what is happening in the picture, then sort it.";
+  timers.push(setInterval(() => { L1.time -= 0.1; $("l1timer").style.width = Math.max(0, L1.time / L1.total * 100) + "%"; $("l1timer").style.background = L1.time < 15 ? "#c84a3a" : "#287c8e"; if (L1.time <= 0) endL1(true); }, 100));
+}
+function updL1() {
+  $("l1n").textContent = Math.min(L1.i + 1, 12); $("l1score").textContent = L1.score; $("l1streak").textContent = L1.streak;
+  TYPES.forEach(t => $("c-" + t).textContent = L1.counts[t] ? `${L1.counts[t]} sorted` : "");
+}
+function l1Card() {
+  const wrap = $("l1wrap"); wrap.innerHTML = "";
+  const ex = L1.q[L1.i]; if (!ex) return;
+  const card = document.createElement("div"); card.className = "dragcard";
+  card.innerHTML = `<canvas width="600" height="340"></canvas><h4>${ex.t}</h4>`;
+  wrap.appendChild(card);
+  const cv = card.querySelector("canvas"), ctx = cv.getContext("2d");
+  anim.length = 0; anim.push(() => drawExample(ctx, 600, 340, ex, clock));
+  enableDrag(card);
+}
+function enableDrag(card) {
+  let ox = 0, oy = 0, ph = null;
+  function binAt(e) { const el = document.elementFromPoint(e.clientX, e.clientY); return el && el.closest(".bin"); }
+  function move(e) {
+    card.style.left = (e.clientX - ox) + "px"; card.style.top = (e.clientY - oy) + "px";
+    document.querySelectorAll(".bin").forEach(b => b.classList.remove("hover")); const b = binAt(e); if (b) b.classList.add("hover");
+    e.preventDefault();
+  }
+  function up(e) {
+    window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up);
+    const b = binAt(e); document.querySelectorAll(".bin").forEach(x => x.classList.remove("hover"));
+    card.classList.remove("dragging"); card.style.left = card.style.top = ""; card.style.width = ""; if (ph) ph.remove();
+    if (b) l1Answer(b.dataset.bin);
+  }
+  card.addEventListener("pointerdown", e => {
+    if (L1.busy) return;
+    const r = card.getBoundingClientRect(); ox = e.clientX - r.left; oy = e.clientY - r.top;
+    ph = document.createElement("div"); ph.style.height = r.height + "px"; ph.style.width = r.width + "px"; card.after(ph);
+    card.style.width = r.width + "px"; card.style.transformOrigin = `${ox}px ${oy}px`; card.classList.add("dragging"); move(e);
+    window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
+  });
+}
+document.querySelectorAll(".bin").forEach(b => b.addEventListener("click", () => { if (!L1.busy && $("level1").classList.contains("active")) l1Answer(b.dataset.bin); }));
+function l1Answer(ans) {
+  const ex = L1.q[L1.i]; if (!ex || L1.busy) return;
+  L1.busy = true; record(ex.a, ans); L1.counts[ex.a]++;
+  const fb = $("l1fb");
+  if (ans === ex.a) {
+    L1.streak++; L1.right++; L1.score += 100 + Math.min(L1.streak - 1, 5) * 20; beep("good");
+    fb.className = "feedback good"; fb.innerHTML = `<strong>✅ Correct: ${TNAME[ex.a]}!</strong> ${ex.w}`;
+    if (L1.streak >= 10) award("streak10");
+  } else {
+    L1.streak = 0; beep("bad");
+    fb.className = "feedback bad"; fb.innerHTML = `<strong>❌ That's ${TNAME[ex.a]}, not ${TNAME[ans]}.</strong> ${ex.w}<br><em>${HINT[ex.a]}</em>`;
+  }
+  updL1(); save();
+  setTimeout(() => { L1.i++; L1.busy = false; if (L1.i >= L1.q.length) endL1(false); else { l1Card(); updL1(); } }, ans === ex.a ? 1300 : 2600);
+}
+function endL1(timeUp) {
+  if (!$("level1").classList.contains("active")) return;
+  const bonus = Math.max(0, Math.round(L1.time)) * 5; L1.score += bonus;
+  const stars = L1.right >= 11 ? 3 : L1.right >= 9 ? 2 : L1.right >= 7 ? 1 : 0;
+  if (stars === 3) award("sort3");
+  finishLevel(1, L1.score, stars, `${L1.right} of 12 correct${timeUp ? " (time ran out)" : ""} · time bonus +${bonus}`);
+}
+
+/* ---------- LEVEL 2: SPOT THE TRANSFER ---------- */
+const SCENES = [
+  { name: "Kitchen", spots: [
+    { x: 250, y: 300, r: 62, a: "conduction", n: "Pan sizzling on the burner", w: "The pan touches the hot burner and the food touches the pan: direct contact." },
+    { x: 760, y: 360, r: 55, a: "conduction", n: "Hand holding a warm mug", w: "The hand touches the warm mug, so energy flows by contact." },
+    { x: 470, y: 270, r: 70, a: "convection", n: "Water boiling in the pot", w: "Hot water rises and cool water sinks, making a convection current." },
+    { x: 860, y: 110, r: 60, a: "convection", n: "AC vent blowing cool air", w: "Cool air sinks and warm air rises: moving air carries the energy." },
+    { x: 660, y: 140, r: 60, a: "radiation", n: "Heat lamp over the fries", w: "The lamp warms the fries with waves, without touching them." },
+    { x: 120, y: 140, r: 58, a: "radiation", n: "Sunlight through the window", w: "Sunlight carries energy as electromagnetic waves through the glass." }
+  ] },
+  { name: "Campsite", spots: [
+    { x: 470, y: 360, r: 60, a: "conduction", n: "Hot dog on the grill grate", w: "The hot dog touches the hot grate: energy moves by contact." },
+    { x: 690, y: 330, r: 55, a: "conduction", n: "Metal skewer heating up in the fire", w: "The metal skewer touches the fire, and the heat conducts up toward the hand." },
+    { x: 400, y: 170, r: 62, a: "convection", n: "Smoke and hot air rising", w: "Air heated by the fire becomes less dense and rises, carrying smoke." },
+    { x: 180, y: 360, r: 58, a: "convection", n: "Kettle of water boiling", w: "The water circulates as hot water rises and cool water sinks." },
+    { x: 850, y: 90, r: 60, a: "radiation", n: "Sun warming the tent", w: "The Sun's energy travels through space as waves." },
+    { x: 860, y: 360, r: 55, a: "radiation", n: "Camper warming hands near the fire", w: "The camper doesn't touch the fire. Infrared waves carry the energy." }
+  ] }
+];
+const L2 = { scene: 0, task: 0, found: [], score: 0, miss: 0, sceneMiss: 0, flash: null };
+function startL2() {
+  stopAll(); show("level2");
+  Object.assign(L2, { scene: 0, task: 0, found: [], score: 0, miss: 0, flash: null });
+  l2Prompt(); $("l2fb").className = "feedback"; $("l2fb").textContent = "Click on the thing in the picture.";
+  const ctx = $("l2canvas").getContext("2d");
+  anim.push(dt => { if (L2.flash) { L2.flash.t -= dt; if (L2.flash.t <= 0) L2.flash = null; } drawScene(ctx, clock); });
+}
+function l2Type() { return TYPES[L2.task]; }
+function l2Prompt() {
+  const t = l2Type(), sc = SCENES[L2.scene];
+  const need = sc.spots.filter(s => s.a === t).length, got = sc.spots.filter((s, i) => s.a === t && L2.found.includes(i)).length;
+  $("l2prompt").innerHTML = `Find ${need} examples of <span style="color:${TCOL[t]}">${TNAME[t].toUpperCase()}</span> (${got}/${need})`;
+  $("l2scene").textContent = `Scene ${L2.scene + 1} of 2: ${sc.name}`; $("l2score").textContent = L2.score; $("l2miss").textContent = L2.miss;
+}
+$("l2canvas").addEventListener("click", e => {
+  if (!$("level2").classList.contains("active")) return;
+  const c = $("l2canvas"), r = c.getBoundingClientRect();
+  const x = (e.clientX - r.left) * c.width / r.width, y = (e.clientY - r.top) * c.height / r.height;
+  const sc = SCENES[L2.scene]; const idx = sc.spots.findIndex(s => Math.hypot(s.x - x, s.y - y) <= s.r);
+  const fb = $("l2fb");
+  if (idx < 0) { fb.className = "feedback"; fb.textContent = "Nothing there. Try clicking on an object that is heating or cooling."; return; }
+  const s = sc.spots[idx], t = l2Type();
+  if (L2.found.includes(idx)) { fb.className = "feedback"; fb.textContent = "You already found that one!"; return; }
+  if (s.a === t) {
+    L2.found.push(idx); L2.score += 150; beep("good"); record(s.a, t);
+    fb.className = "feedback good"; fb.innerHTML = `<strong>✅ ${s.n}: ${TNAME[s.a]}!</strong> ${s.w}`;
+    L2.flash = { x: s.x, y: s.y, good: true, t: 0.8 };
+    const remaining = sc.spots.some((p, i) => p.a === t && !L2.found.includes(i));
+    if (!remaining) {
+      L2.task++;
+      if (L2.task >= 3) {
+        L2.scene++; L2.task = 0; L2.found = [];
+        if (L2.scene >= SCENES.length) return endL2();
+        toast("Scene complete! Next: " + SCENES[L2.scene].name);
+      } else toast(`All ${TNAME[t]} found!`);
+    }
+    l2Prompt();
+  } else {
+    L2.miss++; L2.score = Math.max(0, L2.score - 50); beep("bad"); record(s.a, t);
+    fb.className = "feedback bad"; fb.innerHTML = `<strong>❌ ${s.n} is ${TNAME[s.a]}, not ${TNAME[t]}.</strong> ${s.w}<br><em>${HINT[t]}</em>`;
+    L2.flash = { x: s.x, y: s.y, good: false, t: 0.8 };
+    l2Prompt();
+  }
+});
+function endL2() {
+  const stars = L2.miss <= 1 ? 3 : L2.miss <= 3 ? 2 : L2.miss <= 6 ? 1 : 0;
+  if (L2.miss === 0) award("eagle");
+  finishLevel(2, L2.score, stars, `${L2.miss} mistake${L2.miss === 1 ? "" : "s"}`);
+}
+function waves(ctx, x1, y1, x2, y2, t, col) {
+  const len = Math.hypot(x2 - x1, y2 - y1), ang = Math.atan2(y2 - y1, x2 - x1);
+  ctx.save(); ctx.translate(x1, y1); ctx.rotate(ang); ctx.strokeStyle = col; ctx.lineWidth = 3;
+  for (let w = 0; w < 3; w++) { const p = (t * 0.6 + w / 3) % 1; ctx.globalAlpha = 1 - p * 0.6; ctx.beginPath(); for (let k = 0; k <= 16; k++) { const yy = -22 + k * 2.75, xx = p * len + Math.sin(k * 0.9 + t * 7) * 3; k ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy); } ctx.stroke(); }
+  ctx.restore(); ctx.globalAlpha = 1;
+}
+function loopArrows(ctx, ox, oy, rx, ry, t, n) {
+  for (let k = 0; k < n; k++) { const ang = -((t * 0.9 + k / n) * Math.PI * 2), x = ox + Math.cos(ang) * rx, y = oy + Math.sin(ang) * ry, warm = Math.cos(ang) < 0;
+    ctx.fillStyle = warm ? "rgba(226,69,47,.9)" : "rgba(63,143,216,.9)"; const a = Math.atan2(-Math.cos(ang) * ry, Math.sin(ang) * rx);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.beginPath(); ctx.moveTo(8, 0); ctx.lineTo(-5, -5); ctx.lineTo(-5, 5); ctx.closePath(); ctx.fill(); ctx.restore(); }
+}
+function glow(ctx, x, y, r, t, col) { const p = 0.5 + 0.5 * Math.sin(t * 4); const g = ctx.createRadialGradient(x, y, 2, x, y, r * (0.8 + 0.3 * p)); g.addColorStop(0, col); g.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r * 1.2, 0, 7); ctx.fill(); }
+function drawScene(ctx, t) {
+  const W = 960, H = 520, sc = SCENES[L2.scene]; if (!sc) return;
+  ctx.clearRect(0, 0, W, H);
+  if (L2.scene === 0) {
+    ctx.fillStyle = "#fbf3e6"; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#e7d6bd"; ctx.fillRect(0, 380, W, 140);
+    ctx.fillStyle = "#cfd8de"; ctx.fillRect(160, 330, 420, 50); ctx.fillStyle = "#9aa6ae"; ctx.fillRect(160, 380, 420, 120);
+    // window + sun
+    ctx.fillStyle = "#cdeaff"; ctx.fillRect(40, 60, 170, 130); ctx.strokeStyle = "#8a6d4a"; ctx.lineWidth = 8; ctx.strokeRect(40, 60, 170, 130); ctx.beginPath(); ctx.moveTo(125, 60); ctx.lineTo(125, 190); ctx.stroke();
+    emoji(ctx, "☀️", 80, 95, 44); waves(ctx, 110, 120, 190, 230, t, "rgba(240,150,30,.8)"); emoji(ctx, "🪴", 180, 300, 44);
+    // burner & pan
+    glow(ctx, 250, 330, 70, t, "rgba(240,80,40,.55)"); emoji(ctx, "🍳", 250, 300, 80);
+    // pot boiling
+    ctx.fillStyle = "rgba(125,200,240,.5)"; ctx.fillRect(410, 215, 120, 105); ctx.strokeStyle = "#516273"; ctx.lineWidth = 6; ctx.strokeRect(410, 215, 120, 105);
+    loopArrows(ctx, 470, 268, 38, 30, t, 10); emoji(ctx, "🔥", 470, 340, 26);
+    // heat lamp + fries
+    ctx.strokeStyle = "#516273"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(660, 0); ctx.lineTo(660, 95); ctx.stroke();
+    emoji(ctx, "💡", 660, 115, 48); waves(ctx, 660, 140, 660, 300, t, "rgba(240,150,30,.8)"); emoji(ctx, "🍟", 660, 318, 48);
+    // AC vent
+    ctx.fillStyle = "#dfe6ea"; ctx.fillRect(810, 60, 100, 40); ctx.strokeStyle = "#8a99a6"; ctx.lineWidth = 3; for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.moveTo(815, 68 + k * 9); ctx.lineTo(905, 68 + k * 9); ctx.stroke(); }
+    for (let k = 0; k < 6; k++) { const p = (t * 0.5 + k / 6) % 1; ctx.fillStyle = `rgba(63,143,216,${0.85 - p * 0.6})`; const x = 830 + (k % 3) * 30 + Math.sin(t * 3 + k) * 6, y = 110 + p * 110; ctx.beginPath(); ctx.moveTo(x, y + 8); ctx.lineTo(x - 6, y - 4); ctx.lineTo(x + 6, y - 4); ctx.closePath(); ctx.fill(); }
+    emoji(ctx, "❄️", 935, 80, 22);
+    // mug + hand
+    glow(ctx, 760, 360, 50, t, "rgba(240,80,40,.4)"); emoji(ctx, "☕", 745, 360, 56); emoji(ctx, "🫲", 795, 368, 44);
+    ctx.fillStyle = "#153047"; ctx.font = "bold 16px Arial"; ctx.textAlign = "left"; ctx.fillText("🏠 Kitchen", 16, H - 16);
+  } else {
+    const sky = ctx.createLinearGradient(0, 0, 0, 300); sky.addColorStop(0, "#9fd3f5"); sky.addColorStop(1, "#e8f6ff"); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#8fc27a"; ctx.fillRect(0, 300, W, 220);
+    emoji(ctx, "☀️", 850, 70, 64); waves(ctx, 820, 100, 720, 200, t, "rgba(240,150,30,.8)"); emoji(ctx, "⛺", 680, 210, 90);
+    emoji(ctx, "🌲", 60, 220, 90); emoji(ctx, "🌲", 300, 215, 70);
+    // campfire
+    glow(ctx, 470, 400, 90, t, "rgba(255,140,40,.55)"); emoji(ctx, "🔥", 470, 395, 90);
+    ctx.fillStyle = "#555"; ctx.fillRect(400, 352, 140, 6); emoji(ctx, "🌭", 470, 345, 34);
+    // smoke rising
+    for (let k = 0; k < 9; k++) { const p = (t * 0.45 + k / 9) % 1, x = 420 + Math.sin(k * 2 + t * 2) * 20 * (1 - p) - p * 30, y = 320 - p * 230; ctx.fillStyle = `rgba(${p < .4 ? "226,110,40" : "130,130,140"},${0.85 - p * 0.6})`; ctx.beginPath(); ctx.arc(x, y, 7 + p * 10, 0, 7); ctx.fill(); }
+    // skewer
+    ctx.strokeStyle = "#7a7f86"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(520, 380); ctx.lineTo(730, 300); ctx.stroke();
+    const sg = ctx.createLinearGradient(520, 380, 730, 300); sg.addColorStop(0, "rgba(230,60,30,.9)"); sg.addColorStop(0.3 + 0.2 * Math.sin(t * 2), "rgba(230,60,30,.2)"); sg.addColorStop(1, "rgba(230,60,30,0)");
+    ctx.strokeStyle = sg; ctx.lineWidth = 9; ctx.stroke(); emoji(ctx, "✊", 740, 300, 36);
+    // kettle
+    ctx.fillStyle = "rgba(125,200,240,.5)"; ctx.fillRect(130, 320, 100, 80); ctx.strokeStyle = "#516273"; ctx.lineWidth = 5; ctx.strokeRect(130, 320, 100, 80);
+    loopArrows(ctx, 180, 360, 30, 22, t, 9); emoji(ctx, "🔥", 180, 418, 26);
+    // camper
+    waves(ctx, 540, 400, 820, 380, t, "rgba(240,150,30,.7)"); emoji(ctx, "🧍", 870, 360, 70); emoji(ctx, "🙌", 830, 360, 30);
+    ctx.fillStyle = "#153047"; ctx.font = "bold 16px Arial"; ctx.textAlign = "left"; ctx.fillText("🏕️ Campsite", 16, H - 16);
+  }
+  // found markers
+  sc.spots.forEach((s, i) => { if (L2.found.includes(i)) { ctx.strokeStyle = TCOL[s.a]; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.stroke(); ctx.fillStyle = TCOL[s.a]; ctx.beginPath(); ctx.arc(s.x + s.r * 0.7, s.y - s.r * 0.7, 14, 0, 7); ctx.fill(); ctx.fillStyle = "#fff"; ctx.font = "bold 18px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("✓", s.x + s.r * 0.7, s.y - s.r * 0.7 + 1); } });
+  if (L2.flash) { ctx.strokeStyle = L2.flash.good ? "rgba(79,138,91,.9)" : "rgba(200,74,58,.9)"; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(L2.flash.x, L2.flash.y, 70 + (0.8 - L2.flash.t) * 60, 0, 7); ctx.stroke(); }
+}
+
+/* ---------- LEVEL 3: SPEED ROUND ---------- */
+const L3 = { q: [], i: 0, score: 0, streak: 0, lives: 3, time: 0, limit: 8, busy: false, flowRight: 0, flowTotal: 0, cur: null };
+function startL3() {
+  stopAll(); show("level3");
+  const ex = shuffle(BANK).slice(0, 12), fl = shuffle(FLOW).slice(0, 3), q = [];
+  let f = 0; ex.forEach((e, i) => { q.push({ kind: "type", ex: e }); if ((i + 1) % 4 === 0 && f < 3) q.push({ kind: "flow", fl: fl[f++] }); });
+  Object.assign(L3, { q, i: 0, score: 0, streak: 0, lives: 3, busy: false, flowRight: 0, flowTotal: 0 });
+  const ctx = $("l3canvas").getContext("2d");
+  anim.push(() => { const c = L3.cur; if (!c) return; if (c.kind === "type") drawExample(ctx, 900, 330, c.ex, clock); else drawFlow(ctx, c, clock); });
+  timers.push(setInterval(() => {
+    if (L3.busy || !L3.cur) return;
+    L3.time -= 0.1; $("l3timer").style.width = Math.max(0, L3.time / L3.limit * 100) + "%"; $("l3timer").style.background = L3.time < 3 ? "#c84a3a" : "#287c8e";
+    if (L3.time <= 0) l3Answer(null);
+  }, 100));
+  l3Next();
+}
+function mult() { return Math.min(5, 1 + Math.floor(L3.streak / 2)); }
+function updL3() {
+  $("l3n").textContent = Math.min(L3.i + 1, L3.q.length); $("l3score").textContent = L3.score;
+  $("l3mult").textContent = `x${mult()} ${"🔥".repeat(Math.min(mult(), 5))}`; $("l3mult").style.color = mult() >= 4 ? "#c84a3a" : mult() >= 2 ? "#e08a1e" : "#153047";
+  $("l3hearts").textContent = "❤️".repeat(L3.lives) + "🖤".repeat(3 - L3.lives);
+  document.querySelectorAll("#level3 .pill")[1].innerHTML = `Question <span id="l3n">${Math.min(L3.i + 1, L3.q.length)}</span>/${L3.q.length}`;
+}
+function l3Next() {
+  if (L3.i >= L3.q.length || L3.lives <= 0) return endL3();
+  const c = L3.q[L3.i]; L3.busy = false; L3.time = L3.limit;
+  if (c.kind === "flow") {
+    c.left = Math.random() < 0.5 ? c.fl.a : c.fl.b; c.right = c.left === c.fl.a ? c.fl.b : c.fl.a;
+    c.correct = c.left[2] > c.right[2] ? 1 : -1;
+    $("l3title").textContent = "⭐ BONUS: Which way does thermal energy flow?";
+    $("l3answers").style.display = "none"; $("l3dir").style.display = "flex";
+  } else {
+    $("l3title").textContent = c.ex.t;
+    $("l3answers").style.display = "grid"; $("l3dir").style.display = "none";
+  }
+  L3.cur = c; $("l3fb").className = "feedback"; $("l3fb").textContent = c.kind === "flow" ? "Tap the arrow showing the direction energy moves." : "Conduction, convection or radiation?";
+  updL3();
+}
+function drawFlow(ctx, c, t) {
+  const W = 900, H = 330; ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#f6fafc"; ctx.fillRect(0, 0, W, H);
+  [[c.left, 220], [c.right, 680]].forEach(([o, x]) => {
+    emoji(ctx, o[0], x, 140, 110); ctx.fillStyle = "#153047"; ctx.font = "bold 22px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+    ctx.fillText(o[1], x, 245); ctx.font = "bold 20px Arial"; ctx.fillStyle = o[2] > 40 ? "#c84a3a" : "#2f6fb5"; ctx.fillText(o[2] + " °C", x, 275);
+  });
+  ctx.fillStyle = "#8a99a6"; ctx.font = "bold 40px Arial"; ctx.fillText("?", 450, 155);
+}
+document.querySelectorAll("[data-ans]").forEach(b => b.addEventListener("click", () => l3Answer(b.dataset.ans)));
+document.querySelectorAll("[data-dir]").forEach(b => b.addEventListener("click", () => l3Answer(Number(b.dataset.dir))));
+function l3Answer(ans) {
+  const c = L3.cur; if (!c || L3.busy) return; L3.busy = true;
+  const fb = $("l3fb"); let ok;
+  if (c.kind === "flow") {
+    ok = ans === c.correct; L3.flowTotal++; if (ok) L3.flowRight++;
+    const hot = c.correct === 1 ? c.left : c.right, cold = c.correct === 1 ? c.right : c.left;
+    fb.innerHTML = (ok ? "<strong>✅ Correct!</strong> " : ans === null ? "<strong>⏰ Time's up!</strong> " : "<strong>❌ Not quite.</strong> ") + `Energy flows from the hotter ${hot[1].toLowerCase()} (${hot[2]} °C) to the cooler ${cold[1].toLowerCase()} (${cold[2]} °C).`;
+  } else {
+    ok = ans === c.ex.a; if (ans) record(c.ex.a, ans); else S.stats[c.ex.a].total++;
+    fb.innerHTML = ok ? `<strong>✅ ${TNAME[c.ex.a]}!</strong> ${c.ex.w}` : `<strong>${ans === null ? "⏰ Time's up!" : "❌ Not quite."} It's ${TNAME[c.ex.a]}.</strong> ${c.ex.w}<br><em>${HINT[c.ex.a]}</em>`;
+  }
+  if (ok) { L3.streak++; const pts = Math.round((100 + L3.time * 25) * mult() * (c.kind === "flow" ? 1.5 : 1)); L3.score += pts; fb.className = "feedback good"; fb.innerHTML += ` <strong>+${pts}</strong>`; beep("good"); if (L3.streak >= 10) award("streak10"); }
+  else { L3.streak = 0; L3.lives--; fb.className = "feedback bad"; beep("bad"); }
+  updL3(); save();
+  setTimeout(() => { L3.i++; l3Next(); }, ok ? 1500 : 2800);
+}
+function endL3() {
+  if (!$("level3").classList.contains("active")) return;
+  L3.cur = null;
+  const survived = L3.lives > 0;
+  const stars = !survived ? (L3.score >= 3000 ? 1 : 0) : L3.score >= 9000 ? 3 : L3.score >= 5000 ? 2 : 1;
+  if (L3.score >= 9000) award("speed");
+  if (survived && L3.flowTotal >= 3 && L3.flowRight === L3.flowTotal) award("flow");
+  finishLevel(3, L3.score, stars, survived ? `You survived with ${L3.lives} ${L3.lives === 1 ? "life" : "lives"} left! Energy-flow bonuses: ${L3.flowRight}/${L3.flowTotal}` : "Out of lives! Review the hints and try again.");
+}
+
+/* ---------- RESULTS ---------- */
+function renderResults() {
+  $("resLevels").innerHTML = ["🗂️ Sort It", "🔍 Spot the Transfer", "⚡ Speed Round"].map((n, i) => `<tr><td>${n}</td><td class="stars">${starStr(S.stars[i])}</td><td>${S.best[i]}</td></tr>`).join("");
+  $("resTypes").innerHTML = TYPES.map(t => { const s = S.stats[t]; return `<tr><td style="color:${TCOL[t]};font-weight:700">${TNAME[t]}</td><td>${s.right} / ${s.total}</td><td>${s.total ? Math.round(s.right / s.total * 100) + "%" : "-"}</td></tr>`; }).join("");
+  let worst = null;
+  TYPES.forEach(tr => TYPES.forEach(an => { if (tr !== an && S.stats[tr].as[an] > 0 && (!worst || S.stats[tr].as[an] > worst.n)) worst = { tr, an, n: S.stats[tr].as[an] }; }));
+  $("resConfuse").innerHTML = worst ? `🔎 <strong>Most common mix-up:</strong> you chose ${TNAME[worst.an]} when it was really ${TNAME[worst.tr]} (${worst.n} time${worst.n === 1 ? "" : "s"}).<br><em>${HINT[worst.tr]}</em>` : "No mix-ups yet. Play a level to see your stats!";
+  $("resBadges").innerHTML = BADGES.map(b => `<span class="badge ${S.badges.includes(b[0]) ? "got" : ""}" title="${b[2]}">${b[1]}</span>`).join("");
+}
+$("compile").addEventListener("click", () => {
+  const v = id => ($(id).value || "").trim();
+  const types = TYPES.map(t => { const s = S.stats[t]; return `${TNAME[t]}: ${s.right}/${s.total} correct${s.total ? " (" + Math.round(s.right / s.total * 100) + "%)" : ""}`; }).join("\n");
+  const confuse = TYPES.flatMap(tr => TYPES.filter(an => an !== tr && S.stats[tr].as[an]).map(an => `Chose ${TNAME[an]} when it was ${TNAME[tr]}: ${S.stats[tr].as[an]} time(s)`)).join("\n") || "None";
+  $("summary").textContent = `CCR CHALLENGE RESULTS
+
+Name: ${v("sName")}
+Period: ${v("sPeriod")}
+
+LEVELS
+Level 1 Sort It: ${starStr(S.stars[0])} best score ${S.best[0]}
+Level 2 Spot the Transfer: ${starStr(S.stars[1])} best score ${S.best[1]}
+Level 3 Speed Round: ${starStr(S.stars[2])} best score ${S.best[2]}
+
+ACCURACY BY TYPE
+${types}
+
+MIX-UPS
+${confuse}
+
+BADGES: ${S.badges.map(id => BADGES.find(b => b[0] === id)[1]).join(", ") || "none yet"}
+
+REFLECTION
+1. Hardest type: ${v("r1")}
+2. Conduction vs radiation: ${v("r2")}
+3. Real-life example: ${v("r3")}`;
+});
+let wipeArm = false;
+$("wipe").addEventListener("click", e => {
+  if (!wipeArm) { wipeArm = true; e.target.textContent = "Click again to erase everything"; setTimeout(() => { wipeArm = false; e.target.textContent = "Start Over (erase my saved progress)"; }, 3000); return; }
+  try { localStorage.removeItem(SAVE); } catch (err) {} location.reload();
+});
+
+load(); setSoundBtn(); renderMenu();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
