@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>7th Grade Science Virtual Labs</title>
+  <style>
+    :root { --ink:#153047; --muted:#516273; --line:#c9d6df; --bg:#f3f7fa; --gold:#f4b942; --teal:#287c8e; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Arial, Helvetica, sans-serif; background:var(--bg); color:var(--ink); line-height:1.4; }
+    header { background:var(--ink); color:#fff; padding:28px clamp(16px,4vw,48px); border-bottom:8px solid var(--gold); }
+    header h1 { margin:0 0 8px; font-size:clamp(30px,5vw,46px); line-height:1.05; }
+    header p { margin:0; font-size:18px; color:#d8eef4; max-width:800px; }
+    main { max-width:1100px; margin:0 auto; padding:24px 16px 48px; }
+    .labs { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
+    .lab { display:block; background:#fff; border:1px solid var(--line); border-top:6px solid var(--teal); border-radius:10px;
+           padding:20px; color:inherit; text-decoration:none; box-shadow:0 6px 20px rgba(21,48,71,.08); transition:transform .1s, box-shadow .1s; }
+    .lab:hover, .lab:focus { transform:translateY(-2px); box-shadow:0 10px 26px rgba(21,48,71,.16); outline:none; }
+    .tag { display:inline-block; background:#fff5d6; color:#7a5a00; font-size:13px; font-weight:700; padding:3px 8px; border-radius:6px; }
+    .lab h2 { margin:10px 0 6px; font-size:22px; }
+    .lab p { margin:0 0 14px; color:var(--muted); }
+    .go { font-weight:700; color:var(--teal); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>7th Grade Science Virtual Labs</h1>
+    <p>Choose your lab below. Follow each section in order and finish every part before you submit.</p>
+  </header>
+  <main>
+    <div class="labs">
+      <!-- To add a lab: copy one <a class="lab"> block below and change the folder name, title and description. -->
+      <a class="lab" href="rescue-run/">
+        <span class="tag">Engineering · Force &amp; Motion</span>
+        <h2>Rescue Run</h2>
+        <p>Research, build a gravity-powered rescue vehicle within budget, run trials, redesign, graph motion data and write it up.</p>
+        <span class="go">Open lab &rarr;</span>
+      </a>
+      <a class="lab" href="ccr-challenge/">
+        <span class="tag">Thermal Energy</span>
+        <h2>CCR Challenge</h2>
+        <p>Watch 10 animated examples and decide: is thermal energy moving by conduction, convection or radiation?</p>
+        <span class="go">Open lab &rarr;</span>
+      </a>
+      <a class="lab" href="dissolution/">
+        <span class="tag">Matter · Solutions</span>
+        <h2>Rate of Dissolution</h2>
+        <p>Test how temperature, surface area and stirring change how fast a sugar cube dissolves.</p>
+        <span class="go">Open lab &rarr;</span>
+      </a>
+      <a class="lab" href="https://theunexpectedscienceteacher-blip.github.io/marshmallow-virtual-lab/">
+        <span class="tag">Thermal Energy</span>
+        <h2>Marshmallow Meltdown</h2>
+        <p>Heat a marshmallow by conduction, convection and radiation, collect trial data and build the best s'more.</p>
+        <span class="go">Open lab &rarr;</span>
+      </a>
+    </div>
+  </main>
+</body>
+</html>
