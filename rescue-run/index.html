@@ -882,11 +882,11 @@
     /* ---------- physics ---------- */
     function computeRun() {
       const s = designStats(), q = state.quantities;
-      let eff = 0.40 + 0.025 * Math.min(s.alignment, 12) - 0.012 * s.friction + (q.cds ? 0.05 : 0) + 0.003 * Math.min(s.mass, 35) - 0.006 * Math.max(0, s.mass - 40);
+      let eff = 0.44 + 0.02 * Math.min(s.alignment, 14) - 0.008 * s.friction + (q.cds ? 0.01 : 0) + 0.003 * Math.min(s.mass, 35) - 0.006 * Math.max(0, s.mass - 40);
       if (q.index && !q.cardboard) eff -= 0.04;
       eff = clamp(eff, 0.3, 0.86);
       const v0 = 242 * eff * (1 + rnd(0.04));
-      const a = Math.max(40, 45 + 6 * s.friction - 2 * Math.min(s.alignment, 12)) * (1 + rnd(0.05));
+      const a = Math.max(34, 40 + 2.9 * s.friction - 1.6 * Math.min(s.alignment, 14)) * (1 + rnd(0.05));
       let dStop = v0 * v0 / (2 * a), hitWall = false;
       if (dStop > TRACK - 2) { dStop = TRACK - 2; hitWall = true; }
       const timeAt = x => (v0 - Math.sqrt(Math.max(0, v0 * v0 - 2 * a * x))) / a;
