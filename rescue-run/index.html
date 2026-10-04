@@ -344,6 +344,38 @@
       .panel { display: block; box-shadow: none; border: 0; page-break-after: always; }
       .panel:not(#writeup) { display: none; }
     }
+
+    .partgroup { margin: 14px 0; }
+    .partgroup h3 { margin: 0 0 6px; font-size: 18px; }
+    .parts { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+    .part { border: 2px solid var(--line); border-radius: 8px; padding: 10px; background: #fff; }
+    .part.on { border-color: var(--teal); background: var(--soft-blue); }
+    .part strong { display: block; }
+    .part .small { display: block; margin: 2px 0 6px; }
+    .buildwrap { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+    .preview { position: sticky; top: 10px; border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: #fff; }
+    .preview canvas { width: 100%; height: auto; display: block; background: linear-gradient(#eef6fa, #fff); border-radius: 8px; }
+    .bars { display: grid; gap: 6px; margin-top: 10px; }
+    .barrow { display: grid; grid-template-columns: 120px 1fr 34px; gap: 8px; align-items: center; font-size: 13px; font-weight: 700; color: var(--muted); }
+    .barbg { height: 10px; background: #e5edf2; border-radius: 10px; overflow: hidden; }
+    .barfill { height: 100%; background: var(--teal); width: 0; transition: width .3s; }
+    .scene { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 8px; background: #fff; margin: 10px 0; touch-action: manipulation; }
+    .readouts { display: flex; flex-wrap: wrap; gap: 10px; }
+    .readouts .meter { flex: 1 1 140px; }
+    .setpick { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+    .setpick button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+    td input { min-width: 80px; padding: 6px; }
+    .ok { color: var(--green); font-weight: 700; }
+    .bad { color: var(--red); font-weight: 700; }
+    .msg { margin: 10px 0; }
+    #graphCanvas { width: 100%; max-width: 760px; height: auto; display: block; border: 1px solid var(--line); border-radius: 8px; background: #fff; cursor: crosshair; touch-action: manipulation; }
+    .graphwrap { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+    #graphSnapshot { max-width: 100%; border: 1px solid var(--line); border-radius: 8px; margin-top: 10px; display: none; }
+    @media (max-width: 820px) {
+      .buildwrap, .graphwrap { grid-template-columns: 1fr; }
+      .preview { position: static; }
+    }
+    @media print { #graphSnapshot { display: block; } }
   </style>
 </head>
 <body>
@@ -359,8 +391,9 @@
       <button data-tab="research">2 Research</button>
       <button data-tab="build">3 Build</button>
       <button data-tab="test">4 Test</button>
-      <button data-tab="redesign">5 Redesign</button>
-      <button data-tab="writeup">6 Final Write-Up</button>
+      <button data-tab="graph">5 Graph</button>
+      <button data-tab="redesign">6 Redesign</button>
+      <button data-tab="writeup">7 Final Write-Up</button>
     </nav>
 
     <section id="overview" class="panel active">
@@ -368,6 +401,7 @@
       <div class="note">
         This virtual assignment replaces the full build project only when a student cannot participate in the classroom build. Students still complete the engineering cycle and must support final claims with data.
       </div>
+      <div class="success"><strong>Your work saves automatically</strong> on this device and browser. If you close the tab, come back on the same computer to keep going.</div>
       <div class="grid">
         <div class="card">
           <h3>Challenge</h3>
@@ -459,7 +493,7 @@
 
     <section id="build" class="panel">
       <h2>Build Within Budget</h2>
-      <p>Choose materials for the virtual vehicle. Each material changes mass, friction, stability, alignment, or package security. Stay at or under $200.</p>
+      <p>Build your rescue vehicle by adding materials. Watch your vehicle take shape on the right. Every material changes mass, friction, stability, alignment, or package security. Stay at or under $200.</p>
       <div class="meters">
         <div class="meter"><span>Budget Used</span><strong id="budgetUsed">$0</strong></div>
         <div class="meter"><span>Mass</span><strong id="massScore">0</strong></div>
@@ -468,53 +502,94 @@
         <div class="meter"><span>Package Security</span><strong id="securityScore">0</strong></div>
       </div>
       <div id="budgetMessage" class="note">Budget limit: $200. A complete design needs a body, wheels, axles, and a way to secure the package.</div>
-      <div id="materials" class="materials"></div>
+      <div class="buildwrap">
+        <div id="materials"></div>
+        <div class="preview">
+          <strong>Your Vehicle</strong>
+          <canvas id="carPreview" width="520" height="260" aria-label="Drawing of your vehicle"></canvas>
+          <div class="bars">
+            <div class="barrow">Alignment<div class="barbg"><div class="barfill" id="barAlign"></div></div><span id="numAlign">0</span></div>
+            <div class="barrow">Stability<div class="barbg"><div class="barfill" id="barStab"></div></div><span id="numStab">0</span></div>
+            <div class="barrow">Pkg Security<div class="barbg"><div class="barfill" id="barSec"></div></div><span id="numSec">0</span></div>
+            <div class="barrow">Friction<div class="barbg"><div class="barfill" id="barFric" style="background:var(--red)"></div></div><span id="numFric">0</span></div>
+          </div>
+          <p class="small">Higher alignment and stability help the car roll straight and far. More friction slows it down. Package security keeps the rescue package on board.</p>
+        </div>
+      </div>
       <h3>Design Plan</h3>
       <label>Sketch notes or labeled description</label>
-      <textarea id="sketchNotes" placeholder="Describe your body, wheels, axles, package holder, and ramp direction."></textarea>
+      <textarea id="sketchNotes" placeholder="Describe your body, wheels, axles, package holder, and why you chose them."></textarea>
       <label>Prediction before testing</label>
       <textarea id="prediction" placeholder="Predict distance, time, speed, direction, and whether the package will stay secure."></textarea>
     </section>
 
     <section id="test" class="panel">
-      <h2>Official Test Trials</h2>
-      <p>Run three official trials. The vehicle starts at the same ramp height each time and moves east toward the 200 cm target.</p>
-      <div class="track" aria-label="Virtual test lane from 0 cm to 250 cm">
-        <div class="target">Target<br>200 cm</div>
-        <div id="car" class="car" aria-hidden="true">
-          <div class="package"></div>
-          <div class="body"></div>
-          <div class="wheel left"></div>
-          <div class="wheel right"></div>
-        </div>
+      <h2>Test Your Vehicle</h2>
+      <p>Your vehicle is released from the top of a 30 cm ramp. Timing starts when it crosses the <strong>start line</strong> at the bottom of the ramp. Timing gates record the time at every 50 cm. The target is <strong>200 cm east</strong> of the start line.</p>
+      <div class="note"><strong>Practice Run</strong> lets you try your design as many times as you want (not recorded). <strong>Official Trial</strong> records your data. You get 3 official trials for each design.</div>
+      <div class="setpick no-print">
+        <button class="action active" data-set="1">Design 1 (original) trials</button>
+        <button class="action" data-set="2">Design 2 (redesign) trials</button>
       </div>
-      <div class="no-print">
-        <button class="action primary" id="runTrial">Run Trial</button>
-        <button class="action" id="resetTrials">Reset Trials</button>
+      <canvas id="scene" class="scene" width="1100" height="300" aria-label="Test track from 0 to 260 centimeters"></canvas>
+      <div class="readouts">
+        <div class="meter"><span>Stopwatch</span><strong id="clock">0.00 s</strong></div>
+        <div class="meter"><span>Position</span><strong id="pos">0 cm</strong></div>
+        <div class="meter"><span>Package</span><strong id="pkg">on board</strong></div>
       </div>
+      <div class="no-print" style="margin-top:12px">
+        <button class="action" id="practiceRun">Practice Run</button>
+        <button class="action primary" id="runTrial">Official Trial</button>
+        <button class="action" id="resetTrials">Clear trials for this design</button>
+      </div>
+      <div id="testMsg" class="note msg">Build a complete design in the Build tab, then press Practice Run.</div>
+      <h3 id="trialHeading">Design 1 Official Trials</h3>
+      <p class="small">Calculate the <strong>average speed</strong> (speed = distance &divide; time) and the <strong>velocity</strong> (speed + direction) for each trial. Round to two decimal places, then press Check My Calculations.</p>
+      <div style="overflow-x:auto">
       <table>
-        <thead>
-          <tr>
-            <th>Trial</th>
-            <th>Distance</th>
-            <th>Time</th>
-            <th>Speed</th>
-            <th>Velocity</th>
-            <th>Package</th>
-            <th>Meets Target?</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Trial</th><th>Distance</th><th>Time</th><th>Average Speed (cm/s)</th><th>Velocity</th><th>Package</th><th>Meets Target?</th></tr></thead>
         <tbody id="trialRows"></tbody>
       </table>
-      <h3>Distance-Time Graph</h3>
-      <svg id="graph" viewBox="0 0 720 300" role="img" aria-label="Distance-time graph for official trials"></svg>
+      </div>
+      <button class="action no-print" id="checkCalc">Check My Calculations</button>
+      <div id="calcMsg" class="msg"></div>
+      <h3>Timing Gate Data</h3>
+      <p class="small">Position of the vehicle at each timing gate. You will use this data to build your distance-time graph in the Graph tab.</p>
+      <div style="overflow-x:auto"><table><thead><tr><th>Trial</th><th>0 cm</th><th>50 cm</th><th>100 cm</th><th>150 cm</th><th>200 cm</th><th>250 cm</th><th>Stopped</th></tr></thead><tbody id="gateRows"></tbody></table></div>
+    </section>
+
+    <section id="graph" class="panel">
+      <h2>Build Your Distance-Time Graph</h2>
+      <p>Choose one official trial. Use its timing gate data to plot each point by clicking on the graph. Then connect your points and check your graph.</p>
+      <label>Trial to graph</label>
+      <select id="graphTrial"></select>
+      <div class="graphwrap">
+        <div>
+          <canvas id="graphCanvas" width="760" height="440" aria-label="Distance-time graph. Click to plot points."></canvas>
+          <div class="no-print" style="margin-top:10px">
+            <button class="action" id="undoPoint">Undo Last Point</button>
+            <button class="action" id="clearPoints">Clear Points</button>
+            <label style="display:inline-flex;gap:6px;align-items:center;font-weight:700;margin-left:6px"><input type="checkbox" id="connectPts" style="width:auto"> Connect my points</label>
+            <button class="action primary" id="checkGraph">Check My Graph</button>
+          </div>
+          <div id="graphMsg" class="msg"></div>
+        </div>
+        <div>
+          <h3 style="margin-top:0">Data to Plot</h3>
+          <table><thead><tr><th>Time (s)</th><th>Distance (cm)</th></tr></thead><tbody id="graphData"><tr><td colspan="2">Run an official trial first.</td></tr></tbody></table>
+          <h3>My Plotted Points</h3>
+          <div id="myPoints" class="small">None yet. Click on the graph to plot a point.</div>
+        </div>
+      </div>
+      <label>What does the shape of your graph show about how the vehicle's speed changed?</label>
+      <textarea id="graphShape" placeholder="Is the line straight or curved? Where is it steepest? What happens at the end?"></textarea>
       <label>Data interpretation</label>
-      <textarea id="dataInterpretation" placeholder="Use the graph and calculations to explain how your vehicle moved."></textarea>
+      <textarea id="dataInterpretation" placeholder="Use the graph and your speed calculations to explain how your vehicle moved and why."></textarea>
     </section>
 
     <section id="redesign" class="panel">
       <h2>Redesign and Improvement</h2>
-      <p>Use your official trial data to choose one improvement. Then update materials in the Build tab and run trials again if your teacher requires a second test set.</p>
+      <p>Use your Design 1 trial data to choose one improvement. Then go back to the <strong>Build</strong> tab and change your materials. In the <strong>Test</strong> tab, choose <strong>Design 2</strong> and run 3 new official trials so you can compare.</p>
       <label>What problem did the data show?</label>
       <textarea id="problemShown" placeholder="Example: The car was fast but missed the target, or the package fell off."></textarea>
       <label>What design change would you make?</label>
@@ -552,6 +627,8 @@
       </div>
       <h3>Compiled Student Work</h3>
       <div id="summary" class="print-summary">Click Compile Write-Up when finished.</div>
+      <img id="graphSnapshot" alt="My distance-time graph">
+      <div class="no-print" style="margin-top:18px"><button class="action" id="wipeAll">Start Over (erase my saved work)</button></div>
     </section>
   </main>
 
@@ -559,242 +636,460 @@
     const materials = [
       { id: "cardboard", name: "Cardboard body", unit: "4x6 inch square", price: 15, type: "body", mass: 12, friction: 1, stability: 8, security: 2, alignment: 1 },
       { id: "index", name: "Index card body", unit: "3x5 inch card", price: 10, type: "body", mass: 6, friction: 0, stability: 3, security: 1, alignment: 0 },
-      { id: "sticks", name: "Craft sticks", unit: "2 sticks", price: 3, type: "support", mass: 4, friction: 0, stability: 5, security: 2, alignment: 3 },
+      { id: "sticks", name: "Craft sticks", unit: "2 sticks (frame)", price: 3, type: "support", mass: 4, friction: 0, stability: 5, security: 2, alignment: 3 },
       { id: "caps", name: "Bottle-cap wheels", unit: "4 caps", price: 6, type: "wheels", mass: 5, friction: 6, stability: 4, security: 0, alignment: 1 },
       { id: "cds", name: "CD wheels", unit: "2 CDs", price: 25, type: "wheels", mass: 9, friction: 3, stability: 7, security: 0, alignment: 4 },
       { id: "straws", name: "Straws", unit: "2 straws", price: 4, type: "axles", mass: 1, friction: 2, stability: 2, security: 0, alignment: 3 },
       { id: "dowels", name: "Wooden dowels", unit: "2 dowels", price: 5, type: "axles", mass: 4, friction: 3, stability: 5, security: 0, alignment: 5 },
       { id: "tape", name: "Masking tape", unit: "30 cm", price: 15, type: "secure", mass: 2, friction: 1, stability: 2, security: 8, alignment: 0 },
       { id: "rubber", name: "Rubber bands", unit: "2 bands", price: 7, type: "secure", mass: 2, friction: 5, stability: 4, security: 7, alignment: 1 },
-      { id: "clips", name: "Paper clips", unit: "1 clip", price: 1, type: "weight", mass: 3, friction: 0, stability: 1, security: 3, alignment: 0 },
       { id: "foil", name: "Aluminum foil", unit: "25 cm", price: 12, type: "secure", mass: 2, friction: 2, stability: 2, security: 5, alignment: 0 },
-      { id: "string", name: "String", unit: "25 cm", price: 8, type: "secure", mass: 1, friction: 1, stability: 1, security: 6, alignment: 0 }
+      { id: "string", name: "String", unit: "25 cm", price: 8, type: "secure", mass: 1, friction: 1, stability: 1, security: 6, alignment: 0 },
+      { id: "clips", name: "Paper clips", unit: "1 clip (adds mass)", price: 1, type: "weight", mass: 3, friction: 0, stability: 1, security: 3, alignment: 0 }
     ];
+    const groups = [
+      ["body", "Body (choose at least one)"], ["support", "Frame support (optional)"], ["wheels", "Wheels (choose at least one)"],
+      ["axles", "Axles (choose at least one)"], ["secure", "Package securement (choose at least one)"], ["weight", "Extra mass (optional)"]
+    ];
+    const GATES = [0, 50, 100, 150, 200, 250];
+    const TRACK = 260;
+    const SAVE_KEY = "rescueRun_v2";
 
     const state = {
       quantities: Object.fromEntries(materials.map(m => [m.id, 0])),
-      trials: [],
-      trialSet: 1
+      sets: { 1: { trials: [], design: "" }, 2: { trials: [], design: "" } },
+      cur: 1,
+      graphPts: {},
+      graphCheck: {}
     };
+    let running = false;
 
     function byId(id) { return document.getElementById(id); }
+    function getText(id) { const el = byId(id); return el ? el.value.trim() : ""; }
+    function money(n) { return "$" + n.toFixed(0); }
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+    function rnd(p) { return (Math.random() * 2 - 1) * p; }
 
-    function getText(id) {
-      const el = byId(id);
-      return el ? el.value.trim() : "";
+    /* ---------- saving ---------- */
+    function save() {
+      try {
+        const inputs = {};
+        document.querySelectorAll("main input[id], main textarea[id]").forEach(el => { if (el.type !== "checkbox") inputs[el.id] = el.value; });
+        localStorage.setItem(SAVE_KEY, JSON.stringify({ inputs, quantities: state.quantities, sets: state.sets, cur: state.cur, graphPts: state.graphPts, graphCheck: state.graphCheck }));
+      } catch (e) {}
+    }
+    function load() {
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return;
+        const d = JSON.parse(raw);
+        Object.assign(state.quantities, d.quantities || {});
+        if (d.sets) state.sets = d.sets;
+        state.cur = d.cur || 1;
+        state.graphPts = d.graphPts || {};
+        state.graphCheck = d.graphCheck || {};
+        Object.entries(d.inputs || {}).forEach(([id, v]) => { const el = byId(id); if (el) el.value = v; });
+      } catch (e) {}
     }
 
-    function money(n) { return "$" + n.toFixed(0); }
-
+    /* ---------- design stats ---------- */
     function designStats() {
       const selected = materials.map(m => ({ ...m, qty: state.quantities[m.id] })).filter(m => m.qty > 0);
-      const total = selected.reduce((sum, m) => sum + m.price * m.qty, 0);
-      const mass = selected.reduce((sum, m) => sum + m.mass * m.qty, 0);
-      const friction = selected.reduce((sum, m) => sum + m.friction * m.qty, 0);
-      const stability = selected.reduce((sum, m) => sum + m.stability * m.qty, 0);
-      const security = selected.reduce((sum, m) => sum + m.security * m.qty, 0);
-      const alignment = selected.reduce((sum, m) => sum + m.alignment * m.qty, 0);
-      const hasBody = selected.some(m => m.type === "body");
-      const hasWheels = selected.some(m => m.type === "wheels");
-      const hasAxles = selected.some(m => m.type === "axles");
-      const hasSecure = selected.some(m => m.type === "secure");
-      return { selected, total, mass, friction, stability, security, alignment, hasBody, hasWheels, hasAxles, hasSecure };
+      const sum = k => selected.reduce((s, m) => s + m[k] * m.qty, 0);
+      const total = selected.reduce((s, m) => s + m.price * m.qty, 0);
+      const has = t => selected.some(m => m.type === t);
+      return { selected, total, mass: sum("mass"), friction: sum("friction"), stability: sum("stability"), security: sum("security"), alignment: sum("alignment"),
+        hasBody: has("body"), hasWheels: has("wheels"), hasAxles: has("axles"), hasSecure: has("secure") };
     }
+    function designText() {
+      const s = designStats();
+      return (s.selected.map(m => `${m.qty} x ${m.name} (${money(m.price * m.qty)})`).join("; ") || "No materials") + ` | Total ${money(s.total)}`;
+    }
+    function missingParts(s) {
+      const m = [];
+      if (!s.hasBody) m.push("a body"); if (!s.hasWheels) m.push("wheels"); if (!s.hasAxles) m.push("axles"); if (!s.hasSecure) m.push("package securement");
+      return m;
+    }
+    function canTest() { const s = designStats(); return s.total <= 200 && !missingParts(s).length; }
 
+    /* ---------- build tab ---------- */
     function renderMaterials() {
       const holder = byId("materials");
-      holder.innerHTML = "";
-      materials.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "material";
-        div.innerHTML = `
-          <strong>${item.name}</strong>
-          <span class="small">${item.unit} - ${money(item.price)}</span>
-          <div class="qty">
-            <button type="button" aria-label="Decrease ${item.name}" data-change="-1" data-id="${item.id}">-</button>
-            <input aria-label="${item.name} quantity" value="${state.quantities[item.id]}" data-id="${item.id}" inputmode="numeric">
-            <button type="button" aria-label="Increase ${item.name}" data-change="1" data-id="${item.id}">+</button>
-          </div>
-        `;
-        holder.appendChild(div);
-      });
-      holder.querySelectorAll("button").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const id = btn.dataset.id;
-          const change = Number(btn.dataset.change);
-          state.quantities[id] = Math.max(0, state.quantities[id] + change);
-          renderMaterials();
-          updateStats();
-        });
-      });
-      holder.querySelectorAll("input").forEach(input => {
-        input.addEventListener("change", () => {
-          state.quantities[input.dataset.id] = Math.max(0, Math.min(9, Number(input.value) || 0));
-          renderMaterials();
-          updateStats();
-        });
-      });
+      holder.innerHTML = groups.map(([type, label]) => `
+        <div class="partgroup"><h3>${label}</h3><div class="parts">
+        ${materials.filter(m => m.type === type).map(m => `
+          <div class="part ${state.quantities[m.id] ? "on" : ""}">
+            <strong>${m.name}</strong>
+            <span class="small">${m.unit} - ${money(m.price)} each</span>
+            <div class="qty">
+              <button type="button" aria-label="Remove ${m.name}" data-change="-1" data-id="${m.id}">-</button>
+              <input aria-label="${m.name} quantity" value="${state.quantities[m.id]}" data-id="${m.id}" inputmode="numeric">
+              <button type="button" aria-label="Add ${m.name}" data-change="1" data-id="${m.id}">+</button>
+            </div>
+          </div>`).join("")}
+        </div></div>`).join("");
+      holder.querySelectorAll("button").forEach(btn => btn.addEventListener("click", () => {
+        const id = btn.dataset.id;
+        state.quantities[id] = clamp(state.quantities[id] + Number(btn.dataset.change), 0, 9);
+        renderMaterials(); updateStats(); save();
+      }));
+      holder.querySelectorAll("input").forEach(inp => inp.addEventListener("change", () => {
+        state.quantities[inp.dataset.id] = clamp(Number(inp.value) || 0, 0, 9);
+        renderMaterials(); updateStats(); save();
+      }));
     }
 
     function updateStats() {
-      const stats = designStats();
-      byId("budgetUsed").textContent = money(stats.total);
-      byId("massScore").textContent = stats.mass.toFixed(0);
-      byId("frictionScore").textContent = stats.friction.toFixed(0);
-      byId("stabilityScore").textContent = stats.stability.toFixed(0);
-      byId("securityScore").textContent = stats.security.toFixed(0);
-      const message = byId("budgetMessage");
-      const missing = [];
-      if (!stats.hasBody) missing.push("body");
-      if (!stats.hasWheels) missing.push("wheels");
-      if (!stats.hasAxles) missing.push("axles");
-      if (!stats.hasSecure) missing.push("package securement");
-      if (stats.total > 200) {
-        message.className = "warning";
-        message.textContent = "Over budget. Remove materials until the total is $200 or less.";
-      } else if (missing.length) {
-        message.className = "warning";
-        message.textContent = "Incomplete design. Add: " + missing.join(", ") + ".";
-      } else {
-        message.className = "success";
-        message.textContent = "Ready to test. Your design is within budget and includes the required systems.";
-      }
-    }
-
-    function canTest() {
-      const stats = designStats();
-      return stats.total <= 200 && stats.hasBody && stats.hasWheels && stats.hasAxles && stats.hasSecure;
-    }
-
-    function trialResult(trialNumber) {
       const s = designStats();
-      const baseDistance = 95 + s.alignment * 7 + s.stability * 2.6 + s.security * 1.3 - s.mass * 1.3 - s.friction * 1.8;
-      const wheelBonus = state.quantities.cds > 0 ? 30 : 12;
-      const bodyPenalty = state.quantities.index > 0 && state.quantities.cardboard === 0 ? -12 : 0;
-      const deterministicVariation = ((trialNumber * 13 + s.total * 3 + s.mass) % 21) - 10;
-      const distance = Math.max(45, Math.min(255, baseDistance + wheelBonus + bodyPenalty + deterministicVariation));
-      const time = Math.max(2.2, 7.2 + s.mass * 0.035 + s.friction * 0.045 - s.alignment * 0.035 + (trialNumber - 2) * 0.18);
-      const speed = distance / time;
-      const drift = Math.max(0, 28 - s.alignment * 1.8 - s.stability * .7 + s.friction * .4);
-      const secureChance = s.security + s.stability * .35 - speed * .16 - (s.mass > 40 ? 2 : 0);
-      const packageSecure = secureChance > 8 || trialNumber === 2 && secureChance > 6;
-      const meets = distance >= 200 && drift < 22 && packageSecure;
-      return {
-        trial: trialNumber,
-        distance: Math.round(distance),
-        time: Number(time.toFixed(2)),
-        speed: Number(speed.toFixed(2)),
-        velocity: Number(speed.toFixed(2)) + " cm/s east",
-        drift: Number(drift.toFixed(1)),
-        packageSecure,
-        meets
-      };
+      byId("budgetUsed").textContent = money(s.total);
+      byId("massScore").textContent = s.mass;
+      byId("frictionScore").textContent = s.friction;
+      byId("stabilityScore").textContent = s.stability;
+      byId("securityScore").textContent = s.security;
+      const bar = (id, num, v, max) => { byId(id).style.width = clamp(v / max * 100, 0, 100) + "%"; byId(num).textContent = v; };
+      bar("barAlign", "numAlign", s.alignment, 14); bar("barStab", "numStab", s.stability, 30);
+      bar("barSec", "numSec", s.security, 16); bar("barFric", "numFric", s.friction, 20);
+      const msg = byId("budgetMessage"), missing = missingParts(s);
+      if (s.total > 200) { msg.className = "warning"; msg.textContent = `Over budget by ${money(s.total - 200)}. Remove materials until the total is $200 or less.`; }
+      else if (missing.length) { msg.className = "warning"; msg.textContent = "Incomplete design. Add: " + missing.join(", ") + "."; }
+      else { msg.className = "success"; msg.textContent = `Ready to test! ${money(200 - s.total)} left in your budget. Go to the Test tab and try a Practice Run.`; }
+      drawPreview();
+      if (!running) drawScene({ phase: "idle" });
     }
 
+    /* ---------- drawing the vehicle ---------- */
+    function drawCar(ctx, cx, groundY, sc, opt = {}) {
+      const q = state.quantities;
+      const s = designStats();
+      ctx.save();
+      ctx.translate(cx, groundY);
+      if (opt.angle) ctx.rotate(opt.angle);
+      ctx.scale(sc, sc);
+      const r = q.cds ? 18 : q.caps ? 10 : 0;
+      const L = 110, H = q.cardboard ? 22 : q.index ? 8 : 0;
+      const wheelY = -r;
+      const bodyBottom = wheelY - (r ? 4 : 0) - (s.hasAxles ? 0 : 0);
+      if (!s.selected.length) {
+        ctx.fillStyle = "#8a99a6"; ctx.font = "bold 16px Arial"; ctx.textAlign = "center";
+        ctx.fillText("Add materials to build", 0, -30); ctx.restore(); return;
+      }
+      // axles
+      if (s.hasAxles && r) {
+        ctx.strokeStyle = q.dowels ? "#b07a3c" : "#e9e2d0"; ctx.lineWidth = q.dowels ? 6 : 5;
+        ctx.beginPath(); ctx.moveTo(-L / 2 + 16, wheelY); ctx.lineTo(L / 2 - 16, wheelY); ctx.stroke();
+        if (!q.dowels) { ctx.strokeStyle = "#e05a4b"; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]); }
+      }
+      // body
+      if (H) {
+        ctx.fillStyle = q.cardboard ? "#c8955a" : "#f7f3e8";
+        ctx.strokeStyle = "#153047"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(-L / 2, bodyBottom - H, L, H, 4); ctx.fill(); ctx.stroke();
+      }
+      // frame sticks
+      if (q.sticks) {
+        ctx.fillStyle = "#d9b37a"; ctx.strokeStyle = "#8b6a3c"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.roundRect(-L / 2 - 6, bodyBottom - 4, L + 12, 5, 2); ctx.fill(); ctx.stroke();
+      }
+      // clips
+      for (let i = 0; i < Math.min(q.clips, 4); i++) {
+        ctx.strokeStyle = "#6b7785"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(L / 2 - 6 - i * 8, bodyBottom - H - 7, 6, 10, 3); ctx.stroke();
+      }
+      // package
+      const top = bodyBottom - H;
+      if (!opt.pkgOff) {
+        const pw = 34, ph = 24, px = -pw / 2, py = top - ph;
+        ctx.fillStyle = "#f4b942"; ctx.strokeStyle = "#153047"; ctx.lineWidth = 2;
+        ctx.fillRect(px, py, pw, ph); ctx.strokeRect(px, py, pw, ph);
+        ctx.fillStyle = "#c84a3a"; ctx.fillRect(-3, py + 6, 6, 12); ctx.fillRect(-6, py + 9, 12, 6);
+        if (q.foil) { ctx.fillStyle = "rgba(200,208,216,.75)"; ctx.fillRect(px - 2, py - 2, pw + 4, ph + 4); }
+        if (q.tape) { ctx.fillStyle = "rgba(225,214,180,.95)"; ctx.fillRect(px - 6, py + ph / 2 - 4, pw + 12, 8); }
+        if (q.rubber) { ctx.strokeStyle = "#d1453b"; ctx.lineWidth = 2.5; [px + 8, px + pw - 8].forEach(x => { ctx.beginPath(); ctx.moveTo(x, py - 1); ctx.lineTo(x, top + 1); ctx.stroke(); }); }
+        if (q.string) { ctx.strokeStyle = "#333"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px - 4, top); ctx.lineTo(px + pw + 4, py); ctx.moveTo(px - 4, py); ctx.lineTo(px + pw + 4, top); ctx.stroke(); }
+      }
+      // wheels
+      if (r) {
+        [-L / 2 + 16, L / 2 - 16].forEach(x => {
+          ctx.beginPath(); ctx.arc(x, wheelY, r, 0, Math.PI * 2);
+          if (q.cds) { const g = ctx.createRadialGradient(x, wheelY, 2, x, wheelY, r); g.addColorStop(0, "#ffffff"); g.addColorStop(.5, "#c9d6f5"); g.addColorStop(.8, "#f2c9e6"); g.addColorStop(1, "#9fb3c8"); ctx.fillStyle = g; }
+          else ctx.fillStyle = "#2f6fb5";
+          ctx.fill(); ctx.strokeStyle = "#153047"; ctx.lineWidth = 2; ctx.stroke();
+          ctx.beginPath(); ctx.arc(x, wheelY, q.cds ? 4 : 3, 0, Math.PI * 2); ctx.fillStyle = "#fff"; ctx.fill(); ctx.stroke();
+        });
+      }
+      ctx.restore();
+    }
+
+    function drawPreview() {
+      const c = byId("carPreview"), ctx = c.getContext("2d");
+      ctx.clearRect(0, 0, c.width, c.height);
+      ctx.fillStyle = "#dbe7ed"; ctx.fillRect(0, 210, c.width, 50);
+      ctx.strokeStyle = "#9fb3c0"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, 210); ctx.lineTo(c.width, 210); ctx.stroke();
+      drawCar(ctx, c.width / 2, 210, 2.6);
+    }
+
+    /* ---------- test scene ---------- */
+    const SC = { rampX0: 20, rampY0: 95, rampX1: 175, ground: 240, right: 1080 };
+    function cmToX(cm) { return SC.rampX1 + cm * (SC.right - SC.rampX1) / TRACK; }
+    function drawScene(f) {
+      const c = byId("scene"), ctx = c.getContext("2d");
+      ctx.clearRect(0, 0, c.width, c.height);
+      ctx.fillStyle = "#f4f9fb"; ctx.fillRect(0, 0, c.width, c.height);
+      // floor
+      ctx.fillStyle = "#dbe7ed"; ctx.fillRect(0, SC.ground, c.width, c.height - SC.ground);
+      // ramp
+      ctx.fillStyle = "#c9a26b"; ctx.strokeStyle = "#8b6a3c"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(SC.rampX0, SC.rampY0); ctx.lineTo(SC.rampX1, SC.ground); ctx.lineTo(SC.rampX0, SC.ground); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#153047"; ctx.font = "bold 13px Arial"; ctx.textAlign = "left"; ctx.fillText("30 cm ramp", SC.rampX0 + 4, SC.ground - 8);
+      // target zone
+      ctx.fillStyle = "rgba(79,138,91,.15)"; ctx.fillRect(cmToX(200), 40, cmToX(TRACK) - cmToX(200), SC.ground - 40);
+      ctx.fillStyle = "#4f8a5b"; ctx.font = "bold 14px Arial"; ctx.textAlign = "center"; ctx.fillText("TARGET ZONE", (cmToX(200) + cmToX(TRACK)) / 2, 58);
+      // wall
+      ctx.fillStyle = "#516273"; ctx.fillRect(cmToX(TRACK), 150, 10, SC.ground - 150);
+      // ruler
+      ctx.strokeStyle = "#153047"; ctx.lineWidth = 1; ctx.fillStyle = "#153047"; ctx.font = "12px Arial";
+      for (let cm = 0; cm <= TRACK; cm += 10) {
+        const x = cmToX(cm), big = cm % 50 === 0;
+        ctx.beginPath(); ctx.moveTo(x, SC.ground); ctx.lineTo(x, SC.ground + (big ? 14 : 7)); ctx.stroke();
+        if (big) ctx.fillText(cm + " cm", x, SC.ground + 28);
+      }
+      // start line + gates
+      GATES.forEach((g, i) => {
+        const x = cmToX(g), hit = f.gateTimes && f.gateTimes[i] != null;
+        ctx.strokeStyle = g === 0 ? "#153047" : hit ? "#287c8e" : "#b8c6d0"; ctx.lineWidth = g === 0 ? 3 : 2;
+        ctx.setLineDash(g === 0 ? [] : [5, 4]); ctx.beginPath(); ctx.moveTo(x, 80); ctx.lineTo(x, SC.ground); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = hit ? "#287c8e" : "#8a99a6"; ctx.font = "bold 12px Arial";
+        ctx.fillText(g === 0 ? "START" : "gate", x, 74);
+        if (hit) { ctx.fillStyle = "#153047"; ctx.fillText(f.gateTimes[i].toFixed(2) + " s", x, SC.ground + 46); }
+      });
+      // car
+      const ang = Math.atan2(SC.ground - SC.rampY0, SC.rampX1 - SC.rampX0);
+      if (f.phase === "idle" || f.phase === "ramp") {
+        const p = f.phase === "idle" ? 0.06 : f.rampP;
+        const x = SC.rampX0 + (SC.rampX1 - SC.rampX0) * p, y = SC.rampY0 + (SC.ground - SC.rampY0) * p;
+        drawCar(ctx, x, y, 0.7, { angle: ang });
+      } else {
+        drawCar(ctx, cmToX(f.x), SC.ground, 0.7, { pkgOff: f.pkgOff });
+      }
+      if (f.pkgOff) {
+        const px = cmToX(f.pkgX), py = SC.ground - 2 - (f.pkgY || 0);
+        ctx.fillStyle = "#f4b942"; ctx.strokeStyle = "#153047"; ctx.lineWidth = 1.5;
+        ctx.save(); ctx.translate(px, py); ctx.rotate(f.pkgRot || 0); ctx.fillRect(-9, -13, 19, 13); ctx.strokeRect(-9, -13, 19, 13); ctx.restore();
+      }
+      if (f.label) { ctx.fillStyle = "#153047"; ctx.font = "bold 16px Arial"; ctx.textAlign = "left"; ctx.fillText(f.label, 200, 30); }
+    }
+
+    /* ---------- physics ---------- */
+    function computeRun() {
+      const s = designStats(), q = state.quantities;
+      let eff = 0.40 + 0.025 * Math.min(s.alignment, 12) - 0.012 * s.friction + (q.cds ? 0.05 : 0) + 0.003 * Math.min(s.mass, 35) - 0.006 * Math.max(0, s.mass - 40);
+      if (q.index && !q.cardboard) eff -= 0.04;
+      eff = clamp(eff, 0.3, 0.86);
+      const v0 = 242 * eff * (1 + rnd(0.04));
+      const a = Math.max(40, 45 + 6 * s.friction - 2 * Math.min(s.alignment, 12)) * (1 + rnd(0.05));
+      let dStop = v0 * v0 / (2 * a), hitWall = false;
+      if (dStop > TRACK - 2) { dStop = TRACK - 2; hitWall = true; }
+      const timeAt = x => (v0 - Math.sqrt(Math.max(0, v0 * v0 - 2 * a * x))) / a;
+      const tStop = hitWall ? timeAt(dStop) : v0 / a;
+      const drift = Math.max(0, 28 - 1.8 * s.alignment - 0.7 * s.stability + 0.4 * s.friction + rnd(2));
+      const secure = s.security + 0.35 * s.stability - v0 * 0.045 - (s.mass > 40 ? 2 : 0);
+      const pkgSecure = secure >= 6 || (secure >= 4 && Math.random() < 0.5);
+      const gates = GATES.map(g => g <= dStop ? Number(timeAt(g).toFixed(2)) : null);
+      const d = Math.round(dStop), t = Number(tStop.toFixed(2));
+      const offCourse = drift >= 22;
+      return { v0, a, dStop, tStop, d, t, gates, hitWall, drift: Number(drift.toFixed(1)), offCourse, pkgSecure, meets: d >= 200 && !offCourse && pkgSecure };
+    }
+
+    function animate(run, official) {
+      running = true;
+      byId("practiceRun").disabled = byId("runTrial").disabled = true;
+      const rampT = 0.7, fallT = 0.18;
+      const start = performance.now();
+      let pkg = null;
+      byId("pkg").textContent = "on board";
+      function frame(now) {
+        const el = (now - start) / 1000;
+        if (el < rampT) {
+          const p = 0.06 + 0.94 * (el / rampT) ** 2;
+          drawScene({ phase: "ramp", rampP: p });
+          byId("clock").textContent = "0.00 s"; byId("pos").textContent = "on ramp";
+          return requestAnimationFrame(frame);
+        }
+        const t = Math.min(el - rampT, run.tStop);
+        const x = run.v0 * t - 0.5 * run.a * t * t;
+        const gateTimes = run.gates.map(g => (g != null && g <= t + 1e-9) ? g : null);
+        let pkgOff = false, pkgX = 0, pkgY = 0, pkgRot = 0;
+        if (!run.pkgSecure && t >= fallT) {
+          pkgOff = true;
+          if (!pkg) { const xf = run.v0 * fallT - 0.5 * run.a * fallT * fallT; pkg = { x0: xf, v: (run.v0 - run.a * fallT) * 0.6 }; byId("pkg").textContent = "FELL OFF"; }
+          const tt = t - fallT, ap = 260, tp = Math.min(tt, pkg.v / ap);
+          pkgX = pkg.x0 + pkg.v * tp - 0.5 * ap * tp * tp;
+          pkgY = Math.max(0, 14 - tt * 90); pkgRot = Math.min(tt * 6, 1.4);
+        }
+        byId("clock").textContent = t.toFixed(2) + " s";
+        byId("pos").textContent = Math.round(x) + " cm";
+        drawScene({ phase: "floor", x, gateTimes, pkgOff, pkgX, pkgY, pkgRot });
+        if (t < run.tStop) return requestAnimationFrame(frame);
+        // finished
+        running = false;
+        byId("practiceRun").disabled = byId("runTrial").disabled = false;
+        const notes = [];
+        notes.push(`Stopped at <strong>${run.d} cm</strong> after <strong>${run.t.toFixed(2)} s</strong>.`);
+        if (run.hitWall) notes.push("It reached the end wall!");
+        notes.push(run.pkgSecure ? "The package stayed on." : "The package fell off.");
+        if (run.offCourse) notes.push(`It veered ${run.drift} cm off course (wheels and axles not lined up well).`);
+        else if (run.drift > 12) notes.push(`It drifted ${run.drift} cm sideways but stayed on course.`);
+        notes.push(run.meets ? "<strong>Target met!</strong>" : "Target not met.");
+        const box = byId("testMsg");
+        box.className = run.meets ? "success msg" : "warning msg";
+        box.innerHTML = (official ? `<strong>Official Trial recorded.</strong> ` : `<strong>Practice run (not recorded).</strong> `) + notes.join(" ");
+        if (official) {
+          const set = state.sets[state.cur];
+          set.design = designText();
+          set.trials.push({ d: run.d, t: run.t, gates: run.gates, pkg: run.pkgSecure, meets: run.meets, drift: run.drift, sp: "", vel: "" });
+          renderTrials(); renderGraphOptions(); save();
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function tryRun(official) {
+      if (running) return;
+      const box = byId("testMsg");
+      if (!canTest()) {
+        const s = designStats(), missing = missingParts(s);
+        box.className = "warning msg";
+        box.textContent = s.total > 200 ? "Your design is over budget. Go back to the Build tab and remove materials." : "Your design is missing " + missing.join(", ") + ". Go back to the Build tab.";
+        return;
+      }
+      if (official && state.sets[state.cur].trials.length >= 3) {
+        box.className = "warning msg";
+        box.textContent = `You already have 3 official trials for Design ${state.cur}.` + (state.cur === 1 ? " Use Practice Runs, or switch to Design 2 after your redesign." : " Ask your teacher before clearing trials.");
+        return;
+      }
+      animate(computeRun(), official);
+    }
+
+    /* ---------- trial tables ---------- */
     function renderTrials() {
+      const set = state.sets[state.cur];
+      byId("trialHeading").textContent = `Design ${state.cur} Official Trials`;
+      document.querySelectorAll(".setpick button").forEach(b => b.classList.toggle("active", Number(b.dataset.set) === state.cur));
       const rows = byId("trialRows");
-      rows.innerHTML = "";
-      state.trials.forEach(t => {
+      rows.innerHTML = set.trials.length ? "" : '<tr><td colspan="7">No official trials yet.</td></tr>';
+      set.trials.forEach((t, i) => {
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${t.trial}</td>
-          <td>${t.distance} cm</td>
-          <td>${t.time} s</td>
-          <td>${t.speed} cm/s</td>
-          <td>${t.velocity}</td>
-          <td>${t.packageSecure ? "stayed on" : "fell off"}</td>
-          <td>${t.meets ? "yes" : "no"}</td>
-        `;
+        tr.innerHTML = `<td>${i + 1}</td><td>${t.d} cm</td><td>${t.t.toFixed(2)} s</td>
+          <td><input data-i="${i}" data-k="sp" value="${t.sp || ""}" placeholder="cm/s" inputmode="decimal"></td>
+          <td><input data-i="${i}" data-k="vel" value="${t.vel || ""}" placeholder="__ cm/s ____"></td>
+          <td>${t.pkg ? "stayed on" : "fell off"}</td><td>${t.meets ? "yes" : "no"}</td>`;
         rows.appendChild(tr);
       });
-      drawGraph();
+      rows.querySelectorAll("input").forEach(inp => inp.addEventListener("input", () => { set.trials[inp.dataset.i][inp.dataset.k] = inp.value; save(); }));
+      const g = byId("gateRows"), all = [];
+      [1, 2].forEach(n => state.sets[n].trials.forEach((t, i) => all.push([`D${n} T${i + 1}`, t])));
+      g.innerHTML = all.length ? all.map(([lab, t]) => `<tr><td>${lab}</td>${t.gates.map(x => `<td>${x == null ? "-" : x.toFixed(2) + " s"}</td>`).join("")}<td>${t.d} cm at ${t.t.toFixed(2)} s</td></tr>`).join("") : '<tr><td colspan="8">No official trials yet.</td></tr>';
+      byId("calcMsg").innerHTML = "";
     }
 
-    function runTrial() {
-      if (!canTest()) {
-        alert("Your design must be within budget and include a body, wheels, axles, and a package securement material before testing.");
-        return;
-      }
-      if (state.trials.length >= 3) {
-        alert("You already have three official trials. Reset trials only if your teacher approves a retest.");
-        return;
-      }
-      const result = trialResult(state.trials.length + 1);
-      state.trials.push(result);
-      const car = byId("car");
-      const track = document.querySelector(".track");
-      const maxTravel = track.clientWidth - 130;
-      const px = Math.min(maxTravel, (result.distance / 255) * maxTravel);
-      car.style.transform = `translateX(${px}px) rotate(${result.drift > 18 ? 3 : 0}deg)`;
-      renderTrials();
+    function checkCalc() {
+      const set = state.sets[state.cur], out = [];
+      if (!set.trials.length) { byId("calcMsg").innerHTML = "Run an official trial first."; return; }
+      set.trials.forEach((t, i) => {
+        const correct = t.d / t.t, sp = parseFloat(String(t.sp).replace(/[^0-9.]/g, ""));
+        const spOk = !isNaN(sp) && Math.abs(sp - correct) <= Math.max(0.06, correct * 0.01);
+        const vel = String(t.vel).toLowerCase(), vnum = parseFloat(vel.replace(/[^0-9.]/g, ""));
+        const velOk = !isNaN(vnum) && Math.abs(vnum - correct) <= Math.max(0.06, correct * 0.01) && /east|\be\b/.test(vel);
+        out.push(`Trial ${i + 1}: speed <span class="${spOk ? "ok" : "bad"}">${spOk ? "correct" : "check again"}</span>, velocity <span class="${velOk ? "ok" : "bad"}">${velOk ? "correct" : "check again"}</span>`);
+      });
+      byId("calcMsg").innerHTML = out.join("<br>") + '<br><span class="small">Hint: speed = distance &divide; time. Velocity is the speed <em>plus a direction</em> (the vehicle travels east).</span>';
     }
 
-    function drawGraph() {
-      const svg = byId("graph");
-      const w = 720, h = 300;
-      const left = 64, right = 24, top = 24, bottom = 52;
-      const plotW = w - left - right;
-      const plotH = h - top - bottom;
-      svg.innerHTML = "";
-      function line(x1, y1, x2, y2, color, width = 1) {
-        const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        l.setAttribute("x1", x1); l.setAttribute("y1", y1);
-        l.setAttribute("x2", x2); l.setAttribute("y2", y2);
-        l.setAttribute("stroke", color); l.setAttribute("stroke-width", width);
-        svg.appendChild(l);
+    /* ---------- graph ---------- */
+    const G = { L: 64, R: 20, T: 20, B: 54, W: 760, H: 440, yMax: TRACK };
+    function trialList() { const l = []; [1, 2].forEach(n => state.sets[n].trials.forEach((t, i) => l.push({ key: `${n}-${i}`, label: `Design ${n}, Trial ${i + 1}`, t }))); return l; }
+    function currentGraphTrial() { const k = byId("graphTrial").value; return trialList().find(x => x.key === k); }
+    function graphData(tr) { const pts = []; tr.t.gates.forEach((g, i) => { if (g != null) pts.push([g, GATES[i]]); }); if (!pts.length || pts[pts.length - 1][1] !== tr.t.d) pts.push([tr.t.t, tr.t.d]); return pts; }
+    function xMax(tr) { return tr ? Math.max(3, Math.ceil(tr.t.t + 0.3)) : 4; }
+    function gx(t, xm) { return G.L + t / xm * (G.W - G.L - G.R); }
+    function gy(d) { return G.H - G.B - d / G.yMax * (G.H - G.T - G.B); }
+
+    function renderGraphOptions() {
+      const sel = byId("graphTrial"), prev = sel.value, l = trialList();
+      sel.innerHTML = l.length ? l.map(x => `<option value="${x.key}">${x.label}</option>`).join("") : '<option value="">No official trials yet</option>';
+      if (l.some(x => x.key === prev)) sel.value = prev;
+      renderGraph();
+    }
+    function renderGraph() {
+      const tr = currentGraphTrial(), xm = xMax(tr);
+      const c = byId("graphCanvas"), ctx = c.getContext("2d");
+      ctx.clearRect(0, 0, G.W, G.H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, G.W, G.H);
+      ctx.font = "12px Arial"; ctx.fillStyle = "#153047"; ctx.textAlign = "center";
+      for (let t = 0; t <= xm + 1e-9; t += 0.5) {
+        const x = gx(t, xm); ctx.strokeStyle = t % 1 === 0 ? "#cfdbe3" : "#edf2f5"; ctx.beginPath(); ctx.moveTo(x, G.T); ctx.lineTo(x, G.H - G.B); ctx.stroke();
+        if (t % 1 === 0) ctx.fillText(t, x, G.H - G.B + 18);
       }
-      function text(x, y, value, anchor = "middle", size = 12) {
-        const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        t.setAttribute("x", x); t.setAttribute("y", y);
-        t.setAttribute("text-anchor", anchor);
-        t.setAttribute("font-size", size);
-        t.setAttribute("fill", "#153047");
-        t.textContent = value;
-        svg.appendChild(t);
+      ctx.textAlign = "right";
+      for (let d = 0; d <= G.yMax; d += 25) {
+        const y = gy(d); ctx.strokeStyle = d % 50 === 0 ? "#cfdbe3" : "#edf2f5"; ctx.beginPath(); ctx.moveTo(G.L, y); ctx.lineTo(G.W - G.R, y); ctx.stroke();
+        if (d % 50 === 0) ctx.fillText(d, G.L - 8, y + 4);
       }
-      line(left, top, left, top + plotH, "#153047", 2);
-      line(left, top + plotH, left + plotW, top + plotH, "#153047", 2);
-      [0, 50, 100, 150, 200, 250].forEach(d => {
-        const y = top + plotH - (d / 250) * plotH;
-        line(left, y, left + plotW, y, "#d6e0e7");
-        text(left - 10, y + 4, d, "end");
+      ctx.strokeStyle = "#153047"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(G.L, G.T); ctx.lineTo(G.L, G.H - G.B); ctx.lineTo(G.W - G.R, G.H - G.B); ctx.stroke(); ctx.lineWidth = 1;
+      ctx.textAlign = "center"; ctx.font = "bold 13px Arial"; ctx.fillText("Time (s)", (G.L + G.W - G.R) / 2, G.H - 12);
+      ctx.save(); ctx.translate(16, (G.T + G.H - G.B) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText("Distance (cm)", 0, 0); ctx.restore();
+      const tbody = byId("graphData");
+      if (!tr) { tbody.innerHTML = '<tr><td colspan="2">Run an official trial first.</td></tr>'; byId("myPoints").textContent = "None yet."; return; }
+      tbody.innerHTML = graphData(tr).map(([t, d]) => `<tr><td>${t.toFixed(2)}</td><td>${d}</td></tr>`).join("");
+      const pts = (state.graphPts[tr.key] || []).slice().sort((a, b) => a[0] - b[0]);
+      if (byId("connectPts").checked && pts.length > 1) {
+        ctx.strokeStyle = "#287c8e"; ctx.lineWidth = 3; ctx.beginPath();
+        pts.forEach(([t, d], i) => i ? ctx.lineTo(gx(t, xm), gy(d)) : ctx.moveTo(gx(t, xm), gy(d))); ctx.stroke(); ctx.lineWidth = 1;
+      }
+      pts.forEach(([t, d]) => { ctx.beginPath(); ctx.arc(gx(t, xm), gy(d), 6, 0, Math.PI * 2); ctx.fillStyle = "#f4b942"; ctx.fill(); ctx.strokeStyle = "#153047"; ctx.lineWidth = 2; ctx.stroke(); ctx.lineWidth = 1; });
+      byId("myPoints").innerHTML = pts.length ? pts.map(([t, d]) => `(${t.toFixed(2)} s, ${d} cm)`).join("<br>") : "None yet. Click on the graph to plot a point.";
+      const chk = state.graphCheck[tr.key];
+      byId("graphMsg").innerHTML = chk ? chk.html : "";
+    }
+    function graphClick(e) {
+      const tr = currentGraphTrial();
+      if (!tr) { byId("graphMsg").textContent = "Run an official trial in the Test tab first."; return; }
+      const c = byId("graphCanvas"), r = c.getBoundingClientRect();
+      const px = (e.clientX - r.left) * c.width / r.width, py = (e.clientY - r.top) * c.height / r.height;
+      const xm = xMax(tr);
+      const t = Math.round(((px - G.L) / (G.W - G.L - G.R) * xm) * 20) / 20;
+      const d = Math.round(((G.H - G.B - py) / (G.H - G.T - G.B) * G.yMax) / 5) * 5;
+      if (t < 0 || t > xm || d < 0 || d > G.yMax) return;
+      (state.graphPts[tr.key] = state.graphPts[tr.key] || []).push([t, d]);
+      delete state.graphCheck[tr.key];
+      renderGraph(); save();
+    }
+    function checkGraph() {
+      const tr = currentGraphTrial();
+      if (!tr) return;
+      const data = graphData(tr), pts = state.graphPts[tr.key] || [];
+      const used = new Set(), missed = [];
+      data.forEach(([t, d]) => {
+        const i = pts.findIndex((p, j) => !used.has(j) && Math.abs(p[0] - t) <= 0.15 && Math.abs(p[1] - d) <= 8);
+        if (i >= 0) used.add(i); else missed.push(d);
       });
-      [0, 2, 4, 6, 8].forEach(sec => {
-        const x = left + (sec / 8) * plotW;
-        line(x, top, x, top + plotH, "#eef3f6");
-        text(x, top + plotH + 20, sec);
-      });
-      text(left + plotW / 2, h - 12, "Time (s)");
-      text(18, top + plotH / 2, "Distance (cm)", "middle");
-      if (!state.trials.length) {
-        text(left + plotW / 2, top + plotH / 2, "Run trials to plot data", "middle", 16);
-        return;
-      }
-      const points = state.trials.map(t => ({
-        x: left + (t.time / 8) * plotW,
-        y: top + plotH - (t.distance / 250) * plotH,
-        label: `T${t.trial}`
-      }));
-      for (let i = 0; i < points.length - 1; i++) {
-        line(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y, "#287c8e", 3);
-      }
-      points.forEach(p => {
-        const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        c.setAttribute("cx", p.x);
-        c.setAttribute("cy", p.y);
-        c.setAttribute("r", 6);
-        c.setAttribute("fill", "#f4b942");
-        c.setAttribute("stroke", "#153047");
-        c.setAttribute("stroke-width", 2);
-        svg.appendChild(c);
-        text(p.x + 14, p.y - 8, p.label, "start");
-      });
+      const extra = pts.length - used.size, good = data.length - missed.length;
+      let html;
+      if (!missed.length && !extra) html = `<div class="success"><strong>All ${data.length} points are correct!</strong> ${byId("connectPts").checked ? "" : "Now check \"Connect my points\" to draw the line."}</div>`;
+      else html = `<div class="warning"><strong>${good} of ${data.length} points are correct.</strong> ${missed.length ? "Check your point(s) for: " + missed.map(d => d + " cm").join(", ") + "." : ""} ${extra ? extra + " extra point(s) don't match the data. Use Undo to remove them." : ""}</div>`;
+      state.graphCheck[tr.key] = { html, good, total: data.length, extra };
+      renderGraph(); save();
     }
 
+    /* ---------- compile ---------- */
     function compile() {
-      const stats = designStats();
-      const selected = stats.selected.map(m => `${m.qty} x ${m.name} (${money(m.price * m.qty)})`).join("; ") || "No materials selected";
-      const trialText = state.trials.map(t => `Trial ${t.trial}: ${t.distance} cm in ${t.time} s, speed ${t.speed} cm/s, velocity ${t.velocity}, package ${t.packageSecure ? "stayed on" : "fell off"}, target ${t.meets ? "met" : "not met"}`).join("\n") || "No trials completed";
+      const setText = n => {
+        const s = state.sets[n];
+        if (!s.trials.length) return `Design ${n}: no official trials`;
+        return `Design ${n} materials: ${s.design}\n` + s.trials.map((t, i) =>
+          `  Trial ${i + 1}: ${t.d} cm in ${t.t.toFixed(2)} s | my speed: ${t.sp || "(blank)"} cm/s | my velocity: ${t.vel || "(blank)"} | package ${t.pkg ? "stayed on" : "fell off"} | target ${t.meets ? "met" : "not met"}`).join("\n");
+      };
+      const tr = currentGraphTrial();
+      const graphText = tr ? `Graphed: ${tr.label}\nPoints plotted: ${(state.graphPts[tr.key] || []).slice().sort((a, b) => a[0] - b[0]).map(([t, d]) => `(${t.toFixed(2)} s, ${d} cm)`).join(", ") || "none"}\nGraph check: ${state.graphCheck[tr.key] ? state.graphCheck[tr.key].good + " of " + state.graphCheck[tr.key].total + " points correct" : "not checked"}` : "No graph yet";
       const summary = `RESCUE RUN VIRTUAL ENGINEERING LAB
 
 Name: ${getText("studentName")}
@@ -814,15 +1109,19 @@ Source: ${getText("source3")}
 
 Initial design claim: ${getText("initialClaim")}
 
-BUDGET AND DESIGN
-Budget used: ${money(stats.total)} out of $200
-Materials: ${selected}
+DESIGN PLAN
+Current materials: ${designText()}
 Sketch notes: ${getText("sketchNotes")}
 Prediction: ${getText("prediction")}
 
 OFFICIAL TRIAL DATA
-${trialText}
+${setText(1)}
 
+${setText(2)}
+
+DISTANCE-TIME GRAPH
+${graphText}
+What the graph shape shows: ${getText("graphShape")}
 Data interpretation: ${getText("dataInterpretation")}
 
 REDESIGN
@@ -839,28 +1138,49 @@ Reasoning: ${getText("finalReasoning")}
 Presentation script: ${getText("presentationScript")}
 Limitations and next steps: ${getText("limitations")}`;
       byId("summary").textContent = summary;
+      try { const img = byId("graphSnapshot"); img.src = byId("graphCanvas").toDataURL("image/png"); img.style.display = tr ? "block" : "none"; } catch (e) {}
     }
 
-    document.querySelectorAll(".tabs button").forEach(button => {
-      button.addEventListener("click", () => {
-        document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
-        document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-        button.classList.add("active");
-        byId(button.dataset.tab).classList.add("active");
-      });
+    /* ---------- wiring ---------- */
+    document.querySelectorAll(".tabs button").forEach(button => button.addEventListener("click", () => {
+      document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      button.classList.add("active");
+      byId(button.dataset.tab).classList.add("active");
+      if (button.dataset.tab === "graph") renderGraphOptions();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }));
+    document.querySelectorAll(".setpick button").forEach(b => b.addEventListener("click", () => { if (running) return; state.cur = Number(b.dataset.set); renderTrials(); save(); }));
+    byId("practiceRun").addEventListener("click", () => tryRun(false));
+    byId("runTrial").addEventListener("click", () => tryRun(true));
+    let clearArmed = false;
+    byId("resetTrials").addEventListener("click", e => {
+      if (running) return;
+      if (!clearArmed) { clearArmed = true; e.target.textContent = "Click again to confirm"; setTimeout(() => { clearArmed = false; e.target.textContent = "Clear trials for this design"; }, 3000); return; }
+      clearArmed = false; e.target.textContent = "Clear trials for this design";
+      state.sets[state.cur].trials = []; renderTrials(); renderGraphOptions(); drawScene({ phase: "idle" }); save();
     });
-
-    byId("runTrial").addEventListener("click", runTrial);
-    byId("resetTrials").addEventListener("click", () => {
-      state.trials = [];
-      byId("car").style.transform = "translateX(0)";
-      renderTrials();
-    });
+    byId("checkCalc").addEventListener("click", checkCalc);
+    byId("graphCanvas").addEventListener("click", graphClick);
+    byId("graphTrial").addEventListener("change", renderGraph);
+    byId("connectPts").addEventListener("change", renderGraph);
+    byId("undoPoint").addEventListener("click", () => { const tr = currentGraphTrial(); if (tr && state.graphPts[tr.key]) { state.graphPts[tr.key].pop(); delete state.graphCheck[tr.key]; renderGraph(); save(); } });
+    byId("clearPoints").addEventListener("click", () => { const tr = currentGraphTrial(); if (tr) { state.graphPts[tr.key] = []; delete state.graphCheck[tr.key]; renderGraph(); save(); } });
+    byId("checkGraph").addEventListener("click", checkGraph);
     byId("compile").addEventListener("click", compile);
+    let wipeArmed = false;
+    byId("wipeAll").addEventListener("click", e => {
+      if (!wipeArmed) { wipeArmed = true; e.target.textContent = "Click again to erase everything"; setTimeout(() => { wipeArmed = false; e.target.textContent = "Start Over (erase my saved work)"; }, 3000); return; }
+      try { localStorage.removeItem(SAVE_KEY); } catch (err) {}
+      location.reload();
+    });
+    document.querySelector("main").addEventListener("input", e => { if (e.target.matches("input[id], textarea[id]")) save(); });
 
+    load();
     renderMaterials();
     updateStats();
     renderTrials();
+    renderGraphOptions();
   </script>
 </body>
 </html>
