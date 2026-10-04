@@ -1,30 +1,569 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rate of Dissolution Virtual Lab</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rate of Dissolution Lab</title>
 <style>
-body{font-family:Arial;margin:0;background:#f4f7fb;color:#172033}header{background:#202838;color:white;text-align:center;padding:18px}.wrap{max-width:1100px;margin:auto;padding:16px}.card{background:white;border:1px solid #d9e1ea;border-radius:16px;padding:16px;margin:14px 0}.tabs,.row,.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{padding:11px;border:1px solid #d9e1ea;border-radius:10px;background:white;font-weight:bold;cursor:pointer}.active,.primary{background:#6d3df5;color:white}.grid{display:grid;grid-template-columns:1.3fr .8fr;gap:14px}.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.choice{padding:10px;border:1px solid #d9e1ea;border-radius:10px;background:white;cursor:pointer;font-weight:bold}.choice.on{outline:3px solid #6d3df5;background:#eee9ff}.choice small{display:block;color:#64748b}.bench{height:340px;border:2px solid #d9e1ea;border-radius:15px;position:relative;background:linear-gradient(#eef8ff,#fff);overflow:hidden;margin-top:12px}.beaker{position:absolute;left:50%;bottom:35px;transform:translateX(-50%);width:220px;height:225px;border:7px solid #7b8794;border-top:0;border-radius:0 0 25px 25px;overflow:hidden}.water{position:absolute;bottom:0;width:100%;height:72%;background:#7dd3fc88}.sugar{position:absolute;left:50%;bottom:55px;transform:translateX(-50%);font-size:48px;z-index:3}.spoon{display:none;position:absolute;left:52%;bottom:65px;font-size:80px;z-index:4;animation:stir .6s infinite alternate}.swirl{display:none;position:absolute;left:50%;bottom:105px;transform:translateX(-50%);font-size:80px;color:#0284c7;animation:spin 1s linear infinite}.meter{position:absolute;top:10px;background:white;border:1px solid #ddd;border-radius:9px;padding:8px;z-index:5}.left{left:10px}.right{right:10px;text-align:right}.barbg{height:9px;background:#e5e7eb;border-radius:20px;overflow:hidden;margin-top:9px}.bar{height:100%;width:0;background:#6d3df5}.data{width:100%;border-collapse:collapse;font-size:13px}.data td,.data th{padding:7px;border-bottom:1px solid #ddd;text-align:center}.hint{color:#64748b;font-size:14px}.panel{display:none}.panel.show{display:block}textarea,select,input{width:100%;padding:9px;border:1px solid #d9e1ea;border-radius:8px;margin:5px 0}.status{padding:10px;background:#f8fafc;border-radius:9px;margin-top:9px}@keyframes stir{to{transform:rotate(20deg)}}@keyframes spin{to{transform:translateX(-50%) rotate(360deg)}}@media(max-width:760px){.grid{grid-template-columns:1fr}.choices{grid-template-columns:1fr}}
-</style></head><body>
-<header><a href="../" style="color:#fde68a;font-weight:bold;text-decoration:none;display:block;text-align:left;margin-bottom:6px">&larr; All Labs</a><h1>🧊 Sugar Cube Rate of Dissolution Lab</h1><p>Temperature • Surface Area • Agitation</p></header><main class="wrap">
-<div class="tabs"><button class="btn active" data-tab="lab">🧪 Virtual Lab</button><button class="btn" data-tab="test">🔬 Test It Out</button><button class="btn" data-tab="notes">📓 Lab Notebook</button></div>
-<section id="lab" class="panel show"><div class="card"><div class="row"><button id="guided" class="btn active">On-Level / Advanced</button><button id="aspire" class="btn">Aspire</button></div><h2 id="title">Investigation 1 of 3: Temperature</h2><p id="directions" class="hint"></p></div>
-<div class="grid"><div class="card"><h3>1. Water Temperature — 100 mL</h3><div class="choices"><button class="choice waterC" data-v="10">🧊 Cold<small>10°C</small></button><button class="choice waterC" data-v="22">💧 Room<small>22°C</small></button><button class="choice waterC" data-v="50">♨️ Hot<small>50°C</small></button></div><h3>2. Sugar Form</h3><div class="choices"><button class="choice sugarC" data-v="whole">◻️ Whole Cube<small>Lowest surface area</small></button><button class="choice sugarC" data-v="broken">🔸 Broken Cube<small>Medium surface area</small></button><button class="choice sugarC" data-v="crushed">⋰ Crushed Sugar<small>Greatest surface area</small></button></div><h3>3. Agitation</h3><div class="choices"><button class="choice ag" data-v="none">✋ None<small>No agitation</small></button><button class="choice ag" data-v="swirl">↻ Swirl<small>Gentle agitation</small></button><button class="choice ag" data-v="stir">🥄 Stir<small>Strong agitation</small></button></div>
-<div class="bench"><div class="meter left"><b id="clock">00.0 s</b><br>100 mL</div><div class="meter right"><b id="temp">—</b><br><span id="form">—</span></div><div class="beaker"><div class="water"></div><div id="cube" class="sugar"></div><div id="swirl" class="swirl">↻</div><div id="spoon" class="spoon">🥄</div></div></div><div class="barbg"><div id="bar" class="bar"></div></div><div class="actions"><button id="start" class="btn primary">▶ Start Stopwatch</button><button id="reset" class="btn">↻ Reset Beaker</button><button id="next" class="btn">Next Investigation →</button></div><div id="status" class="status">Set up the trial.</div></div>
-<div class="card"><h2>Trial Data</h2><table class="data"><thead><tr><th>#</th><th>Water</th><th>Sugar</th><th>Agitation</th><th>Time</th></tr></thead><tbody id="rows"></tbody></table><button id="clear" class="btn">Clear Data</button><p class="hint"><b>Remember:</b> shorter dissolution time = faster rate of dissolution.</p></div></div></section>
-<section id="test" class="panel"><div class="card"><h2>🔬 Test It Out</h2><p class="hint">Choose any combination of temperature, sugar form, and agitation. Make a hypothesis and test it.</p><label>Temperature<select id="tt"><option value="10">Cold 10°C</option><option value="22">Room 22°C</option><option value="50">Hot 50°C</option></select></label><label>Sugar<select id="ts"><option value="whole">Whole cube</option><option value="broken">Broken cube</option><option value="crushed">Crushed sugar</option></select></label><label>Agitation<select id="ta"><option value="none">None</option><option value="swirl">Swirl</option><option value="stir">Constant stirring</option></select></label><label>Hypothesis<input id="hyp" placeholder="I predict... because..."></label><button id="runTest" class="btn primary">▶ Run My Trial</button><div id="testResult" class="status">Choose variables and test your hypothesis.</div></div></section>
-<section id="notes" class="panel"><div class="card"><h2>📓 Lab Notebook</h2><label>Prediction</label><textarea id="pred" rows="3" placeholder="Which condition will dissolve sugar fastest? Why?"></textarea><label>Observations and patterns</label><textarea id="obs" rows="3" placeholder="When ______ increased, dissolution time..."></textarea><label>Which water temperature dissolved sugar fastest?</label><select id="q1"><option></option><option>Cold</option><option>Room</option><option>Hot</option></select><label>Which sample has the greatest surface area?</label><select id="q2"><option></option><option>Whole cube</option><option>Broken cube</option><option>Crushed sugar</option></select><label>Which action creates the most agitation?</label><select id="q3"><option></option><option>No movement</option><option>Swirling</option><option>Constant stirring</option></select><label>What is the dependent variable?</label><select id="q4"><option></option><option>Water volume</option><option>Dissolution time</option><option>Sugar form</option></select><label>Conclusion</label><textarea id="con" rows="3" placeholder="Sugar dissolved faster when..."></textarea><div id="aspireExtra" style="display:none"><label>Controlled variable and why it stayed constant</label><textarea id="cv" rows="3"></textarea><label>Limitation / source of error</label><textarea id="lim" rows="3"></textarea><label>CER: Which factor most affects rate of dissolution? Use evidence.</label><textarea id="cer" rows="4"></textarea></div><button id="check" class="btn primary">✓ Check Responses</button><button onclick="window.print()" class="btn">🖨 Print / Save PDF</button><div id="checkResult" class="status">Complete the analysis questions.</div></div></section></main>
+  :root { --ink:#153047; --muted:#516273; --line:#c9d6df; --bg:#f3f7fa; --gold:#f4b942; --teal:#287c8e; --green:#4f8a5b; --red:#c84a3a; --purple:#6d3df5; --soft:#eef0ff; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Arial, Helvetica, sans-serif; background:var(--bg); color:var(--ink); line-height:1.4; }
+  header { background:var(--ink); color:#fff; padding:20px clamp(16px,4vw,48px); border-bottom:8px solid var(--gold); }
+  header a { color:var(--gold); font-weight:700; text-decoration:none; }
+  header h1 { margin:6px 0 4px; font-size:clamp(26px,5vw,42px); }
+  header p { margin:0; color:#d8eef4; }
+  main { max-width:1180px; margin:0 auto; padding:16px; }
+  .tabs { display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 14px; }
+  button { border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer; font-size:15px; }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  .tabs button.active, .primary { background:var(--purple); color:#fff; border-color:var(--purple); }
+  .gold { background:var(--gold); border-color:var(--gold); }
+  .big { font-size:18px; padding:13px 22px; }
+  .panel { display:none; } .panel.active { display:block; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:clamp(14px,3vw,22px); box-shadow:0 6px 20px rgba(21,48,71,.08); margin-bottom:14px; }
+  h2 { margin:0 0 8px; font-size:24px; } h3 { margin:14px 0 8px; font-size:18px; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.25fr); gap:16px; align-items:start; }
+  .grid2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+  .choices { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-bottom:10px; }
+  .choice { padding:9px 6px; font-size:14px; }
+  .choice small { display:block; font-weight:400; color:var(--muted); font-size:12px; }
+  .choice.on { outline:3px solid var(--purple); background:var(--soft); }
+  .choice.locked { opacity:.5; }
+  canvas { display:block; width:100%; height:auto; border-radius:12px; border:1px solid var(--line); background:#fff; }
+  .meters { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:8px 0; }
+  .meter { border:1px solid var(--line); border-radius:10px; padding:6px 10px; }
+  .meter span { display:block; color:var(--muted); font-size:12px; font-weight:700; }
+  .meter strong { font-size:20px; }
+  .note { background:var(--soft); border-left:5px solid var(--purple); padding:10px 12px; margin:10px 0; border-radius:6px; }
+  .good { background:#eaf6ec; border-left:5px solid var(--green); padding:10px 12px; margin:10px 0; border-radius:6px; }
+  .warn { background:#fff1ee; border-left:5px solid var(--red); padding:10px 12px; margin:10px 0; border-radius:6px; }
+  .seg { display:inline-flex; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .seg button { border:0; border-radius:0; }
+  .seg button.on { background:var(--ink); color:#fff; }
+  table { width:100%; border-collapse:collapse; margin:8px 0; font-size:14px; }
+  th, td { border:1px solid var(--line); padding:7px; text-align:center; }
+  th { background:var(--ink); color:#fff; }
+  label { display:block; font-weight:700; margin:12px 0 5px; }
+  input, textarea, select { width:100%; border:1px solid var(--line); border-radius:8px; padding:9px; font:inherit; color:var(--ink); background:#fff; }
+  textarea { min-height:74px; }
+  .small { color:var(--muted); font-size:13px; }
+  .setup { border:2px solid var(--line); border-radius:12px; padding:12px; }
+  .setup h3 { margin-top:0; }
+  .setup.A { border-color:#2f6fb5; } .setup.B { border-color:#c86b1e; }
+  .setup select { margin-bottom:6px; }
+  .challenges { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+  .chal { border:2px dashed var(--line); border-radius:12px; padding:10px; }
+  .chal.done { border-style:solid; border-color:var(--green); background:#eaf6ec; }
+  .summary { white-space:pre-wrap; background:#f7fafc; border:1px solid var(--line); border-radius:8px; padding:12px; min-height:160px; }
+  .ok { color:var(--green); font-weight:700; } .bad { color:var(--red); font-weight:700; }
+  @media (max-width:860px) { .grid, .grid2, .challenges { grid-template-columns:1fr; } }
+  @media print { header, .tabs, .noprint { display:none !important; } .panel { display:none !important; } #notes { display:block !important; } body { background:#fff; } }
+</style>
+</head>
+<body>
+<header>
+  <a href="https://theunexpectedscienceteacher-blip.github.io/virtual-labs/">&larr; All Labs</a>
+  <h1>🧊 Sugar Cube Rate of Dissolution Lab</h1>
+  <p>Temperature • Surface Area • Agitation</p>
+</header>
+<main>
+  <nav class="tabs">
+    <button class="active" data-tab="lab">🧪 1 Virtual Lab</button>
+    <button data-tab="race">🏁 2 Dissolving Race</button>
+    <button data-tab="notes">📓 3 Lab Notebook &amp; Submit</button>
+  </nav>
+
+  <!-- VIRTUAL LAB -->
+  <section id="lab" class="panel active">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div class="seg"><button class="on" data-mode="guided">On-Level / Advanced</button><button data-mode="aspire">Aspire</button></div>
+        <div class="row"><button id="prevInv">← Prev</button><strong id="invNum">Investigation 1 of 3</strong><button id="nextInv">Next →</button></div>
+      </div>
+      <h2 id="invTitle" style="margin-top:12px">Temperature</h2>
+      <p id="invDir" class="small" style="font-size:15px"></p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h3 style="margin-top:0">1. Water temperature (100 mL)</h3>
+        <div class="choices" data-group="T">
+          <button class="choice" data-v="10">🧊 Cold<small>10 °C</small></button>
+          <button class="choice" data-v="22">💧 Room<small>22 °C</small></button>
+          <button class="choice" data-v="50">♨️ Hot<small>50 °C</small></button>
+        </div>
+        <h3>2. Sugar form</h3>
+        <div class="choices" data-group="S">
+          <button class="choice" data-v="whole">◻️ Whole cube<small>least surface area</small></button>
+          <button class="choice" data-v="broken">🔸 Broken cube<small>more surface area</small></button>
+          <button class="choice" data-v="crushed">⋰ Crushed<small>most surface area</small></button>
+        </div>
+        <h3>3. Agitation</h3>
+        <div class="choices" data-group="A">
+          <button class="choice" data-v="none">✋ None<small>no movement</small></button>
+          <button class="choice" data-v="swirl">↻ Swirl<small>gentle</small></button>
+          <button class="choice" data-v="stir">🥄 Stir<small>strong</small></button>
+        </div>
+        <div class="row noprint">
+          <button class="primary big" id="labStart">▶ Drop sugar &amp; start</button>
+          <button id="labReset">↻ Reset beaker</button>
+        </div>
+        <div id="labMsg" class="note">Set up your trial, then drop the sugar in.</div>
+      </div>
+      <div class="card">
+        <canvas id="labCanvas" width="760" height="470" aria-label="Beaker with dissolving sugar"></canvas>
+        <div class="meters">
+          <div class="meter"><span>Stopwatch</span><strong id="labClock">0.0 s</strong></div>
+          <div class="meter"><span>Sugar dissolved</span><strong id="labPct">0%</strong></div>
+          <div class="meter"><span>Water</span><strong id="labTemp">—</strong></div>
+        </div>
+        <p class="small" style="margin:0">The circle shows a <strong>particle zoom</strong> at the edge of the sugar: blue water particles bump sugar particles loose.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="grid2">
+        <div>
+          <h3 style="margin-top:0">Trial Data</h3>
+          <table><thead><tr><th>#</th><th>Water</th><th>Sugar</th><th>Agitation</th><th>Time</th></tr></thead><tbody id="rows"></tbody></table>
+          <button id="clear" class="noprint">Clear data</button>
+          <p class="small"><strong>Remember:</strong> a shorter dissolving time means a faster rate of dissolution.</p>
+        </div>
+        <div>
+          <h3 style="margin-top:0">Dissolving Time Graph</h3>
+          <canvas id="bars" width="560" height="330" aria-label="Bar graph of dissolving times"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RACE -->
+  <section id="race" class="panel">
+    <div class="card">
+      <h2>🏁 Dissolving Race</h2>
+      <p>Set up two beakers. Predict which sugar will dissolve first, then race them side by side. To make it a <strong>fair test</strong>, change only <strong>one</strong> variable.</p>
+      <div class="grid2">
+        <div class="setup A"><h3 style="color:#2f6fb5">Beaker A</h3>
+          <select id="aT"><option value="10">Cold 10 °C</option><option value="22" selected>Room 22 °C</option><option value="50">Hot 50 °C</option></select>
+          <select id="aS"><option value="whole" selected>Whole cube</option><option value="broken">Broken cube</option><option value="crushed">Crushed sugar</option></select>
+          <select id="aA"><option value="none" selected>No agitation</option><option value="swirl">Swirl</option><option value="stir">Constant stirring</option></select>
+        </div>
+        <div class="setup B"><h3 style="color:#c86b1e">Beaker B</h3>
+          <select id="bT"><option value="10">Cold 10 °C</option><option value="22">Room 22 °C</option><option value="50" selected>Hot 50 °C</option></select>
+          <select id="bS"><option value="whole" selected>Whole cube</option><option value="broken">Broken cube</option><option value="crushed">Crushed sugar</option></select>
+          <select id="bA"><option value="none" selected>No agitation</option><option value="swirl">Swirl</option><option value="stir">Constant stirring</option></select>
+        </div>
+      </div>
+      <div id="fair" class="note"></div>
+      <label>My prediction</label>
+      <div class="row" id="predict">
+        <button data-p="A">🔵 A will win</button><button data-p="B">🟠 B will win</button><button data-p="tie">🤝 Tie</button>
+      </div>
+      <div class="row noprint" style="margin-top:10px"><button class="primary big" id="raceGo" disabled>🏁 Race!</button><span class="small" id="raceHint">Make a prediction first.</span></div>
+      <canvas id="raceCanvas" width="1100" height="420" style="margin-top:12px" aria-label="Two beakers racing"></canvas>
+      <div id="raceResult"></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">🏆 Challenges</h3>
+      <div class="challenges">
+        <div class="chal" id="ch1"><strong>⚡ Speed Demon</strong><br><span class="small">Make a beaker dissolve in under 15 seconds.</span></div>
+        <div class="chal" id="ch2"><strong>🐢 Slow Motion</strong><br><span class="small">Make a beaker take longer than 2 minutes.</span></div>
+        <div class="chal" id="ch3"><strong>⚖️ Fair Scientist</strong><br><span class="small">Run a fair test for all 3 variables. <span id="ch3n"></span></span></div>
+      </div>
+      <h3>Race Log</h3>
+      <table><thead><tr><th>#</th><th>Beaker A</th><th>Beaker B</th><th>Variable tested</th><th>Times</th><th>Prediction</th></tr></thead><tbody id="raceRows"></tbody></table>
+    </div>
+  </section>
+
+  <!-- NOTEBOOK -->
+  <section id="notes" class="panel">
+    <div class="card">
+      <h2>📓 Lab Notebook</h2>
+      <div class="row">
+        <span style="flex:1;min-width:180px"><label>Name</label><input id="sName"></span>
+        <span style="width:110px"><label>Period</label><input id="sPeriod"></span>
+        <span style="width:170px"><label>Date</label><input id="sDate" type="date"></span>
+      </div>
+      <label>Prediction: which condition will dissolve sugar fastest? Why?</label><textarea id="pred"></textarea>
+      <label>Observations and patterns</label><textarea id="obs" placeholder="When ______ increased, the dissolving time..."></textarea>
+      <label>1. Which water temperature dissolved sugar fastest?</label>
+      <select id="q1"><option></option><option>Cold</option><option>Room</option><option>Hot</option></select>
+      <label>2. Which sample has the greatest surface area?</label>
+      <select id="q2"><option></option><option>Whole cube</option><option>Broken cube</option><option>Crushed sugar</option></select>
+      <label>3. Which action creates the most agitation?</label>
+      <select id="q3"><option></option><option>No movement</option><option>Swirling</option><option>Constant stirring</option></select>
+      <label>4. What is the dependent variable?</label>
+      <select id="q4"><option></option><option>Water volume</option><option>Dissolving time</option><option>Sugar form</option></select>
+      <div class="row noprint" style="margin-top:8px"><button id="check">✓ Check answers</button><span id="checkMsg"></span></div>
+      <label>5. Use the particle zoom: explain WHY hot water dissolves sugar faster.</label><textarea id="particle"></textarea>
+      <label>Conclusion</label><textarea id="con" placeholder="Sugar dissolved faster when..."></textarea>
+      <div id="aspireExtra" style="display:none">
+        <label>Controlled variable and why it stayed constant</label><textarea id="cv"></textarea>
+        <label>Limitation / source of error</label><textarea id="lim"></textarea>
+        <label>CER: Which factor most affects the rate of dissolution? Use evidence from your data.</label><textarea id="cer"></textarea>
+      </div>
+      <div class="row noprint" style="margin-top:12px">
+        <button class="primary" id="compile">Compile My Work</button>
+        <button class="gold" onclick="window.print()">Print / Save as PDF</button>
+      </div>
+      <p class="small noprint">After compiling, highlight everything in the box, copy it (Ctrl+C), and paste it into your Schoology assignment.</p>
+      <div id="summary" class="summary">Click Compile My Work when you are finished.</div>
+      <div class="noprint" style="margin-top:16px"><button id="wipe">Start Over (erase my saved work)</button></div>
+    </div>
+  </section>
+</main>
+
 <script>
-const q=s=>document.querySelector(s),qa=s=>[...document.querySelectorAll(s)];let mode="guided",inv=0,T=null,S=null,A=null,trials=[],running=false;
-const N={10:"Cold",22:"Room",50:"Hot",whole:"Whole cube",broken:"Broken cube",crushed:"Crushed",none:"None",swirl:"Swirl",stir:"Constant stir"};
-const INV=[["Investigation 1 of 3: Temperature","Use 100 mL of one water temperature, a whole cube, and no movement. Collect cold, room, and hot trials.",null,"whole","none"],["Investigation 2 of 3: Surface Area","Use 100 mL room-temperature water and no movement. Compare whole, broken, and crushed sugar.",22,null,"none"],["Investigation 3 of 3: Agitation","Use 100 mL room-temperature water and a whole cube. Compare no movement, swirling, and constant stirring.",22,"whole",null]];
-function calc(t,s,a){return Math.round(92*({10:1.38,22:1,50:.62}[t])*({whole:1,broken:.72,crushed:.46}[s])*({none:1,swirl:.72,stir:.48}[a])*10)/10}
-qa("[data-tab]").forEach(b=>b.onclick=()=>{qa("[data-tab]").forEach(x=>x.classList.remove("active"));qa(".panel").forEach(x=>x.classList.remove("show"));b.classList.add("active");q("#"+b.dataset.tab).classList.add("show")});
-function mark(cls,v){qa(cls).forEach(x=>x.classList.toggle("on",x.dataset.v==v))}
-function update(){q("#temp").textContent=T?T+"°C":"—";q("#form").textContent=S?N[S]:"—";q("#cube").textContent=S==="whole"?"◻️":S==="broken"?"🔸🔸":S==="crushed"?"⋰⋰⋰":"";q("#spoon").style.display=A==="stir"?"block":"none";q("#swirl").style.display=A==="swirl"?"block":"none"}
-qa(".waterC").forEach(b=>b.onclick=()=>{T=+b.dataset.v;mark(".waterC",T);update()});qa(".sugarC").forEach(b=>b.onclick=()=>{S=b.dataset.v;mark(".sugarC",S);update()});qa(".ag").forEach(b=>b.onclick=()=>{A=b.dataset.v;mark(".ag",A);update()});
-function load(){T=S=A=null;qa(".choice").forEach(x=>x.classList.remove("on"));let x=INV[inv];q("#title").textContent=mode==="aspire"?"Aspire: Design a Controlled Trial":x[0];q("#directions").textContent=mode==="aspire"?"Change one independent variable at a time. Keep the other variables controlled and collect evidence.":x[1];if(mode==="guided"){T=x[2];S=x[3];A=x[4];if(T)mark(".waterC",T);if(S)mark(".sugarC",S);if(A)mark(".ag",A)}q("#clock").textContent="00.0 s";q("#bar").style.width="0";q("#cube").style.opacity="1";q("#cube").style.transform="translateX(-50%)";update()}
-q("#guided").onclick=()=>{mode="guided";q("#guided").classList.add("active");q("#aspire").classList.remove("active");q("#aspireExtra").style.display="none";load()};q("#aspire").onclick=()=>{mode="aspire";q("#aspire").classList.add("active");q("#guided").classList.remove("active");q("#aspireExtra").style.display="block";load()};
-q("#start").onclick=()=>{if(running)return;if(T===null||!S||!A){q("#status").textContent="Choose water, sugar, and agitation first.";return}running=true;let fin=calc(T,S,A),st=performance.now();function tick(n){let p=Math.min(1,(n-st)/5200);q("#clock").textContent=(fin*p).toFixed(1)+" s";q("#bar").style.width=p*100+"%";q("#cube").style.opacity=1-p*.95;q("#cube").style.transform=`translateX(-50%) scale(${1-p*.7})`;if(p<1)requestAnimationFrame(tick);else{running=false;trials.push({T,S,A,time:fin});q("#status").textContent="Sugar fully dissolved! Trial recorded.";render()}}requestAnimationFrame(tick)};
-function render(){q("#rows").innerHTML=trials.length?trials.map((r,i)=>`<tr><td>${i+1}</td><td>${N[r.T]}</td><td>${N[r.S]}</td><td>${N[r.A]}</td><td><b>${r.time}s</b></td></tr>`).join(""):'<tr><td colspan="5">No trials recorded</td></tr>'}
-q("#reset").onclick=load;q("#next").onclick=()=>{inv=(inv+1)%3;load()};q("#clear").onclick=()=>{trials=[];render()};
-q("#runTest").onclick=()=>{let t=+q("#tt").value,s=q("#ts").value,a=q("#ta").value,time=calc(t,s,a);q("#testResult").innerHTML=`<b>Result: ${time} seconds</b><br>${N[t]} water + ${N[s]} + ${N[a]}. ${q("#hyp").value?"Compare this evidence with your hypothesis.":"Write a hypothesis and explain whether the evidence supports it."}`;trials.push({T:t,S:s,A:a,time});render()};
-q("#check").onclick=()=>{let c=(q("#q1").value==="Hot")+(q("#q2").value==="Crushed sugar")+(q("#q3").value==="Constant stirring")+(q("#q4").value==="Dissolution time");q("#checkResult").innerHTML=`<b>${c}/4 correct.</b> ${c===4?"Great job!":"Use your evidence: shorter time means faster dissolution."}`};load();render();
-</script></body></html>
+const $ = id => document.getElementById(id);
+const N = { 10: "Cold", 22: "Room", 50: "Hot", whole: "Whole cube", broken: "Broken cube", crushed: "Crushed", none: "None", swirl: "Swirl", stir: "Stir" };
+const SPEED = 10; // lab seconds per real second
+function calc(t, s, a) { return Math.round(92 * ({ 10: 1.38, 22: 1, 50: 0.62 }[t]) * ({ whole: 1, broken: 0.72, crushed: 0.46 }[s]) * ({ none: 1, swirl: 0.72, stir: 0.48 }[a]) * 10) / 10; }
+const INV = [
+  ["Investigation 1 of 3: Temperature", "Use 100 mL of water, a whole cube, and no movement. Test cold, room, and hot water. Only the temperature changes.", null, "whole", "none"],
+  ["Investigation 2 of 3: Surface Area", "Use 100 mL of room-temperature water and no movement. Compare a whole cube, a broken cube, and crushed sugar.", 22, null, "none"],
+  ["Investigation 3 of 3: Agitation", "Use 100 mL of room-temperature water and a whole cube. Compare no movement, swirling, and constant stirring.", 22, "whole", null]
+];
+const SAVE = "dissolutionLab_v2";
+const store = { trials: [], races: [], ch: { fast: false, slow: false, fair: [] }, mode: "guided", inputs: {} };
+
+/* ---------- beaker simulation ---------- */
+function makeBeaker(T, S, A) {
+  const total = calc(T, S, A);
+  const pieces = [];
+  if (S === "whole") pieces.push({ x: 0, y: 0, s: 1 });
+  else if (S === "broken") [[-0.9, 0, .62], [0.1, 0, .58], [0.95, 0, .55], [-0.35, -.62, .5]].forEach(([x, y, s]) => pieces.push({ x, y, s }));
+  else for (let k = 0; k < 46; k++) pieces.push({ x: (Math.random() - .5) * 2.6, y: -Math.random() * .35, s: .16 + Math.random() * .1 });
+  pieces.forEach(p => { p.s0 = p.s; p.x += (Math.random() - .5) * .1; p.rot = (Math.random() - .5) * .5; });
+  return { T, S, A, total, t: 0, p: 0, running: false, done: false, pieces, parts: [], zoom: makeZoom() };
+}
+function makeZoom() {
+  const water = Array.from({ length: 16 }, () => ({ x: Math.random(), y: Math.random(), a: Math.random() * 6.28 }));
+  const lattice = []; for (let i = 0; i < 4; i++) for (let j = 0; j < 7; j++) lattice.push({ i, j, on: true });
+  return { water, lattice, free: [] };
+}
+function stepBeaker(b, dtReal) {
+  if (!b.running) return;
+  const dtLab = dtReal * SPEED;
+  b.t = Math.min(b.total, b.t + dtLab); b.p = b.t / b.total;
+  b.pieces.forEach(p => p.s = p.s0 * Math.cbrt(Math.max(0, 1 - b.p)));
+  // emit dissolved sugar particles (more surface -> more particles)
+  const emit = b.S === "crushed" ? 7 : b.S === "broken" ? 4 : 2;
+  if (b.p < 1) for (let k = 0; k < emit; k++) {
+    const pc = b.pieces[Math.floor(Math.random() * b.pieces.length)];
+    if (pc.s > 0.02) b.parts.push({ x: pc.x + (Math.random() - .5) * pc.s, y: pc.y + pc.s * (Math.random() * .8), life: 1 });
+  }
+  if (b.parts.length > 420) b.parts.splice(0, b.parts.length - 420);
+  const dif = { 10: .35, 22: .6, 50: 1 }[b.T], swirl = { none: 0, swirl: .9, stir: 2 }[b.A];
+  b.parts.forEach(q => {
+    q.x += (Math.random() - .5) * dif * .14; q.y += (Math.random() - .3) * dif * .1;
+    if (swirl) { const cy = 1.4, dx = q.x, dy = q.y - cy; q.x += -dy * swirl * dtReal * .9; q.y += dx * swirl * dtReal * .9; }
+    q.x = Math.max(-1.75, Math.min(1.75, q.x)); q.y = Math.max(-.1, Math.min(3.1, q.y));
+    q.life -= dtReal * .05;
+  });
+  b.parts = b.parts.filter(q => q.life > 0);
+  if (b.t >= b.total) { b.running = false; b.done = true; }
+}
+function stepZoom(b, dtReal) {
+  const z = b.zoom, sp = { 10: .25, 22: .45, 50: .8 }[b.T] * (b.running ? 1 : 0.6), agit = { none: 0, swirl: .25, stir: .5 }[b.A];
+  z.water.forEach(w => {
+    w.a += (Math.random() - .5) * 1.4; w.x += Math.cos(w.a) * sp * dtReal + agit * dtReal * .3; w.y += Math.sin(w.a) * sp * dtReal;
+    if (w.x > 1) w.x = 0.42; if (w.x < 0.42) { w.x = 0.42; w.a = Math.PI - w.a; } if (w.y < 0 || w.y > 1) { w.a = -w.a; w.y = Math.min(1, Math.max(0, w.y)); }
+  });
+  if (b.running) {
+    const rate = { 10: .6, 22: 1.2, 50: 2.2 }[b.T] * { whole: 1, broken: 1.4, crushed: 2 }[b.S] * (1 + agit * 2);
+    if (Math.random() < rate * dtReal) {
+      // knock off an edge lattice particle (rightmost in its row)
+      const rows = [...new Set(z.lattice.filter(l => l.on).map(l => l.j))];
+      if (rows.length) { const j = rows[Math.floor(Math.random() * rows.length)]; const edge = z.lattice.filter(l => l.on && l.j === j).sort((a, b) => b.i - a.i)[0]; edge.on = false; z.free.push({ x: 0.08 + edge.i * 0.085, y: 0.12 + j * 0.115, vx: .2 + Math.random() * .2, vy: (Math.random() - .5) * .2, life: 1 }); }
+    }
+  }
+  if (b.done && z.lattice.some(l => l.on)) z.lattice.forEach(l => l.on = false);
+  z.free.forEach(f => { f.x += f.vx * dtReal; f.y += f.vy * dtReal; f.vy += (Math.random() - .5) * .3 * dtReal; f.life -= dtReal * .35; });
+  z.free = z.free.filter(f => f.life > 0 && f.x < 1.05);
+}
+function drawBeaker(ctx, b, X, Y, W, H, t, opts = {}) {
+  // X,Y top-left of beaker region; W,H size
+  const bx = X + W * .12, bw = W * .76, top = Y + H * .1, bot = Y + H * .92, wl = top + (bot - top) * .2;
+  const water = { 10: ["#bfe6ff", "#8fd0f5"], 22: ["#cdeefe", "#9fd9f5"], 50: ["#fde3cf", "#f6c3a0"] }[b.T];
+  const g = ctx.createLinearGradient(0, wl, 0, bot); g.addColorStop(0, water[0]); g.addColorStop(1, water[1]);
+  // sweetness haze: grows with dissolved amount
+  ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(bx, wl, bw, bot - wl, [0, 0, 18, 18]); ctx.fill();
+  ctx.fillStyle = `rgba(255,255,255,${0.35 * b.p})`; ctx.beginPath(); ctx.roundRect(bx, wl, bw, bot - wl, [0, 0, 18, 18]); ctx.fill();
+  // mapping from sim coords (x -1.8..1.8, y 0 bottom ..3.2 top) to canvas
+  const mx = x => bx + bw / 2 + x * bw / 3.8, my = y => bot - 10 - y * (bot - wl - 14) / 3.2, unit = bw / 3.8;
+  // dissolved particles
+  b.parts.forEach(q => { ctx.fillStyle = `rgba(255,255,255,${Math.min(1, q.life) * .95})`; ctx.beginPath(); ctx.arc(mx(q.x), my(q.y), 2.4, 0, 7); ctx.fill(); ctx.strokeStyle = `rgba(120,150,170,${q.life * .5})`; ctx.lineWidth = .8; ctx.stroke(); });
+  // sugar pieces
+  b.pieces.forEach(p => {
+    if (p.s < 0.015) return;
+    const sz = p.s * unit * 0.9, cx = mx(p.x), cy = my(p.y) - sz / 2 - 2;
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(p.rot);
+    ctx.fillStyle = "#fffdf7"; ctx.strokeStyle = "#b8b3a5"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.roundRect(-sz / 2, -sz / 2, sz, sz, Math.max(1, sz * .12)); ctx.fill(); ctx.stroke();
+    if (sz > 14) { ctx.fillStyle = "rgba(200,195,180,.5)"; for (let k = 0; k < 5; k++) ctx.fillRect(-sz / 2 + ((k * 37) % 10) / 10 * sz * .8, -sz / 2 + ((k * 53) % 10) / 10 * sz * .8, 2, 2); }
+    ctx.restore();
+  });
+  // swirl arrows / spoon
+  if (b.A !== "none" && (b.running || opts.preview)) {
+    const sp = b.A === "stir" ? 3.2 : 1.6, n = b.A === "stir" ? 8 : 5;
+    for (let k = 0; k < n; k++) { const a = t * sp + k * 6.28 / n, x = bx + bw / 2 + Math.cos(a) * bw * .3, y = (wl + bot) / 2 + Math.sin(a) * (bot - wl) * .22;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(a + Math.PI / 2); ctx.fillStyle = "rgba(40,120,200,.45)"; ctx.beginPath(); ctx.moveTo(8, 0); ctx.lineTo(-5, -5); ctx.lineTo(-5, 5); ctx.closePath(); ctx.fill(); ctx.restore(); }
+  }
+  if (b.A === "stir") {
+    const a = (b.running ? t * 3.2 : 0.4), sx = bx + bw / 2 + Math.cos(a) * bw * .18;
+    ctx.strokeStyle = "#8a96a3"; ctx.lineWidth = 7; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(sx, bot - 30); ctx.lineTo(bx + bw / 2 + bw * .32, top - 20); ctx.stroke(); ctx.lineCap = "butt";
+    ctx.fillStyle = "#8a96a3"; ctx.beginPath(); ctx.ellipse(sx, bot - 26, 14, 8, 0, 0, 7); ctx.fill();
+  }
+  // steam / ice
+  if (b.T === 50) for (let k = 0; k < 4; k++) { const ph = (t * .5 + k / 4) % 1; ctx.strokeStyle = `rgba(160,170,180,${0.6 - ph * .6})`; ctx.lineWidth = 3; ctx.beginPath(); const sx = bx + bw * (.25 + k * .17); for (let j = 0; j <= 10; j++) { const yy = wl - 6 - ph * 50 - j * 3; const xx = sx + Math.sin(j * .8 + t * 3 + k) * 5; j ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy); } ctx.stroke(); }
+  if (b.T === 10) { ctx.font = `${unit * .28}px "Segoe UI Emoji","Noto Color Emoji",sans-serif`; ctx.textAlign = "center"; ctx.fillText("🧊", bx + bw * .2, wl + 14); ctx.fillText("🧊", bx + bw * .8, wl + 20); }
+  // glass
+  ctx.strokeStyle = "#6b7a88"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(bx, top); ctx.lineTo(bx, bot - 18); ctx.quadraticCurveTo(bx, bot, bx + 18, bot); ctx.lineTo(bx + bw - 18, bot); ctx.quadraticCurveTo(bx + bw, bot, bx + bw, bot - 18); ctx.lineTo(bx + bw, top); ctx.stroke();
+  ctx.fillStyle = "#6b7a88"; ctx.font = "12px Arial"; ctx.textAlign = "left";
+  for (let k = 1; k <= 4; k++) { const y = bot - (bot - wl) * k / 4.6; ctx.fillRect(bx + 4, y, 12, 2); ctx.fillText(k * 25, bx + 20, y + 4); }
+  // thermometer
+  const tx = bx + bw + 16, tT = top + 10, tB = bot - 10; ctx.fillStyle = "#fff"; ctx.strokeStyle = "#6b7a88"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.roundRect(tx - 6, tT, 12, tB - tT, 6); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.arc(tx, tB + 4, 10, 0, 7); ctx.fillStyle = "#d9452e"; ctx.fill();
+  const lev = tB - (tB - tT) * (b.T / 70); ctx.fillStyle = "#d9452e"; ctx.fillRect(tx - 3, lev, 6, tB - lev);
+  ctx.fillStyle = "#153047"; ctx.font = "bold 13px Arial"; ctx.textAlign = "center"; ctx.fillText(b.T + "°C", tx, tT - 6);
+  if (b.done) { ctx.fillStyle = "rgba(79,138,91,.92)"; ctx.beginPath(); ctx.roundRect(bx + bw / 2 - 90, wl + 10, 180, 34, 10); ctx.fill(); ctx.fillStyle = "#fff"; ctx.font = "bold 16px Arial"; ctx.fillText("✓ All dissolved!", bx + bw / 2, wl + 33); }
+}
+function drawZoom(ctx, b, cx, cy, r) {
+  const z = b.zoom;
+  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fillStyle = "#f4fbff"; ctx.fill(); ctx.clip();
+  const X = cx - r, Y = cy - r, D = 2 * r;
+  z.lattice.forEach(l => { if (!l.on) return; const x = X + (0.08 + l.i * 0.085) * D, y = Y + (0.12 + l.j * 0.115) * D; ctx.fillStyle = "#fffdf2"; ctx.strokeStyle = "#c9a227"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x - 9, y - 9, 18, 18, 4); ctx.fill(); ctx.stroke(); });
+  z.free.forEach(f => { ctx.globalAlpha = Math.max(0, f.life); ctx.fillStyle = "#fffdf2"; ctx.strokeStyle = "#c9a227"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(X + f.x * D - 8, Y + f.y * D - 8, 16, 16, 4); ctx.fill(); ctx.stroke(); ctx.globalAlpha = 1; });
+  z.water.forEach(w => { const x = X + w.x * D, y = Y + w.y * D; ctx.fillStyle = "#3b8ed8"; ctx.beginPath(); ctx.arc(x, y, 7, 0, 7); ctx.fill(); ctx.strokeStyle = "rgba(59,142,216,.35)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - Math.cos(w.a) * 14, y - Math.sin(w.a) * 14); ctx.stroke(); });
+  ctx.restore(); ctx.strokeStyle = "#153047"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.stroke();
+  ctx.fillStyle = "#153047"; ctx.font = "bold 13px Arial"; ctx.textAlign = "center"; ctx.fillText("Particle zoom", cx, cy + r + 16);
+  ctx.font = "11px Arial"; ctx.fillStyle = "#516273"; ctx.fillText("🟨 sugar  🔵 water", cx, cy + r + 30);
+}
+
+/* ---------- VIRTUAL LAB ---------- */
+const lab = { inv: 0, T: null, S: null, A: null, b: null };
+function choose(group, v) {
+  if (lab.b && lab.b.running) return;
+  lab[group] = group === "T" ? Number(v) : v;
+  document.querySelectorAll(`[data-group="${group}"] .choice`).forEach(c => c.classList.toggle("on", c.dataset.v == v));
+  previewBeaker();
+}
+document.querySelectorAll("[data-group] .choice").forEach(c => c.addEventListener("click", () => {
+  const g = c.parentElement.dataset.group;
+  if (c.classList.contains("locked")) { $("labMsg").className = "warn"; $("labMsg").textContent = "That variable is controlled in this investigation. Keep it the same so the test is fair!"; return; }
+  choose(g, c.dataset.v);
+}));
+function previewBeaker() { if (lab.T && lab.S && lab.A) lab.b = makeBeaker(lab.T, lab.S, lab.A); else lab.b = null; updLab(); }
+function loadInv() {
+  const x = INV[lab.inv], asp = store.mode === "aspire";
+  $("invNum").textContent = asp ? "Aspire: design your own" : `Investigation ${lab.inv + 1} of 3`;
+  $("invTitle").textContent = asp ? "Design a Controlled Trial" : x[0].split(": ")[1];
+  $("invDir").textContent = asp ? "Change ONE independent variable at a time. Keep the other variables controlled, collect evidence, and explain your results." : x[1];
+  lab.T = lab.S = lab.A = null;
+  document.querySelectorAll(".choice").forEach(c => c.classList.remove("on", "locked"));
+  if (!asp) {
+    [["T", x[2]], ["S", x[3]], ["A", x[4]]].forEach(([g, v]) => {
+      if (v != null) { choose(g, v); document.querySelectorAll(`[data-group="${g}"] .choice`).forEach(c => { if (c.dataset.v != v) c.classList.add("locked"); }); }
+    });
+  }
+  $("prevInv").style.visibility = $("nextInv").style.visibility = asp ? "hidden" : "visible";
+  $("labMsg").className = "note"; $("labMsg").textContent = asp ? "Choose all three settings, then drop the sugar in." : "Choose the setting you are testing, then drop the sugar in.";
+  previewBeaker();
+}
+function updLab() {
+  const b = lab.b;
+  $("labClock").textContent = b ? b.t.toFixed(1) + " s" : "0.0 s";
+  $("labPct").textContent = b ? Math.round(b.p * 100) + "%" : "0%";
+  $("labTemp").textContent = lab.T ? `${N[lab.T]} ${lab.T} °C` : "—";
+}
+$("labStart").addEventListener("click", () => {
+  if (!(lab.T && lab.S && lab.A)) { $("labMsg").className = "warn"; $("labMsg").textContent = "Choose a water temperature, sugar form, and agitation first."; return; }
+  if (lab.b && lab.b.running) return;
+  lab.b = makeBeaker(lab.T, lab.S, lab.A); lab.b.running = true;
+  $("labMsg").className = "note"; $("labMsg").textContent = "Watch the sugar particles break away and spread through the water...";
+  document.querySelectorAll(".choice").forEach(c => c.disabled = true);
+  if (innerWidth < 900) $("labCanvas").scrollIntoView({ behavior: "smooth", block: "center" });
+});
+$("labReset").addEventListener("click", () => { document.querySelectorAll(".choice").forEach(c => c.disabled = false); previewBeaker(); $("labMsg").className = "note"; $("labMsg").textContent = "Set up your trial, then drop the sugar in."; });
+$("prevInv").addEventListener("click", () => { if (lab.b && lab.b.running) return; lab.inv = (lab.inv + 2) % 3; loadInv(); });
+$("nextInv").addEventListener("click", () => { if (lab.b && lab.b.running) return; lab.inv = (lab.inv + 1) % 3; loadInv(); });
+document.querySelectorAll("[data-mode]").forEach(btn => btn.addEventListener("click", () => {
+  if (lab.b && lab.b.running) return;
+  store.mode = btn.dataset.mode; document.querySelectorAll("[data-mode]").forEach(x => x.classList.toggle("on", x === btn));
+  $("aspireExtra").style.display = store.mode === "aspire" ? "block" : "none"; loadInv(); save();
+}));
+function labFinished() {
+  const b = lab.b;
+  store.trials.push({ T: b.T, S: b.S, A: b.A, time: b.total, inv: store.mode === "aspire" ? "Aspire" : ["Temperature", "Surface area", "Agitation"][lab.inv] });
+  document.querySelectorAll(".choice").forEach(c => c.disabled = false);
+  $("labMsg").className = "good"; $("labMsg").innerHTML = `<strong>All dissolved in ${b.total} s!</strong> Trial recorded. Reset the beaker and test the next setting.`;
+  renderRows(); save();
+}
+function renderRows() {
+  $("rows").innerHTML = store.trials.length ? store.trials.map((r, i) => `<tr><td>${i + 1}</td><td>${N[r.T]}</td><td>${N[r.S]}</td><td>${N[r.A]}</td><td><strong>${r.time} s</strong></td></tr>`).join("") : '<tr><td colspan="5" class="small">No trials yet.</td></tr>';
+  drawBars();
+}
+function drawBars() {
+  const c = $("bars"), ctx = c.getContext("2d"), W = c.width, H = c.height, L = 50, B = 70, T = 16, R = 10;
+  ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+  const data = store.trials.slice(-10), max = 140;
+  ctx.font = "11px Arial"; ctx.fillStyle = "#153047"; ctx.textAlign = "right";
+  for (let v = 0; v <= max; v += 20) { const y = H - B - v / max * (H - B - T); ctx.strokeStyle = "#e3eaef"; ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(W - R, y); ctx.stroke(); ctx.fillText(v, L - 6, y + 4); }
+  ctx.save(); ctx.translate(14, (H - B + T) / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = "center"; ctx.font = "bold 12px Arial"; ctx.fillText("Dissolving time (s)", 0, 0); ctx.restore();
+  if (!data.length) { ctx.textAlign = "center"; ctx.font = "14px Arial"; ctx.fillStyle = "#8a99a6"; ctx.fillText("Your trials will appear here", (L + W) / 2, (H - B) / 2); return; }
+  const bw = (W - L - R) / data.length;
+  const col = { Temperature: "#d9534f", "Surface area": "#e0a01e", Agitation: "#2f6fb5", Aspire: "#6d3df5" };
+  data.forEach((d, i) => {
+    const h = d.time / max * (H - B - T), x = L + i * bw + bw * .15, y = H - B - h;
+    ctx.fillStyle = col[d.inv]; ctx.fillRect(x, y, bw * .7, h);
+    ctx.fillStyle = "#153047"; ctx.textAlign = "center"; ctx.font = "bold 11px Arial"; ctx.fillText(d.time + "s", x + bw * .35, y - 4);
+    ctx.font = "10px Arial"; ctx.save(); ctx.translate(x + bw * .35, H - B + 8); ctx.rotate(-0.6); ctx.textAlign = "right";
+    ctx.fillText(`${N[d.T]}, ${N[d.S].replace(" cube", "")}, ${N[d.A]}`, 0, 0); ctx.restore();
+  });
+  ctx.strokeStyle = "#153047"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, H - B); ctx.lineTo(W - R, H - B); ctx.stroke(); ctx.lineWidth = 1;
+}
+$("clear").addEventListener("click", () => { store.trials = []; renderRows(); save(); });
+
+/* ---------- RACE ---------- */
+const race = { a: null, b: null, pred: null, running: false };
+function setupOf(p) { return { T: Number($(p + "T").value), S: $(p + "S").value, A: $(p + "A").value }; }
+function diffVars() { const a = setupOf("a"), b = setupOf("b"), d = []; if (a.T !== b.T) d.push("temperature"); if (a.S !== b.S) d.push("surface area"); if (a.A !== b.A) d.push("agitation"); return d; }
+function updFair() {
+  const d = diffVars(), f = $("fair");
+  if (!d.length) { f.className = "note"; f.innerHTML = "🤔 Both beakers are the same. Change <strong>one</strong> variable to test something."; }
+  else if (d.length === 1) { f.className = "good"; f.innerHTML = `✅ <strong>Fair test!</strong> You are testing <strong>${d[0]}</strong>. Everything else is controlled.`; }
+  else { f.className = "warn"; f.innerHTML = `⚠️ <strong>Not a fair test!</strong> You changed ${d.join(" AND ")}. If one beaker wins, you won't know which change caused it. You can still race, but try changing just one thing.`; }
+  if (!race.running) { race.a = makeBeaker(...Object.values(setupOf("a"))); race.b = makeBeaker(...Object.values(setupOf("b"))); }
+}
+["aT", "aS", "aA", "bT", "bS", "bA"].forEach(id => $(id).addEventListener("change", () => { updFair(); $("raceResult").innerHTML = ""; }));
+document.querySelectorAll("[data-p]").forEach(btn => btn.addEventListener("click", () => {
+  if (race.running) return; race.pred = btn.dataset.p;
+  document.querySelectorAll("[data-p]").forEach(x => x.classList.toggle("primary", x === btn));
+  $("raceGo").disabled = false; $("raceHint").textContent = "";
+}));
+$("raceGo").addEventListener("click", () => {
+  if (race.running || !race.pred) return;
+  updFair(); race.a.running = race.b.running = true; race.running = true; $("raceGo").disabled = true; $("raceResult").innerHTML = ""; $("raceCanvas").scrollIntoView({ behavior: "smooth", block: "center" });
+});
+function raceFinished() {
+  race.running = false;
+  const ta = race.a.total, tb = race.b.total, win = ta < tb ? "A" : tb < ta ? "B" : "tie", d = diffVars(), right = win === race.pred;
+  const sa = setupOf("a"), sb = setupOf("b");
+  store.races.push({ a: `${N[sa.T]}, ${N[sa.S]}, ${N[sa.A]}`, b: `${N[sb.T]}, ${N[sb.S]}, ${N[sb.A]}`, vars: d.length ? d.join(" + ") : "none", fair: d.length === 1, ta, tb, win, pred: race.pred, right });
+  if (Math.min(ta, tb) < 15) store.ch.fast = true;
+  if (Math.max(ta, tb) > 120) store.ch.slow = true;
+  if (d.length === 1 && !store.ch.fair.includes(d[0])) store.ch.fair.push(d[0]);
+  const why = d.length !== 1 ? "" : d[0] === "temperature" ? "Hotter water particles move faster and hit the sugar harder and more often." : d[0] === "surface area" ? "Smaller pieces expose more surface, so more water particles can hit the sugar at once." : "Agitation keeps bringing fresh water to the sugar and carries dissolved sugar away.";
+  $("raceResult").innerHTML = `<div class="${right ? "good" : "note"}"><strong>${win === "tie" ? "🤝 It's a tie!" : `🏆 Beaker ${win} wins!`}</strong> A: ${ta} s · B: ${tb} s. Your prediction was <strong>${right ? "correct ✅" : "not correct"}</strong>.${why ? "<br>" + why : ""}${d.length > 1 ? "<br>⚠️ Remember: you changed more than one variable, so you can't tell which one caused the difference." : ""}</div>`;
+  race.pred = null; document.querySelectorAll("[data-p]").forEach(x => x.classList.remove("primary")); $("raceHint").textContent = "Make a prediction for the next race.";
+  renderRaces(); save();
+}
+function renderRaces() {
+  $("raceRows").innerHTML = store.races.length ? store.races.map((r, i) => `<tr><td>${i + 1}</td><td>${r.a}</td><td>${r.b}</td><td>${r.vars}${r.fair ? " ✅" : r.vars === "none" ? "" : " ⚠️"}</td><td>A ${r.ta}s · B ${r.tb}s</td><td>${r.pred === "tie" ? "Tie" : r.pred} ${r.right ? "✅" : "❌"}</td></tr>`).join("") : '<tr><td colspan="6" class="small">No races yet.</td></tr>';
+  $("ch1").classList.toggle("done", store.ch.fast); $("ch2").classList.toggle("done", store.ch.slow);
+  $("ch3").classList.toggle("done", store.ch.fair.length >= 3); $("ch3n").textContent = `(${store.ch.fair.length}/3${store.ch.fair.length ? ": " + store.ch.fair.join(", ") : ""})`;
+}
+function drawRace(ctx, t) {
+  ctx.clearRect(0, 0, 1100, 420); ctx.fillStyle = "#f6fafc"; ctx.fillRect(0, 0, 1100, 420);
+  [[race.a, 0, "A", "#2f6fb5"], [race.b, 550, "B", "#c86b1e"]].forEach(([b, x, lab, col]) => {
+    if (!b) return;
+    drawBeaker(ctx, b, x + 20, 30, 360, 360, t, { preview: !race.running });
+    drawZoom(ctx, b, x + 460, 150, 72);
+    ctx.fillStyle = col; ctx.font = "bold 22px Arial"; ctx.textAlign = "left"; ctx.fillText("Beaker " + lab, x + 30, 30);
+    ctx.fillStyle = "#153047"; ctx.font = "bold 20px Arial"; ctx.textAlign = "center"; ctx.fillText(b.t.toFixed(1) + " s", x + 460, 300);
+    ctx.font = "13px Arial"; ctx.fillText(Math.round(b.p * 100) + "% dissolved", x + 460, 320);
+  });
+  ctx.strokeStyle = "#c9d6df"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(550, 20); ctx.lineTo(550, 400); ctx.stroke();
+}
+
+/* ---------- loop ---------- */
+let last = performance.now(), clock = 0;
+function frame(now) {
+  const dt = Math.min(0.25, (now - last) / 1000); last = now; clock += dt;
+  const active = document.querySelector(".panel.active").id;
+  if (lab.b) { const was = lab.b.running; stepBeaker(lab.b, dt); stepZoom(lab.b, dt); if (was && lab.b.done) labFinished(); updLab(); }
+  if (active === "lab") {
+    const ctx = $("labCanvas").getContext("2d"); ctx.clearRect(0, 0, 760, 470); ctx.fillStyle = "#f6fafc"; ctx.fillRect(0, 0, 760, 470);
+    if (lab.b) { drawBeaker(ctx, lab.b, 10, 20, 470, 440, clock, { preview: true }); drawZoom(ctx, lab.b, 625, 170, 100); }
+    else { ctx.fillStyle = "#8a99a6"; ctx.font = "18px Arial"; ctx.textAlign = "center"; ctx.fillText("Choose your settings to set up the beaker", 380, 235); }
+  }
+  if (race.a && race.b) {
+    const wasRunning = race.running; [race.a, race.b].forEach(b => { stepBeaker(b, dt); stepZoom(b, dt); });
+    if (wasRunning && race.a.done && race.b.done) raceFinished();
+    if (active === "race") drawRace($("raceCanvas").getContext("2d"), clock);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- notebook, save, compile ---------- */
+$("check").addEventListener("click", () => {
+  const ans = [["q1", "Hot"], ["q2", "Crushed sugar"], ["q3", "Constant stirring"], ["q4", "Dissolving time"]];
+  const c = ans.filter(([id, a]) => $(id).value === a).length;
+  $("checkMsg").innerHTML = `<span class="${c === 4 ? "ok" : "bad"}">${c}/4 correct.</span> ${c === 4 ? "Great job!" : "Use your data: a shorter time means faster dissolving."}`;
+  store.check = c; save();
+});
+function save() {
+  try { document.querySelectorAll("main input[id], main textarea[id], main #notes select[id]").forEach(el => store.inputs[el.id] = el.value); localStorage.setItem(SAVE, JSON.stringify(store)); } catch (e) {}
+}
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(SAVE) || "null"); if (!d) return;
+    Object.assign(store, d);
+    Object.entries(store.inputs || {}).forEach(([k, v]) => { const el = $(k); if (el) el.value = v; });
+  } catch (e) {}
+}
+document.querySelector("main").addEventListener("input", e => { if (e.target.closest("#notes")) save(); });
+document.querySelector("main").addEventListener("change", e => { if (e.target.closest("#notes")) save(); });
+$("compile").addEventListener("click", () => {
+  const v = id => ($(id).value || "").trim();
+  const trials = store.trials.map((r, i) => `Trial ${i + 1} (${r.inv}): ${N[r.T]} water, ${N[r.S]}, ${N[r.A]} agitation = ${r.time} s`).join("\n") || "No trials";
+  const races = store.races.map((r, i) => `Race ${i + 1}: A [${r.a}] ${r.ta} s vs B [${r.b}] ${r.tb} s | tested: ${r.vars}${r.fair ? " (fair test)" : r.vars === "none" ? "" : " (NOT a fair test)"} | prediction ${r.right ? "correct" : "incorrect"}`).join("\n") || "No races";
+  const ch = [store.ch.fast ? "Speed Demon" : null, store.ch.slow ? "Slow Motion" : null, store.ch.fair.length >= 3 ? "Fair Scientist" : null].filter(Boolean).join(", ") || "none";
+  let txt = `RATE OF DISSOLUTION LAB
+
+Name: ${v("sName")}
+Period: ${v("sPeriod")}
+Date: ${v("sDate")}
+Level: ${store.mode === "aspire" ? "Aspire" : "On-Level / Advanced"}
+
+Prediction: ${v("pred")}
+
+TRIAL DATA
+${trials}
+
+DISSOLVING RACES
+${races}
+Challenges completed: ${ch}
+
+Observations: ${v("obs")}
+1. Fastest temperature: ${v("q1")}
+2. Greatest surface area: ${v("q2")}
+3. Most agitation: ${v("q3")}
+4. Dependent variable: ${v("q4")}
+5. Particle explanation: ${v("particle")}
+Conclusion: ${v("con")}`;
+  if (store.mode === "aspire") txt += `
+Controlled variable: ${v("cv")}
+Limitation: ${v("lim")}
+CER: ${v("cer")}`;
+  $("summary").textContent = txt;
+});
+let wipeArm = false;
+$("wipe").addEventListener("click", e => {
+  if (!wipeArm) { wipeArm = true; e.target.textContent = "Click again to erase everything"; setTimeout(() => { wipeArm = false; e.target.textContent = "Start Over (erase my saved work)"; }, 3000); return; }
+  try { localStorage.removeItem(SAVE); } catch (err) {} location.reload();
+});
+
+/* ---------- tabs ---------- */
+document.querySelectorAll(".tabs button").forEach(btn => btn.addEventListener("click", () => {
+  document.querySelectorAll(".tabs button").forEach(x => x.classList.toggle("active", x === btn));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === btn.dataset.tab));
+}));
+
+load();
+document.querySelectorAll("[data-mode]").forEach(x => x.classList.toggle("on", x.dataset.mode === store.mode));
+$("aspireExtra").style.display = store.mode === "aspire" ? "block" : "none";
+loadInv(); renderRows(); renderRaces(); updFair();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
