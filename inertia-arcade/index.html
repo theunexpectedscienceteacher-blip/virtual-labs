@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inertia Arcade</title>
+<style>
+:root{--ink:#153047;--muted:#516273;--line:#c9d6df;--bg:#f3f7fa;--gold:#f4b942;--teal:#287c8e;--good:#1f7a4d;--goodbg:#e3f5ea;--bad:#b3261e;--badbg:#fdeceb;--warnbg:#fff5d6}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);line-height:1.4}
+header{background:var(--ink);color:#fff;padding:18px clamp(16px,4vw,48px);border-bottom:8px solid var(--gold)}
+header a{color:var(--gold);font-weight:700;text-decoration:none}
+header h1{margin:6px 0 4px;font-size:clamp(26px,4.5vw,40px);line-height:1.1}
+header p{margin:0;color:#d8eef4}
+main{max-width:1000px;margin:0 auto;padding:20px 16px 48px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin:0 0 16px;box-shadow:0 6px 20px rgba(21,48,71,.08)}
+h2{margin:0 0 10px}
+h3{margin:14px 0 8px}
+button{font:inherit;font-weight:700;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:10px;padding:10px 16px;cursor:pointer}
+button.primary{background:var(--ink);color:#fff}
+button.gold{background:var(--gold);border-color:#c98f12}
+button:disabled{opacity:.45;cursor:default}
+.big{font-size:1.15rem}
+.small{font-size:.9rem;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.hidden{display:none!important}
+.tag{display:inline-block;background:var(--warnbg);color:#7a5a00;font-size:13px;font-weight:700;padding:3px 8px;border-radius:6px;margin:2px 4px 2px 0}
+.seg{display:inline-flex;border:2px solid var(--ink);border-radius:10px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;border-radius:0;background:#fff}
+.seg button.on{background:var(--ink);color:#fff}
+.choice{display:block;width:100%;text-align:left;margin:8px 0;background:#eef4f8;border-color:transparent;font-weight:600}
+.choice:hover:not(:disabled){border-color:var(--teal)}
+.choice.good{background:var(--goodbg);border-color:var(--good);opacity:1}
+.choice.bad{background:var(--badbg);border-color:var(--bad);opacity:1}
+.choice.gone{visibility:hidden}
+.choice:disabled{cursor:default;opacity:.75}
+.fb{margin-top:12px;padding:12px 14px;border-radius:8px;border-left:5px solid var(--teal);background:#eef6f8}
+.fb.good{background:var(--goodbg);border-color:var(--good)}
+.fb.bad{background:var(--badbg);border-color:var(--bad)}
+.fb.hint{background:var(--warnbg);border-color:var(--gold)}
+canvas{width:100%;height:auto;display:block;border-radius:10px;background:#f7fbfd;border:1px solid var(--line)}
+.bar{height:12px;background:#e3eaf0;border-radius:6px;overflow:hidden}
+.bar>div{height:100%;width:0;background:var(--teal);transition:width .3s}
+input,select,textarea{font:inherit;padding:9px 10px;border:2px solid var(--line);border-radius:8px;color:var(--ink)}
+textarea{width:100%;min-height:90px}
+textarea.results{min-height:200px;font-family:"Courier New",monospace;font-size:.9rem}
+table{border-collapse:collapse;width:100%;margin:8px 0}
+th,td{border:1px solid var(--line);padding:8px;text-align:left}
+th{background:var(--ink);color:#fff}
+.stat{background:#eef4f8;border-radius:10px;padding:10px 14px;min-width:110px}
+.stat span{display:block;font-size:.8rem;color:var(--muted);font-weight:700;text-transform:uppercase}
+.stat strong{font-size:1.4rem}
+.pop{animation:pop .4s}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+.shake{animation:shake .45s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-7px)}80%{transform:translateX(7px)}}
+@media print{header a,.noprint,button{display:none!important}body{background:#fff}.card{box-shadow:none}}
+</style>
+</head>
+<body>
+<header>
+  <a href="../">&larr; All Labs</a>
+  <h1>🎮 Inertia Arcade</h1>
+  <p>Predict it. Watch it. Explain it. Six machines, one law: Newton's 1st Law.</p>
+</header>
+<main>
+  <section id="intro" class="card">
+    <span class="tag">7.7D Newton's 1st Law</span><span class="tag">Balanced &amp; unbalanced forces</span><span class="tag">Inertia</span>
+    <h2>How to play</h2>
+    <ol class="big">
+      <li><b>Predict:</b> What do you think will happen? ⭐</li>
+      <li><b>Watch:</b> Run the machine and see what really happens.</li>
+      <li><b>Explain:</b> Choose the best science explanation. ⭐</li>
+    </ol>
+    <p>Each machine is worth 2 stars, for 12 total. A wrong prediction is fine. Scientists learn from surprises! After you watch, try the other buttons to compare.</p>
+    <div class="row" style="margin:12px 0">
+      <label>Your name <input id="sName" placeholder="First and last name"></label>
+      <label>Period <input id="sPeriod" style="width:80px"></label>
+    </div>
+    <div class="fb" style="margin-bottom:14px"><b>Newton's 1st Law:</b> An object at rest stays at rest, and an object in motion stays in motion at the same speed and direction, <b>unless an unbalanced force acts on it</b>. <b>Inertia</b> is an object's tendency to resist changes in its motion. More mass means more inertia.</div>
+    <button class="primary big" id="startBtn">🪙 Insert coin ▶</button>
+    <p class="small" id="bestLine"></p>
+  </section>
+
+  <section id="game" class="card hidden">
+    <div class="spread">
+      <strong id="machLabel"></strong>
+      <div class="row"><div class="stat"><span>Machine</span><strong id="machNum"></strong></div><div class="stat"><span>Stars</span><strong id="starNum">0</strong></div></div>
+    </div>
+    <div class="bar" style="margin:10px 0 14px"><div id="prog"></div></div>
+    <h2 id="machTitle"></h2>
+    <p class="big" id="story"></p>
+    <canvas id="cv" width="800" height="320"></canvas>
+    <div class="row noprint" style="margin-top:10px" id="runRow"></div>
+    <div id="step1">
+      <h3>1️⃣ Predict <span class="small">⭐</span></h3>
+      <p class="big" id="predQ"></p>
+      <div id="predChoices"></div>
+      <div id="predFb" class="fb hidden"></div>
+    </div>
+    <div id="step3" class="hidden">
+      <h3>3️⃣ Explain <span class="small">⭐</span></h3>
+      <p class="big" id="explQ"></p>
+      <div id="explChoices"></div>
+      <div id="explFb" class="fb hidden"></div>
+    </div>
+    <div class="row" style="margin-top:12px"><button class="primary hidden" id="nextBtn">Next machine →</button></div>
+  </section>
+
+  <section id="end" class="card hidden">
+    <h2 id="endTitle"></h2>
+    <p class="big" id="endMsg"></p>
+    <table id="endTable"></table>
+    <h3>✍️ Explain it in your own words</h3>
+    <label>Explain Newton's 1st Law using one arcade machine as your example. Use the words <b>inertia</b> and <b>unbalanced force</b>.</label>
+    <textarea id="reflect"></textarea>
+    <h3>Submit</h3>
+    <ol class="small"><li>Click <b>Make my results</b>.</li><li>Click <b>Copy</b>, then paste it into your Schoology assignment.</li></ol>
+    <div class="row noprint"><button class="primary" id="compileBtn">📄 Make my results</button><button id="copyBtn">📋 Copy my results</button><button id="againBtn">🔁 Play again</button></div>
+    <textarea id="results" class="results" readonly placeholder="Your results will appear here."></textarea>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pickOne = a => a[Math.floor(Math.random() * a.length)];
+const uniq = a => [...new Set(a)];
+function loadStore(key) { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { return {}; } }
+function saveStore(key, d) { try { localStorage.setItem(key, JSON.stringify(d)); } catch (e) {} }
+
+/* Multiple choice: opts = array of strings (answer included). cb(ok, chosen) */
+function askMC(el, opts, answer, cb) {
+  el.innerHTML = ""; let done = false;
+  shuffle(uniq(opts)).forEach(o => {
+    const b = document.createElement("button"); b.className = "choice"; b.textContent = o;
+    b.onclick = () => {
+      if (done) return; done = true; const ok = o === answer;
+      b.classList.add(ok ? "good" : "bad");
+      if (!ok) [...el.children].find(c => c.textContent === answer).classList.add("good");
+      [...el.children].forEach(c => c.disabled = true);
+      cb(ok, o);
+    };
+    el.appendChild(b);
+  });
+}
+function fiftyFifty(el, answer) {
+  const wrong = [...el.querySelectorAll(".choice")].filter(c => c.textContent !== answer && !c.classList.contains("gone"));
+  shuffle(wrong).slice(0, Math.min(2, wrong.length - 1)).forEach(c => c.classList.add("gone"));
+}
+function feedback(el, cls, html) { el.className = "fb " + cls; el.innerHTML = html; el.classList.remove("hidden"); }
+function copyResults(taId, btn) {
+  const ta = $(taId); ta.focus(); ta.select();
+  let ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+  if (navigator.clipboard) navigator.clipboard.writeText(ta.value).catch(() => {});
+  const old = btn.textContent; btn.textContent = "✓ Copied! Now paste it in Schoology"; setTimeout(() => btn.textContent = old, 2500);
+}
+function bump(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+/* ---- canvas helpers ---- */
+function fitCanvas(c) { return c.getContext("2d"); }
+function arrow(ctx, x1, y1, x2, y2, color, w, label, labelPos) {
+  const ang = Math.atan2(y2 - y1, x2 - x1), hl = Math.max(12, w * 2.6);
+  ctx.save(); ctx.strokeStyle = ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(ang) * hl * .8, y2 - Math.sin(ang) * hl * .8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - hl * Math.cos(ang - .45), y2 - hl * Math.sin(ang - .45));
+  ctx.lineTo(x2 - hl * Math.cos(ang + .45), y2 - hl * Math.sin(ang + .45)); ctx.closePath(); ctx.fill();
+  if (label) {
+    ctx.font = "bold 20px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    let lx = (x1 + x2) / 2, ly = (y1 + y2) / 2;
+    if (labelPos) { lx += labelPos[0]; ly += labelPos[1]; } else if (Math.abs(y2 - y1) < 2) ly -= 20; else lx += 34;
+    const tw = ctx.measureText(label).width + 12;
+    ctx.fillStyle = "rgba(255,255,255,.92)"; ctx.fillRect(lx - tw / 2, ly - 13, tw, 26);
+    ctx.fillStyle = color; ctx.fillText(label, lx, ly);
+  }
+  ctx.restore();
+}
+function emoji(ctx, e, x, y, size, flip) { ctx.save(); if (flip) { ctx.translate(x, 0); ctx.scale(-1, 1); x = 0; } ctx.font = size + "px 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(e, x, y); ctx.restore(); }
+function rrect(ctx, x, y, w, h, r, fill, stroke) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); } }
+
+/* Force diagram: forces = [{dir:'left'|'right'|'up'|'down', n:Number}] ; offset = box shift along motion */
+function drawForceDiagram(ctx, W, H, forces, offset, opts) {
+  opts = opts || {};
+  ctx.clearRect(0, 0, W, H);
+  const vertical = forces.some(f => f.dir === "up" || f.dir === "down");
+  const bw = 120, bh = 90;
+  let cx = W / 2, by;
+  if (vertical) {
+    by = (H - bh) / 2 + (offset || 0);
+    ctx.fillStyle = "#eaf3fb"; ctx.fillRect(0, 0, W, H);
+  } else {
+    cx += offset || 0;
+    const gy = H - 60; by = gy - bh;
+    ctx.fillStyle = "#dfe8ee"; ctx.fillRect(0, gy, W, H - gy);
+    ctx.strokeStyle = "#8aa0b0"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+  }
+  const cy = by + bh / 2;
+  rrect(ctx, cx - bw / 2, by, bw, bh, 8, "#c8955c", "#7a5530");
+  ctx.strokeStyle = "#a7763f"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx - bw / 2 + 8, by + bh - 22); ctx.lineTo(cx + bw / 2 - 8, by + bh - 22); ctx.stroke();
+  ctx.fillStyle = "#4a3115"; ctx.font = "bold 20px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(opts.label || "BOX", cx, by + 34);
+  const colors = { left: "#1f5fa8", right: "#c0392b", up: "#1f7a4d", down: "#7b3fa0" };
+  const len = n => 40 + Math.min(n, 120) * 1.6;
+  ["left", "right", "up", "down"].forEach(dir => {
+    const fs = forces.filter(f => f.dir === dir), m = fs.length;
+    fs.forEach((f, k) => {
+      const off = m === 1 ? 0 : (k - (m - 1) / 2) * 40, L = len(f.n), c = colors[dir], lab = f.n + " N";
+      if (dir === "right") arrow(ctx, cx + bw / 2 + 4, cy + off, cx + bw / 2 + 4 + L, cy + off, c, 8, lab, [L / 2 - (L / 2) + 0, m > 1 ? (off < 0 ? -20 : 20) : -22]);
+      if (dir === "left") arrow(ctx, cx - bw / 2 - 4, cy + off, cx - bw / 2 - 4 - L, cy + off, c, 8, lab, [0, m > 1 ? (off < 0 ? -20 : 20) : -22]);
+      if (dir === "up") arrow(ctx, cx + off, by - 4, cx + off, Math.max(8, by - 4 - L), c, 8, lab, [48, 0]);
+      if (dir === "down") arrow(ctx, cx + off, by + bh + 4, cx + off, Math.min(H - 8, by + bh + 4 + L), c, 8, lab, [48, 0]);
+    });
+  });
+}
+/* net of forces -> {n, dir} */
+function netForce(forces) {
+  let x = 0, y = 0;
+  forces.forEach(f => { if (f.dir === "right") x += f.n; if (f.dir === "left") x -= f.n; if (f.dir === "up") y += f.n; if (f.dir === "down") y -= f.n; });
+  if (x !== 0) return { n: Math.abs(x), dir: x > 0 ? "right" : "left", axis: "x", s: x };
+  if (y !== 0) return { n: Math.abs(y), dir: y > 0 ? "up" : "down", axis: "y", s: y };
+  return { n: 0, dir: "none", axis: forces.some(f => f.dir === "up" || f.dir === "down") ? "y" : "x", s: 0 };
+}
+const netLabel = r => r.n === 0 ? "0 N (balanced)" : `${r.n} N ${r.dir}`;
+/* generate a force problem. level: 'basic'|'challenge' */
+function makeForceProblem(level, kind) {
+  kind = kind || pickOne(level === "challenge" ? ["opp", "opp", "bal", "same", "three", "three", "vert"] : ["opp", "opp", "bal", "same", "vert"]);
+  const h = Math.random() < .5 ? ["left", "right"] : ["right", "left"];
+  let f;
+  if (kind === "opp") { const a = rint(2, 9) * 5, b = a + rint(1, 6) * (Math.random() < .5 ? 1 : 2); f = [{ dir: h[0], n: a }, { dir: h[1], n: b }]; }
+  else if (kind === "bal") { const a = rint(2, 12) * 5; f = [{ dir: "left", n: a }, { dir: "right", n: a }]; }
+  else if (kind === "same") { const a = rint(2, 8) * 5, b = rint(1, 6) * 5; f = [{ dir: h[0], n: a }, { dir: h[0], n: b }]; }
+  else if (kind === "three") { const a = rint(1, 6) * 5, b = rint(1, 6) * 5, c = rint(2, 12) * 5; f = [{ dir: h[0], n: a }, { dir: h[0], n: b }, { dir: h[1], n: c }]; }
+  else { const w = rint(3, 10) * 10, up = Math.random() < .3 ? w : w + rint(-2, 3) * 10 || w + 10; f = [{ dir: "down", n: w }, { dir: "up", n: Math.max(10, up) }]; }
+  const r = netForce(f);
+  const tot = f.reduce((s, x) => s + x.n, 0);
+  const opp = r.dir === "left" ? "right" : r.dir === "right" ? "left" : r.dir === "up" ? "down" : r.dir === "down" ? "up" : (r.axis === "y" ? "up" : "right");
+  const distract = [netLabel(r), r.n ? `${r.n} N ${opp}` : `${f[0].n} N ${f[0].dir}`, `${tot} N ${r.dir === "none" ? (r.axis === "y" ? "up" : "right") : r.dir}`, r.n ? "0 N (balanced)" : `${tot} N ${r.axis === "y" ? "down" : "left"}`];
+  const extra = [`${Math.abs(f[0].n - (f[1] ? f[1].n : 0)) + 5} N ${r.dir === "none" ? "right" : r.dir}`, `${r.n + 10} N ${r.dir === "none" ? "left" : r.dir}`];
+  let opts = uniq(distract); for (const e of extra) if (opts.length < 4 && !opts.includes(e)) opts.push(e);
+  return { forces: f, net: r, answer: netLabel(r), opts: opts.slice(0, 4), kind };
+}
+function forceExplain(p) {
+  const f = p.forces, r = p.net;
+  const sums = {}; f.forEach(x => sums[x.dir] = (sums[x.dir] || 0) + x.n);
+  const parts = Object.entries(sums).map(([d, n]) => `${n} N ${d}` + (f.filter(x => x.dir === d).length > 1 ? ` (${f.filter(x => x.dir === d).map(x => x.n).join(" + ")})` : ""));
+  if (r.n === 0) return `The forces are equal and opposite (${parts.join(" vs ")}), so they cancel: net force = 0 N. The forces are <b>balanced</b>, so the motion does not change.`;
+  if (parts.length === 1) return `Both forces point the same way, so you <b>add</b> them: ${f.map(x => x.n).join(" + ")} = ${r.n} N ${r.dir}. The forces are <b>unbalanced</b>.`;
+  return `Opposite forces: <b>subtract</b> the smaller total from the larger. ${parts.join(" vs ")} → ${r.n} N toward the ${r.dir === "up" || r.dir === "down" ? r.dir + "ward" : r.dir} (the bigger side). The forces are <b>unbalanced</b>, so the motion changes in that direction.`;
+}
+
+const KEY = "inertiaArcade_v1";
+const st = loadStore(KEY);
+const cv = $("cv"), ctx = cv.getContext("2d"), W = 800, H = 320;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const easeOut = t => 1 - (1 - t) * (1 - t);
+
+function bg(top, bottom) { const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, top); g.addColorStop(1, bottom); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+function label(text, x, y, color, size, align) { ctx.save(); ctx.font = `bold ${size || 18}px Arial`; ctx.textAlign = align || "center"; ctx.textBaseline = "middle"; const w = ctx.measureText(text).width + 14; ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.fillRect((align === "left" ? x : x - w / 2), y - 14, w, 28); ctx.fillStyle = color || "#153047"; ctx.fillText(text, align === "left" ? x + 7 : x, y); ctx.restore(); }
+function wheel(x, y, r) { ctx.fillStyle = "#222"; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.fillStyle = "#999"; ctx.beginPath(); ctx.arc(x, y, r * .4, 0, 7); ctx.fill(); }
+
+/* ---------- machines ---------- */
+const M = [
+  {
+    name: "Tablecloth Trick", icon: "🍽️", dur: 2200,
+    story: "Dishes sit on a tablecloth. Someone yanks the cloth out from under them.",
+    variants: [["fast", "▶ Run it: yank FAST"], ["slow", "Try: pull SLOWLY"]],
+    pred: { q: "The cloth is yanked out FAST. What happens to the dishes?", a: "They stay on the table, almost where they were", w: ["They fly off with the cloth", "They jump straight up into the air", "They slide off the other side of the table"] },
+    expl: { q: "Why did the dishes stay put when the cloth was yanked fast?", a: "The dishes were at rest and tended to stay at rest. The quick yank gave friction almost no time to change their motion.", w: ["Gravity turned off for a moment", "The tablecloth has no mass", "The cloth pushed the dishes backward"] },
+    why: "The dishes have <b>inertia</b>: objects at rest tend to stay at rest. A fast yank means friction from the cloth acts for only a tiny moment, too short to get the dishes moving much. When you pull slowly, friction has time to act as an unbalanced force, and the dishes move with the cloth.",
+    draw(t, v) {
+      bg("#fdf6ec", "#f3e6d3");
+      ctx.fillStyle = "#9c6b3c"; ctx.fillRect(200, 210, 400, 16); ctx.fillRect(220, 226, 16, 90); ctx.fillRect(564, 226, 16, 90);
+      let cdx, ddx = 0, fall = 0;
+      if (v === "fast") { const p = clamp(t / .22, 0, 1); cdx = 700 * p * p; ddx = 6 * p; }
+      else { cdx = 460 * t; ddx = cdx; }
+      // cloth (lies on table, drapes over right edge)
+      ctx.fillStyle = "#d64545"; ctx.fillRect(195 + cdx, 202, 410, 8); ctx.fillRect(597 + cdx, 202, 8, 55);
+      ctx.fillStyle = "#fff"; for (let x = 205; x < 600; x += 40) ctx.fillRect(x + cdx, 203, 14, 6);
+      emoji(ctx, "✊", 615 + cdx, 262, 40);
+      [[310, "🍽️", 56], [430, "🥛", 48], [500, "🍎", 36]].forEach(([x, e, s]) => {
+        let dx = ddx, dy = 0, rot = 0;
+        if (v === "slow" && x + dx > 600) { const over = (x + dx - 600) / 460 * 2.2; dy = Math.min(110, 900 * over * over); rot = Math.min(1.2, over * 3); }
+        ctx.save(); ctx.translate(x + dx, 202 - s * .45 + dy); ctx.rotate(rot); emoji(ctx, e, 0, 0, s); ctx.restore();
+      });
+      if (t >= 1) label(v === "fast" ? "The dishes stayed on the table!" : "The dishes moved with the cloth and fell off.", 400, 40);
+    }
+  },
+  {
+    name: "Coin Drop", icon: "🪙", dur: 1800,
+    story: "A coin sits on an index card on top of a cup.",
+    variants: [["flick", "▶ Run it: FLICK the card"], ["slow", "Try: push the card slowly"]],
+    pred: { q: "The card is flicked sideways quickly. Where does the coin go?", a: "Straight down into the cup", w: ["Sideways with the card", "Up into the air", "It stays floating in the air where it was"] },
+    expl: { q: "Which statement best explains the coin?", a: "The coin's inertia kept it in place while the card shot away. Then gravity, an unbalanced force, pulled it down.", w: ["The card pushed the coin down into the cup", "The coin is too small to have inertia", "Balanced forces made the coin fall"] },
+    why: "The coin was at rest and its <b>inertia</b> kept it at rest while the card zipped out from under it. With the card gone, nothing held the coin up, so <b>gravity</b> was unbalanced and pulled it straight down. Pushed slowly, friction carries the coin along with the card.",
+    draw(t, v) {
+      bg("#eef6fb", "#dce9f2");
+      ctx.fillStyle = "#c9b28e"; ctx.fillRect(0, 290, W, 30);
+      // cup
+      ctx.fillStyle = "rgba(160,200,230,.45)"; ctx.strokeStyle = "#5b88a8"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(340, 180); ctx.lineTo(460, 180); ctx.lineTo(445, 290); ctx.lineTo(355, 290); ctx.closePath(); ctx.fill(); ctx.stroke();
+      let cdx, coinX = 400, coinY = 158, cardY = 172, cardRot = 0;
+      if (v === "flick") {
+        const p = clamp(t / .1, 0, 1); cdx = 760 * p;
+        if (t > .1) coinY = Math.min(274, 158 + 1500 * (t - .1) * (t - .1));
+        emoji(ctx, "👉", 285 + Math.min(40, t * 600), 176, 40);
+      } else {
+        cdx = 320 * t; coinX = 400 + cdx;
+        if (cdx > 140) { const f = (cdx - 140) / 180; cardY = 172 + Math.min(110, 400 * f * f); cardRot = Math.min(.5, f); coinY = cardY - 14; }
+        emoji(ctx, "👉", 285 + cdx, 176 + (cardY - 172), 40);
+      }
+      ctx.save(); ctx.translate(400 + cdx, cardY + 4); ctx.rotate(cardRot); ctx.fillStyle = "#fff"; ctx.strokeStyle = "#8aa0b0"; ctx.lineWidth = 2; ctx.fillRect(-80, -4, 160, 8); ctx.strokeRect(-80, -4, 160, 8); ctx.restore();
+      ctx.fillStyle = "#e0a526"; ctx.strokeStyle = "#9a6c08"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(coinX, coinY, 18, 9, 0, 0, 7); ctx.fill(); ctx.stroke();
+      if (t >= 1) label(v === "flick" ? "Plop! The coin dropped into the cup." : "The coin rode along with the card.", 400, 40);
+    }
+  },
+  {
+    name: "Seatbelt Stop", icon: "🚗", dur: 2600,
+    story: "A test car with a crash-test dummy drives toward a barrier and stops suddenly.",
+    variants: [["nobelt", "▶ Run it: NO seatbelt"], ["belt", "Try: seatbelt ON"]],
+    pred: { q: "The car stops suddenly. What does the dummy WITHOUT a seatbelt do?", a: "Keeps moving forward", w: ["Moves backward", "Stops instantly with the car", "Floats upward"] },
+    expl: { q: "Why does a seatbelt protect the passenger?", a: "It supplies the unbalanced force that stops the passenger along with the car.", w: ["It takes away the passenger's inertia", "It pushes the passenger backward faster than the car", "It makes the forces on the car balanced"] },
+    why: "The dummy was moving forward with the car. When the car stopped, the dummy's <b>inertia</b> kept it moving forward, because nothing was pushing back on it yet. A seatbelt provides the <b>unbalanced force</b> that stops the passenger with the car.",
+    draw(t, v) {
+      bg("#e8f3fb", "#f7fbfd");
+      ctx.fillStyle = "#6b7a86"; ctx.fillRect(0, 270, W, 50); ctx.fillStyle = "#f4b942"; for (let x = 10; x < W; x += 70) ctx.fillRect(x, 293, 38, 5);
+      ctx.fillStyle = "#e67e22"; ctx.fillRect(690, 150, 40, 120); ctx.fillStyle = "#fff"; for (let y = 160; y < 270; y += 30) ctx.fillRect(690, y, 40, 12);
+      const stopT = .45, carX = 60 + 450 * Math.min(t, stopT) / stopT;
+      let dummy = 0, lean = 0;
+      if (t > stopT) {
+        const s = (t - stopT) / (1 - stopT);
+        if (v === "nobelt") { dummy = Math.min(46, 900 * s); lean = Math.min(.5, s * 4); }
+        else { dummy = Math.sin(Math.min(1, s * 5) * Math.PI) * 8; }
+      }
+      // car body
+      rrect(ctx, carX, 200, 180, 52, 10, "#2e86de", "#1b4f8a");
+      ctx.fillStyle = "#2e86de"; ctx.beginPath(); ctx.moveTo(carX + 30, 202); ctx.lineTo(carX + 55, 150); ctx.lineTo(carX + 125, 150); ctx.lineTo(carX + 150, 202); ctx.closePath(); ctx.fill(); ctx.strokeStyle = "#1b4f8a"; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = "#cfe8fb"; ctx.beginPath(); ctx.moveTo(carX + 100, 158); ctx.lineTo(carX + 122, 158); ctx.lineTo(carX + 142, 198); ctx.lineTo(carX + 100, 198); ctx.closePath(); ctx.fill();
+      wheel(carX + 40, 254, 18); wheel(carX + 140, 254, 18);
+      // dummy
+      const dx = carX + 72 + dummy;
+      ctx.save(); ctx.translate(dx, 200); ctx.rotate(lean);
+      ctx.fillStyle = "#f1c40f"; ctx.strokeStyle = "#8a6d00"; ctx.lineWidth = 2;
+      ctx.fillRect(-10, -36, 20, 36); ctx.strokeRect(-10, -36, 20, 36);
+      ctx.beginPath(); ctx.arc(0, -46, 11, 0, 7); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#222"; ctx.beginPath(); ctx.arc(0, -46, 4, 0, 7); ctx.fill();
+      ctx.restore();
+      if (v === "belt") { ctx.strokeStyle = "#333"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(carX + 60, 166); ctx.lineTo(dx + 12, 200); ctx.stroke(); }
+      if (t > stopT && v === "nobelt" && dummy > 40) emoji(ctx, "💥", carX + 128, 168, 30);
+      label(t <= stopT ? "Car and dummy moving →" : (v === "nobelt" ? "Car stopped, but the dummy keeps moving forward!" : "The seatbelt stops the dummy with the car."), 400, 40, t > stopT && v === "nobelt" ? "#b3261e" : "#153047");
+    }
+  },
+  {
+    name: "Cart Crash Course", icon: "🛒", dur: 2600,
+    story: "Two identical carts get exactly the same push (20 N). One cart is empty. The other is loaded with 10 kg of books.",
+    variants: [["push", "▶ Run it: push both carts"]],
+    pred: { q: "Both carts get the same push. Which cart changes its motion LESS?", a: "The cart loaded with books", w: ["The empty cart", "They move exactly the same", "Neither cart moves"] },
+    expl: { q: "Why did the loaded cart change its motion less?", a: "More mass means more inertia, so the same force changes its motion less.", w: ["The loaded cart has less inertia", "Mass does not affect motion", "The empty cart has more friction"] },
+    why: "The loaded cart has more <b>mass</b>, so it has more <b>inertia</b>. That means it resists changes in motion more, and the same force doesn't speed it up as much. That's why a full shopping cart is harder to start <i>and</i> harder to stop.",
+    draw(t, v) {
+      bg("#f2f6f9", "#e1e9ef");
+      [150, 285].forEach(y => { ctx.fillStyle = "#c7d3dc"; ctx.fillRect(0, y, W, 6); });
+      const pushEnd = .12, s = clamp((t - pushEnd) / (1 - pushEnd), 0, 1);
+      const xa = 90 + (t < pushEnd ? 30 * t / pushEnd : 30 + 560 * easeOut(s));
+      const xb = 90 + (t < pushEnd ? 10 * t / pushEnd : 10 + 170 * easeOut(s));
+      [[xa, 150, "Empty cart", false], [xb, 285, "Loaded cart (+10 kg books)", true]].forEach(([x, y, name, load]) => {
+        rrect(ctx, x, y - 52, 110, 36, 6, load ? "#8e44ad" : "#16a085", "#153047");
+        wheel(x + 20, y - 10, 10); wheel(x + 90, y - 10, 10);
+        if (load) { emoji(ctx, "📚", x + 35, y - 72, 40); emoji(ctx, "📚", x + 78, y - 72, 40); }
+        ctx.fillStyle = "#153047"; ctx.font = "bold 16px Arial"; ctx.textAlign = "left"; ctx.fillText(name, 10, y - 100 + (load ? -10 : 0));
+        if (t < pushEnd + .05) { emoji(ctx, "✋", x - 22, y - 34, 36, true); arrow(ctx, x - 60, y - 34, x - 6, y - 34, "#c0392b", 6); label("20 N", x - 40, y - 64, "#c0392b", 15); }
+      });
+      if (t >= 1) label("Same push → the empty cart went much farther!", 470, 30);
+    }
+  },
+  {
+    name: "Space Puck", icon: "🏒", dur: 3200,
+    story: "A puck gets one push and is let go. Compare a puck in deep space (no friction, no air) with a puck on carpet.",
+    variants: [["space", "▶ Run it: in SPACE"], ["carpet", "Try: on CARPET"]],
+    pred: { q: "In space, the puck is pushed once and let go. What happens next?", a: "It keeps moving at the same speed in a straight line", w: ["It slows down and stops", "It keeps speeding up", "It curves around in a circle"] },
+    expl: { q: "On carpet, the puck stopped. What was different?", a: "Friction from the carpet was an unbalanced force that slowed the puck. In space, nothing unbalanced it.", w: ["The puck ran out of force", "Space gives the puck extra inertia", "On carpet the forces were balanced the whole time"] },
+    why: "Objects in motion stay in motion at the same speed and direction <b>unless an unbalanced force acts</b>. In space there's no friction, so the puck coasts at constant velocity. On carpet, <b>friction</b> acts opposite the motion, so it's an unbalanced force that slows the puck to a stop. Moving objects don't \"run out of force.\"",
+    draw(t, v) {
+      const space = v === "space";
+      if (space) { ctx.fillStyle = "#0d1b2a"; ctx.fillRect(0, 0, W, H); ctx.fillStyle = "#fff"; for (let i = 0; i < 70; i++) { const x = (i * 137) % W, y = (i * 59) % H; ctx.fillRect(x, y, i % 3 ? 2 : 3, i % 3 ? 2 : 3); } }
+      else { ctx.fillStyle = "#a5674a"; ctx.fillRect(0, 0, W, H); ctx.fillStyle = "rgba(0,0,0,.08)"; for (let x = 0; x < W; x += 8) for (let y = (x / 8) % 2 * 4; y < H; y += 8) ctx.fillRect(x, y, 3, 3); }
+      const pushEnd = .08, s = Math.max(0, t - pushEnd) * v0dur(this.dur);
+      let x, speed;
+      if (space) { x = 120 + 230 * s; speed = 3; while (x > W + 40) x -= W + 80; }
+      else { const stopS = 1.8, ss = Math.min(s, stopS); x = 120 + 230 * (ss - ss * ss / (2 * stopS)); speed = Math.max(0, 3 * (1 - s / stopS)); }
+      if (t < pushEnd) { x = 120 * (t / pushEnd) + 90 * (1 - t / pushEnd) + 30; speed = 3 * t / pushEnd; emoji(ctx, "✋", x - 45, 180, 44, true); }
+      ctx.fillStyle = "#111"; ctx.strokeStyle = space ? "#9fc5e8" : "#333"; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(x, 190, 34, 14, 0, 0, 7); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#333"; ctx.fillRect(x - 34, 190, 68, 8);
+      label(`Speed: ${speed.toFixed(1)} m/s`, 120, 36, space ? "#153047" : "#153047");
+      if (t >= 1) label(space ? "Still going at the same speed!" : "Friction slowed it to a stop.", 520, 36);
+    }
+  },
+  {
+    name: "Tug-of-War Cart", icon: "🪢", dur: 2400,
+    story: "A cart is at rest. Two teams pull on it in opposite directions.",
+    variants: [["equal", "▶ Run it: 50 N vs 50 N"], ["unequal", "Try: 50 N vs 70 N"]],
+    pred: { q: "50 N pulls left and 50 N pulls right on the resting cart. What happens?", a: "It stays at rest", w: ["It moves left", "It moves right", "It wiggles back and forth forever"] },
+    expl: { q: "What would make the resting cart start moving?", a: "An unbalanced net force, like 70 N right and 50 N left", w: ["Making both pulls 80 N", "Waiting longer", "Adding more mass to the cart"] },
+    why: "50 N left and 50 N right cancel out, so the net force is 0 N. The forces are <b>balanced</b>, and the cart's motion doesn't change, so it stays at rest. With 70 N right and 50 N left, the net force is 20 N right. That <b>unbalanced</b> force changes the cart's motion, and it starts moving right.",
+    draw(t, v) {
+      bg("#eaf6ea", "#d6ecd6");
+      ctx.fillStyle = "#8fc57a"; ctx.fillRect(0, 260, W, 60);
+      const un = v === "unequal", x = un ? 400 + 220 * t * t : 400 + (t > 0 && t < 1 ? Math.sin(t * 40) * 1.5 : 0);
+      ctx.strokeStyle = "#a07a3c"; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(x - 60, 215); ctx.lineTo(x - 260, 205); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + 60, 215); ctx.lineTo(x + 260, 205); ctx.stroke();
+      rrect(ctx, x - 60, 190, 120, 50, 8, "#e67e22", "#7a3e06"); wheel(x - 35, 245, 13); wheel(x + 35, 245, 13);
+      emoji(ctx, "🧍", x - 280, 210, 80); emoji(ctx, "🧍", x - 330, 210, 80);
+      emoji(ctx, "🧍", x + 280, 210, 80); emoji(ctx, "🧍", x + 330, 210, 80); if (un) emoji(ctx, "🧍", x + 380, 210, 80);
+      arrow(ctx, x - 62, 150, x - 62 - 100, 150, "#1f5fa8", 8, "50 N", [0, -22]);
+      arrow(ctx, x + 62, 150, x + 62 + (un ? 140 : 100), 150, "#c0392b", 8, un ? "70 N" : "50 N", [0, -22]);
+      label(un ? "Net force = 20 N right → UNBALANCED → the cart starts moving" : "Net force = 0 N → BALANCED → the cart stays at rest", 400, 36, un ? "#b3261e" : "#1f7a4d", 17);
+    }
+  }
+];
+function v0dur(d) { return d / 1000; }
+
+/* ---------- game flow ---------- */
+let G, anim = null;
+$("sName").value = st.name || ""; $("sPeriod").value = st.period || "";
+["sName", "sPeriod"].forEach(id => $(id).addEventListener("input", () => { st.name = $("sName").value; st.period = $("sPeriod").value; saveStore(KEY, st); }));
+if (st.best != null) $("bestLine").textContent = `Your best: ${st.best} / 12 stars`;
+
+function start() {
+  G = { i: 0, stars: 0, log: [] };
+  $("intro").classList.add("hidden"); $("end").classList.add("hidden"); $("game").classList.remove("hidden");
+  show();
+}
+$("startBtn").onclick = start;
+$("againBtn").onclick = () => { $("results").value = ""; start(); window.scrollTo(0, 0); };
+
+function show() {
+  const m = M[G.i];
+  G.cur = { pred: null, predOk: null, watched: false, explOk: null };
+  $("machLabel").textContent = `${m.icon} Machine ${G.i + 1}`; $("machNum").textContent = `${G.i + 1}/${M.length}`; $("starNum").textContent = G.stars;
+  $("prog").style.width = (G.i / M.length * 100) + "%";
+  $("machTitle").textContent = `${m.icon} ${m.name}`; $("story").textContent = m.story;
+  m.draw(0, m.variants[0][0]);
+  // run buttons
+  $("runRow").innerHTML = "";
+  m.variants.forEach(([k, txt], idx) => {
+    const b = document.createElement("button"); b.textContent = txt; b.dataset.v = k;
+    b.className = idx === 0 ? "primary" : "hidden"; b.disabled = idx === 0; b.onclick = () => run(k);
+    $("runRow").appendChild(b);
+  });
+  const lock = document.createElement("span"); lock.className = "small"; lock.id = "lockNote"; lock.textContent = "🔒 Make your prediction first."; $("runRow").appendChild(lock);
+  // predict
+  $("predQ").textContent = m.pred.q; $("predFb").className = "fb hidden";
+  $("predChoices").innerHTML = "";
+  shuffle([m.pred.a, ...m.pred.w]).forEach(o => {
+    const b = document.createElement("button"); b.className = "choice"; b.textContent = o;
+    b.onclick = () => {
+      if (G.cur.pred) return; G.cur.pred = o;
+      [...$("predChoices").children].forEach(c => { c.disabled = true; if (c === b) { c.style.borderColor = "#153047"; c.style.background = "#dfe9f1"; } });
+      feedback($("predFb"), "", `🔒 Prediction locked in: <b>${o}</b><br>2️⃣ <b>Watch:</b> press <b>${m.variants[0][1].replace("▶ ", "")}</b> above to test it.`);
+      const rb = $("runRow").querySelector("button"); rb.disabled = false; bump(rb, "pop"); $("lockNote").textContent = "";
+      cv.scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+    $("predChoices").appendChild(b);
+  });
+  $("step3").classList.add("hidden"); $("explFb").className = "fb hidden"; $("nextBtn").classList.add("hidden");
+}
+
+function run(v) {
+  const m = M[G.i];
+  if (anim) cancelAnimationFrame(anim);
+  [...$("runRow").querySelectorAll("button")].forEach(b => b.disabled = true);
+  const t0 = performance.now();
+  const frame = now => {
+    const t = Math.min(1, (now - t0) / m.dur);
+    m.draw(t, v);
+    if (t < 1) anim = requestAnimationFrame(frame);
+    else { anim = null; finishedRun(v); }
+  };
+  anim = requestAnimationFrame(frame);
+}
+function finishedRun(v) {
+  const m = M[G.i];
+  [...$("runRow").querySelectorAll("button")].forEach(b => { b.disabled = false; b.classList.remove("hidden"); });
+  const first = $("runRow").querySelector("button"); first.textContent = first.textContent.replace("▶ Run it:", "↻ Replay:");
+  if (G.cur.watched) return;
+  G.cur.watched = true;
+  const ok = G.cur.pred === m.pred.a; G.cur.predOk = ok; if (ok) G.stars++;
+  [...$("predChoices").children].forEach(c => { if (c.textContent === m.pred.a) c.classList.add("good"); else if (c.textContent === G.cur.pred) c.classList.add("bad"); });
+  feedback($("predFb"), ok ? "good" : "bad", ok ? "⭐ <b>Your prediction was right!</b> Star earned." : `🤔 <b>Surprise!</b> What really happened: <b>${m.pred.a}</b>. That's okay. Now figure out <i>why</i>.`);
+  $("starNum").textContent = G.stars; bump($("starNum"), "pop");
+  if (m.variants.length > 1) $("predFb").innerHTML += `<br><span class="small">🔬 Compare: try <b>${m.variants[1][1].replace("Try: ", "")}</b> using the button above.</span>`;
+  // explain
+  $("step3").classList.remove("hidden"); $("explQ").textContent = m.expl.q;
+  askMC($("explChoices"), [m.expl.a, ...m.expl.w], m.expl.a, ok2 => {
+    G.cur.explOk = ok2; if (ok2) G.stars++;
+    $("starNum").textContent = G.stars; bump($("starNum"), "pop");
+    feedback($("explFb"), ok2 ? "good" : "bad", (ok2 ? "⭐ <b>Correct!</b> " : "❌ <b>Not quite.</b> ") + m.why);
+    G.log.push({ name: m.name, pred: G.cur.pred, predOk: G.cur.predOk, explOk: ok2 });
+    $("nextBtn").textContent = G.i === M.length - 1 ? "See my results →" : "Next machine →";
+    $("nextBtn").classList.remove("hidden");
+  });
+}
+$("nextBtn").onclick = () => { if (anim) cancelAnimationFrame(anim); anim = null; G.i++; if (G.i < M.length) { show(); $("machTitle").scrollIntoView({ block: "start" }); } else finish(); };
+
+function badge(s) { return s >= 11 ? "🏆 Newton's 1st Law Master" : s >= 8 ? "🥇 Inertia Expert" : s >= 5 ? "🎟️ Arcade Regular" : "🕹️ Rookie Player"; }
+function finish() {
+  $("game").classList.add("hidden"); $("end").classList.remove("hidden");
+  if (st.best == null || G.stars > st.best) { st.best = G.stars; saveStore(KEY, st); }
+  $("endTitle").textContent = `Arcade complete! ${badge(G.stars)}`;
+  $("endMsg").innerHTML = `You earned <b>${G.stars} / 12 ⭐</b>.` + (G.stars < 8 ? " Read the explanations for the machines you missed, then play again." : " Awesome work!");
+  $("endTable").innerHTML = "<tr><th>Machine</th><th>Prediction</th><th>Explanation</th></tr>" + G.log.map(l => `<tr><td>${l.name}</td><td>${l.predOk ? "⭐" : "✗"} ${l.pred}</td><td>${l.explOk ? "⭐" : "✗"}</td></tr>`).join("");
+  window.scrollTo(0, 0);
+}
+$("compileBtn").onclick = () => {
+  $("results").value = [
+    "INERTIA ARCADE RESULTS",
+    `Name: ${$("sName").value}   Period: ${$("sPeriod").value}   Date: ${new Date().toLocaleDateString()}`,
+    `Stars: ${G.stars}/12   Badge: ${badge(G.stars).replace(/^\S+ /, "")}`,
+    "",
+    ...G.log.map((l, i) => `${i + 1}. ${l.name}: prediction ${l.predOk ? "✓" : "✗"} ("${l.pred}"), explanation ${l.explOk ? "✓" : "✗"}`),
+    "",
+    "NEWTON'S 1ST LAW IN MY OWN WORDS:",
+    $("reflect").value || "(not answered)"
+  ].join("\n");
+};
+$("copyBtn").onclick = e => { if (!$("results").value) $("compileBtn").click(); copyResults("results", e.target); };
+</script>
+</body>
+</html>
