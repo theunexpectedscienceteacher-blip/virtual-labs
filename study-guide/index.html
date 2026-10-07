@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DBA Study Guide</title>
+<style>
+:root{--ink:#153047;--muted:#516273;--line:#c9d6df;--bg:#f3f7fa;--gold:#f4b942;--teal:#287c8e}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);line-height:1.3}
+.top{background:var(--ink);color:#fff;padding:14px clamp(16px,4vw,40px);border-bottom:6px solid var(--gold)}
+.top a{color:var(--gold);font-weight:700;text-decoration:none}
+.top .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.top button{font:inherit;font-weight:700;background:var(--gold);border:0;border-radius:8px;padding:9px 14px;cursor:pointer}
+.sheet{max-width:8.5in;margin:16px auto 40px;background:#fff;padding:.35in .4in;box-shadow:0 6px 20px rgba(21,48,71,.12);font-size:11.2px}
+h1{margin:0 0 2px;font-size:19px}
+.sub{color:var(--muted);margin:0 0 6px;font-size:10px}
+.name{border-bottom:1px solid #999;display:inline-block;min-width:2.2in}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px}
+.box{border:1.5px solid var(--ink);border-radius:6px;padding:5px 7px;break-inside:avoid}
+.box h2{margin:-5px -7px 4px;padding:3px 7px;background:var(--ink);color:#fff;font-size:11.5px;border-radius:4px 4px 0 0}
+.box h2 span{color:var(--gold);font-weight:400;font-size:10px}
+.box h3{margin:4px 0 1px;font-size:10.5px;color:var(--teal)}
+p,ul{margin:1px 0}
+ul{padding-left:14px}
+li{margin:0}
+.formula{display:inline-block;background:#fff5d6;border:1px solid var(--gold);border-radius:4px;padding:1px 6px;font-weight:700}
+.graphs{display:flex;gap:6px;margin:3px 0}
+.graphs figure{margin:0;text-align:center;font-size:9px;flex:1}
+.graphs svg{width:100%;height:46px;display:block}
+table{border-collapse:collapse;width:100%;font-size:10px;margin:2px 0}
+td,th{border:1px solid #9fb2c0;padding:2px 4px;text-align:left;vertical-align:top}
+th{background:#e6eef3}
+.full{grid-column:1/-1}
+.tip{background:#eef6f8;border-left:3px solid var(--teal);padding:2px 5px;margin-top:3px}
+@media (max-width:700px){.cols{grid-template-columns:1fr}.sheet{font-size:13px;padding:16px}}
+@media print{
+  @page{size:letter;margin:.3in}
+  body{background:#fff}
+  .top{display:none}
+  .sheet{box-shadow:none;margin:0;padding:0;max-width:none}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div class="top"><div class="row"><a href="../">&larr; All Labs</a><button onclick="window.print()">🖨️ Print (1 page)</button></div></div>
+<div class="sheet">
+  <h1>7th Grade Science DBA Study Guide</h1>
+  <p class="sub">Force &amp; Motion · Thermal Energy · Solutions &nbsp;&nbsp; Name: <span class="name"></span></p>
+  <div class="cols">
+
+    <div class="box">
+      <h2>Speed &amp; Velocity <span>7.7A, 7.7B</span></h2>
+      <p><span class="formula">average speed = total distance ÷ total time</span> &nbsp;units: m/s, km/h</p>
+      <p><b>Example:</b> 120 m in 20 s → 120 ÷ 20 = <b>6 m/s</b></p>
+      <p><b>Whole trip:</b> add ALL distance, add ALL time, then divide. Don't average the speeds!</p>
+      <h3>Speed vs. velocity</h3>
+      <ul>
+        <li><b>Velocity</b> = speed + direction (12 m/s <b>west</b>)</li>
+        <li>Same speed, new direction (turning) → velocity changes</li>
+        <li><b>Distance</b> = total path. <b>Displacement</b> = start to finish, with direction.<br>30 m east, then 10 m west → distance 40 m, displacement 20 m east</li>
+      </ul>
+    </div>
+
+    <div class="box">
+      <h2>Distance-Time Graphs <span>7.7C</span></h2>
+      <div class="graphs">
+        <figure><svg viewBox="0 0 60 46"><path d="M6 4V40H58" fill="none" stroke="#153047" stroke-width="1.5"/><path d="M8 26H56" stroke="#287c8e" stroke-width="3"/></svg>flat = stopped</figure>
+        <figure><svg viewBox="0 0 60 46"><path d="M6 4V40H58" fill="none" stroke="#153047" stroke-width="1.5"/><path d="M8 38L56 22" stroke="#287c8e" stroke-width="3"/></svg>gentle = slow</figure>
+        <figure><svg viewBox="0 0 60 46"><path d="M6 4V40H58" fill="none" stroke="#153047" stroke-width="1.5"/><path d="M8 38L40 6" stroke="#287c8e" stroke-width="3"/></svg>steep = fast</figure>
+        <figure><svg viewBox="0 0 60 46"><path d="M6 4V40H58" fill="none" stroke="#153047" stroke-width="1.5"/><path d="M8 38Q40 38 56 6" fill="none" stroke="#287c8e" stroke-width="3"/></svg>curving up = speeding up</figure>
+      </div>
+      <ul>
+        <li>Straight sloped line = <b>constant speed</b></li>
+        <li><b>Speed in a section</b> = distance change ÷ time change<br>(rose 20 m in 4 s → 5 m/s)</li>
+        <li>Time goes on the x-axis, distance on the y-axis</li>
+      </ul>
+    </div>
+
+    <div class="box">
+      <h2>Net Force &amp; Newton's 1st Law <span>7.7D</span></h2>
+      <ul>
+        <li>Same direction → <b>add</b>: 10 N right + 5 N right = 15 N right</li>
+        <li>Opposite directions → <b>subtract</b>, toward the bigger side: 30 N right, 25 N left → 5 N right</li>
+        <li>Net force <b>0 N = balanced</b> → motion does NOT change (stays at rest or keeps the same speed and direction)</li>
+        <li>Net force <b>not 0 = unbalanced</b> → motion changes (starts, stops, speeds up, slows down, turns)</li>
+      </ul>
+      <h3>Newton's 1st Law (Law of Inertia)</h3>
+      <p>An object at rest stays at rest, and an object in motion stays in motion at the same speed and direction, <b>unless an unbalanced force acts on it</b>.</p>
+      <ul><li><b>Inertia</b> = resisting changes in motion. <b>More mass = more inertia.</b></li><li>Seatbelt: the car stops, but your body keeps moving forward</li><li>Objects slow down because of <b>friction</b>, not because they "run out of force"</li></ul>
+    </div>
+
+    <div class="box">
+      <h2>Thermal Energy Transfer <span>7.8A</span></h2>
+      <table>
+        <tr><th>Type</th><th>How it moves</th><th>Examples</th></tr>
+        <tr><td><b>Conduction</b></td><td>direct <b>contact</b>, particle to particle</td><td>pan handle gets hot; hand on ice</td></tr>
+        <tr><td><b>Convection</b></td><td><b>currents</b> in liquids/gases: warm rises, cool sinks</td><td>boiling water; oven air; sea breeze</td></tr>
+        <tr><td><b>Radiation</b></td><td><b>waves</b>, no contact or matter needed</td><td>sunlight; campfire warmth; heat lamp</td></tr>
+      </table>
+      <ul>
+        <li><b>Conductors</b> (metals) transfer thermal energy quickly. <b>Insulators</b> (wood, plastic, air, foam) slow it down.</li>
+        <li>Convection: warm fluid is <b>less dense</b>, so it rises; cooler fluid sinks, making a loop called a <b>current</b>.</li>
+        <li>Radiation can travel through empty space (that's how the Sun warms Earth).</li>
+      </ul>
+    </div>
+
+    <div class="box">
+      <h2>Temperature &amp; Equilibrium <span>7.8B, 7.8C</span></h2>
+      <ul>
+        <li>Thermal energy always moves from <b>warmer → cooler</b> until both reach the <b>same temperature</b> (<b>thermal equilibrium</b>)</li>
+        <li>"Cold" does not move. Ice feels cold because <b>energy leaves your hand</b>.</li>
+        <li>70 °C spoon in 20 °C water → final temperature is <b>between</b> 20 and 70 °C</li>
+        <li><b>Temperature</b> = average <b>kinetic energy</b> (motion) of particles. Hotter = particles move <b>faster</b>.</li>
+      </ul>
+    </div>
+
+    <div class="box">
+      <h2>Solutions <span>7.6D</span></h2>
+      <ul>
+        <li><b>Solute</b> = what dissolves (salt, sugar). <b>Solvent</b> = what it dissolves in (water). Aqueous = in water.</li>
+        <li><b>Concentration</b> = how much solute in an amount of solvent. More solute OR less water → <b>more concentrated</b></li>
+        <li><b>Dilution</b> = adding more solvent (water). The solute amount stays the same → <b>less concentrated</b></li>
+        <li>Compare: 20 g in 100 mL is more concentrated than 20 g in 200 mL</li>
+      </ul>
+    </div>
+
+    <div class="box full">
+      <h2>Rate of Dissolution <span>7.6E</span></h2>
+      <div class="cols" style="gap:4px 14px">
+        <table>
+          <tr><th>Speeds it up</th><th>Why (particles)</th></tr>
+          <tr><td><b>Higher temperature</b></td><td>water particles move faster and hit the solute harder and more often</td></tr>
+          <tr><td><b>More surface area</b> (crushed)</td><td>more solute is exposed, so more water particles touch it at once</td></tr>
+          <tr><td><b>Agitation</b> (stirring)</td><td>brings fresh water to the solute and carries dissolved particles away</td></tr>
+        </table>
+        <div>
+          <p><b>Fair test:</b> change <b>ONE</b> variable (independent) and keep the others the same (controlled). Measure the time to dissolve (dependent).</p>
+          <p class="tip"><b>Shorter time = faster dissolving.</b> Fastest: hot water + crushed + stirred. Slowest: cold water + whole cube + no stirring.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
