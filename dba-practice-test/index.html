@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DBA Practice Test</title>
+<style>
+:root{--ink:#153047;--muted:#516273;--line:#c9d6df;--bg:#f3f7fa;--gold:#f4b942;--teal:#287c8e;--good:#1f7a4d;--goodbg:#e3f5ea;--bad:#b3261e;--badbg:#fdeceb;--warnbg:#fff5d6}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);line-height:1.4}
+header{background:var(--ink);color:#fff;padding:18px clamp(16px,4vw,48px);border-bottom:8px solid var(--gold)}
+header a{color:var(--gold);font-weight:700;text-decoration:none}
+header h1{margin:6px 0 4px;font-size:clamp(26px,4.5vw,40px);line-height:1.1}
+header p{margin:0;color:#d8eef4}
+main{max-width:1000px;margin:0 auto;padding:20px 16px 48px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin:0 0 16px;box-shadow:0 6px 20px rgba(21,48,71,.08)}
+h2{margin:0 0 10px}
+h3{margin:14px 0 8px}
+button{font:inherit;font-weight:700;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:10px;padding:10px 16px;cursor:pointer}
+button.primary{background:var(--ink);color:#fff}
+button.gold{background:var(--gold);border-color:#c98f12}
+button:disabled{opacity:.45;cursor:default}
+.big{font-size:1.15rem}
+.small{font-size:.9rem;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.hidden{display:none!important}
+.tag{display:inline-block;background:var(--warnbg);color:#7a5a00;font-size:13px;font-weight:700;padding:3px 8px;border-radius:6px;margin:2px 4px 2px 0}
+.seg{display:inline-flex;border:2px solid var(--ink);border-radius:10px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;border-radius:0;background:#fff}
+.seg button.on{background:var(--ink);color:#fff}
+.choice{display:block;width:100%;text-align:left;margin:8px 0;background:#eef4f8;border-color:transparent;font-weight:600}
+.choice:hover:not(:disabled){border-color:var(--teal)}
+.choice.good{background:var(--goodbg);border-color:var(--good);opacity:1}
+.choice.bad{background:var(--badbg);border-color:var(--bad);opacity:1}
+.choice.gone{visibility:hidden}
+.choice:disabled{cursor:default;opacity:.75}
+.fb{margin-top:12px;padding:12px 14px;border-radius:8px;border-left:5px solid var(--teal);background:#eef6f8}
+.fb.good{background:var(--goodbg);border-color:var(--good)}
+.fb.bad{background:var(--badbg);border-color:var(--bad)}
+.fb.hint{background:var(--warnbg);border-color:var(--gold)}
+canvas{width:100%;height:auto;display:block;border-radius:10px;background:#f7fbfd;border:1px solid var(--line)}
+.bar{height:12px;background:#e3eaf0;border-radius:6px;overflow:hidden}
+.bar>div{height:100%;width:0;background:var(--teal);transition:width .3s}
+input,select,textarea{font:inherit;padding:9px 10px;border:2px solid var(--line);border-radius:8px;color:var(--ink)}
+textarea{width:100%;min-height:90px}
+textarea.results{min-height:200px;font-family:"Courier New",monospace;font-size:.9rem}
+table{border-collapse:collapse;width:100%;margin:8px 0}
+th,td{border:1px solid var(--line);padding:8px;text-align:left}
+th{background:var(--ink);color:#fff}
+.stat{background:#eef4f8;border-radius:10px;padding:10px 14px;min-width:110px}
+.stat span{display:block;font-size:.8rem;color:var(--muted);font-weight:700;text-transform:uppercase}
+.stat strong{font-size:1.4rem}
+.pop{animation:pop .4s}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+.shake{animation:shake .45s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-7px)}80%{transform:translateX(7px)}}
+@media print{header a,.noprint,button{display:none!important}body{background:#fff}.card{box-shadow:none}}
+.palette{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.palette button{width:42px;height:38px;padding:0;border-radius:8px;font-size:.95rem;background:#eef4f8;border-color:transparent;position:relative}
+.palette button.ans{background:#d6e6ef;border-color:#8fb3c7}
+.palette button.cur{border-color:var(--ink);background:var(--ink);color:#fff}
+.palette button.flag::after{content:"🚩";position:absolute;top:-8px;right:-6px;font-size:.75rem}
+.palette button.right{background:var(--goodbg);border-color:var(--good)}
+.palette button.wrong{background:var(--badbg);border-color:var(--bad)}
+.qbody{font-size:1.08rem}
+.qbody .stem{margin:6px 0 12px;line-height:1.5}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;margin:8px 0;background:#f4f8fb;border:2px solid #d9e4ea;border-radius:10px;padding:10px 14px;font-weight:500;cursor:pointer}
+.opt:hover{border-color:var(--teal)}
+.opt.on{border-color:var(--ink);background:#e2ecf3}
+.opt .let{flex:0 0 28px;height:28px;border-radius:50%;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-weight:700}
+.opt.on .let{background:var(--ink);color:#fff}
+.opt.multi .let{border-radius:6px}
+.inline select{font-size:1rem;margin:0 4px;padding:4px 6px;border-color:var(--teal)}
+.dtable td,.dtable th{text-align:center}
+.dtable td:first-child{text-align:left}
+.dtable input{width:20px;height:20px}
+.datatable{width:auto;min-width:320px}
+.qcanvas{max-width:640px;margin:6px 0 12px}
+.rv{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:10px 0}
+.rv.ok{border-left:6px solid var(--good)}
+.rv.no{border-left:6px solid var(--bad)}
+.rv .small{margin-top:4px}
+@media(max-width:600px){#tekTable{font-size:.82rem}#tekTable th:nth-child(2),#tekTable td:nth-child(2){display:none}#tekTable td,#tekTable th{padding:6px}}
+@media(max-width:600px){.dtable{font-size:.8rem}.dtable td,.dtable th{padding:5px 3px}.datatable{min-width:0}.rv{padding:8px}}
+</style>
+</head>
+<body>
+<header>
+  <a href="../">&larr; All Labs</a>
+  <h1>📝 DBA Practice Test</h1>
+  <p>Test-style practice for Force &amp; Motion, Thermal Energy, and Solutions.</p>
+</header>
+<main>
+  <section id="intro" class="card">
+    <span class="tag">7.6D–E Solutions</span><span class="tag">7.7A–D Force &amp; Motion</span><span class="tag">7.8A–C Thermal Energy</span>
+    <h2>Before you begin</h2>
+    <ul class="big">
+      <li><b>24 questions</b>, mixed from all three units. They work like the real test: choose one, select two, type a number, drop-down sentences, and tables.</li>
+      <li><b>No hints and no right/wrong until you submit.</b> Take your time and read every word.</li>
+      <li>Use 🚩 <b>Flag</b> to mark questions you want to come back to. The 📐 <b>Reference</b> button shows the speed formula.</li>
+      <li>Your answers save on this device as you go. Each new test has different questions.</li>
+    </ul>
+    <div class="row" style="margin:12px 0">
+      <label>Your name <input id="sName" placeholder="First and last name"></label>
+      <label>Period <input id="sPeriod" style="width:80px"></label>
+    </div>
+    <div class="row"><button class="primary big" id="startBtn">✏️ Start new test</button><button class="big hidden" id="resumeBtn">↩ Resume my test</button></div>
+    <p class="small" id="lastLine"></p>
+  </section>
+
+  <section id="test" class="card hidden">
+    <div class="spread">
+      <strong id="qLabel"></strong>
+      <div class="row"><span class="small" id="timer"></span><button id="refBtn">📐 Reference</button><button id="flagBtn">🚩 Flag</button></div>
+    </div>
+    <div id="palette" class="palette"></div>
+    <div id="refBox" class="fb hidden"><b>Reference:</b> average speed = total distance ÷ total time &nbsp;·&nbsp; s = d ÷ t &nbsp;·&nbsp; 1 newton (N) = unit of force</div>
+    <div id="qBody" class="qbody"></div>
+    <div class="spread" style="margin-top:16px">
+      <button id="prevBtn">← Previous</button>
+      <span class="small" id="answeredLine"></span>
+      <button class="primary" id="nextBtn">Next →</button>
+    </div>
+  </section>
+
+  <section id="review" class="card hidden">
+    <h2>Review before you submit</h2>
+    <p id="reviewMsg" class="big"></p>
+    <div id="reviewList" class="palette"></div>
+    <div class="row" style="margin-top:14px"><button id="backBtn">← Back to test</button><button class="primary" id="submitBtn">✅ Submit test</button></div>
+    <p class="small" id="submitNote"></p>
+  </section>
+
+  <section id="results" class="card hidden">
+    <h2 id="resTitle"></h2>
+    <p class="big" id="resMsg"></p>
+    <table id="tekTable"></table>
+    <div id="practiceBox"></div>
+    <h3>Question-by-question review</h3>
+    <div id="reviewAll"></div>
+    <h3>Submit</h3>
+    <ol class="small"><li>Click <b>Make my results</b>.</li><li>Click <b>Copy</b>, then paste it into Schoology.</li></ol>
+    <div class="row noprint"><button class="primary" id="compileBtn">📄 Make my results</button><button id="copyBtn">📋 Copy my results</button><button id="newBtn">🔁 Take a new practice test</button></div>
+    <textarea id="resultsTxt" class="results" readonly placeholder="Your results will appear here." style="margin-top:8px"></textarea>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pickOne = a => a[Math.floor(Math.random() * a.length)];
+const uniq = a => [...new Set(a)];
+function loadStore(key) { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { return {}; } }
+function saveStore(key, d) { try { localStorage.setItem(key, JSON.stringify(d)); } catch (e) {} }
+
+/* Multiple choice: opts = array of strings (answer included). cb(ok, chosen) */
+function askMC(el, opts, answer, cb) {
+  el.innerHTML = ""; let done = false;
+  shuffle(uniq(opts)).forEach(o => {
+    const b = document.createElement("button"); b.className = "choice"; b.textContent = o;
+    b.onclick = () => {
+      if (done) return; done = true; const ok = o === answer;
+      b.classList.add(ok ? "good" : "bad");
+      if (!ok) [...el.children].find(c => c.textContent === answer).classList.add("good");
+      [...el.children].forEach(c => c.disabled = true);
+      cb(ok, o);
+    };
+    el.appendChild(b);
+  });
+}
+function fiftyFifty(el, answer) {
+  const wrong = [...el.querySelectorAll(".choice")].filter(c => c.textContent !== answer && !c.classList.contains("gone"));
+  shuffle(wrong).slice(0, Math.min(2, wrong.length - 1)).forEach(c => c.classList.add("gone"));
+}
+function feedback(el, cls, html) { el.className = "fb " + cls; el.innerHTML = html; el.classList.remove("hidden"); }
+function copyResults(taId, btn) {
+  const ta = $(taId); ta.focus(); ta.select();
+  let ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+  if (navigator.clipboard) navigator.clipboard.writeText(ta.value).catch(() => {});
+  const old = btn.textContent; btn.textContent = "✓ Copied! Now paste it in Schoology"; setTimeout(() => btn.textContent = old, 2500);
+}
+function bump(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+/* ---- canvas helpers ---- */
+function fitCanvas(c) { return c.getContext("2d"); }
+function arrow(ctx, x1, y1, x2, y2, color, w, label, labelPos) {
+  const ang = Math.atan2(y2 - y1, x2 - x1), hl = Math.max(12, w * 2.6);
+  ctx.save(); ctx.strokeStyle = ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(ang) * hl * .8, y2 - Math.sin(ang) * hl * .8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - hl * Math.cos(ang - .45), y2 - hl * Math.sin(ang - .45));
+  ctx.lineTo(x2 - hl * Math.cos(ang + .45), y2 - hl * Math.sin(ang + .45)); ctx.closePath(); ctx.fill();
+  if (label) {
+    ctx.font = "bold 20px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    let lx = (x1 + x2) / 2, ly = (y1 + y2) / 2;
+    if (labelPos) { lx += labelPos[0]; ly += labelPos[1]; } else if (Math.abs(y2 - y1) < 2) ly -= 20; else lx += 34;
+    const tw = ctx.measureText(label).width + 12;
+    ctx.fillStyle = "rgba(255,255,255,.92)"; ctx.fillRect(lx - tw / 2, ly - 13, tw, 26);
+    ctx.fillStyle = color; ctx.fillText(label, lx, ly);
+  }
+  ctx.restore();
+}
+function emoji(ctx, e, x, y, size, flip) { ctx.save(); if (flip) { ctx.translate(x, 0); ctx.scale(-1, 1); x = 0; } ctx.font = size + "px 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(e, x, y); ctx.restore(); }
+function rrect(ctx, x, y, w, h, r, fill, stroke) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); } }
+
+/* Force diagram: forces = [{dir:'left'|'right'|'up'|'down', n:Number}] ; offset = box shift along motion */
+function drawForceDiagram(ctx, W, H, forces, offset, opts) {
+  opts = opts || {};
+  ctx.clearRect(0, 0, W, H);
+  const vertical = forces.some(f => f.dir === "up" || f.dir === "down");
+  const bw = 120, bh = 90;
+  let cx = W / 2, by;
+  if (vertical) {
+    by = (H - bh) / 2 + (offset || 0);
+    ctx.fillStyle = "#eaf3fb"; ctx.fillRect(0, 0, W, H);
+  } else {
+    cx += offset || 0;
+    const gy = H - 60; by = gy - bh;
+    ctx.fillStyle = "#dfe8ee"; ctx.fillRect(0, gy, W, H - gy);
+    ctx.strokeStyle = "#8aa0b0"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+  }
+  const cy = by + bh / 2;
+  rrect(ctx, cx - bw / 2, by, bw, bh, 8, "#c8955c", "#7a5530");
+  ctx.strokeStyle = "#a7763f"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx - bw / 2 + 8, by + bh - 22); ctx.lineTo(cx + bw / 2 - 8, by + bh - 22); ctx.stroke();
+  ctx.fillStyle = "#4a3115"; ctx.font = "bold 20px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(opts.label || "BOX", cx, by + 34);
+  const colors = { left: "#1f5fa8", right: "#c0392b", up: "#1f7a4d", down: "#7b3fa0" };
+  const len = n => 40 + Math.min(n, 120) * 1.6;
+  ["left", "right", "up", "down"].forEach(dir => {
+    const fs = forces.filter(f => f.dir === dir), m = fs.length;
+    fs.forEach((f, k) => {
+      const off = m === 1 ? 0 : (k - (m - 1) / 2) * 40, L = len(f.n), c = colors[dir], lab = f.n + " N";
+      if (dir === "right") arrow(ctx, cx + bw / 2 + 4, cy + off, cx + bw / 2 + 4 + L, cy + off, c, 8, lab, [L / 2 - (L / 2) + 0, m > 1 ? (off < 0 ? -20 : 20) : -22]);
+      if (dir === "left") arrow(ctx, cx - bw / 2 - 4, cy + off, cx - bw / 2 - 4 - L, cy + off, c, 8, lab, [0, m > 1 ? (off < 0 ? -20 : 20) : -22]);
+      if (dir === "up") arrow(ctx, cx + off, by - 4, cx + off, Math.max(8, by - 4 - L), c, 8, lab, [48, 0]);
+      if (dir === "down") arrow(ctx, cx + off, by + bh + 4, cx + off, Math.min(H - 8, by + bh + 4 + L), c, 8, lab, [48, 0]);
+    });
+  });
+}
+/* net of forces -> {n, dir} */
+function netForce(forces) {
+  let x = 0, y = 0;
+  forces.forEach(f => { if (f.dir === "right") x += f.n; if (f.dir === "left") x -= f.n; if (f.dir === "up") y += f.n; if (f.dir === "down") y -= f.n; });
+  if (x !== 0) return { n: Math.abs(x), dir: x > 0 ? "right" : "left", axis: "x", s: x };
+  if (y !== 0) return { n: Math.abs(y), dir: y > 0 ? "up" : "down", axis: "y", s: y };
+  return { n: 0, dir: "none", axis: forces.some(f => f.dir === "up" || f.dir === "down") ? "y" : "x", s: 0 };
+}
+const netLabel = r => r.n === 0 ? "0 N (balanced)" : `${r.n} N ${r.dir}`;
+/* generate a force problem. level: 'basic'|'challenge' */
+function makeForceProblem(level, kind) {
+  kind = kind || pickOne(level === "challenge" ? ["opp", "opp", "bal", "same", "three", "three", "vert"] : ["opp", "opp", "bal", "same", "vert"]);
+  const h = Math.random() < .5 ? ["left", "right"] : ["right", "left"];
+  let f;
+  if (kind === "opp") { const a = rint(2, 9) * 5, b = a + rint(1, 6) * (Math.random() < .5 ? 1 : 2); f = [{ dir: h[0], n: a }, { dir: h[1], n: b }]; }
+  else if (kind === "bal") { const a = rint(2, 12) * 5; f = [{ dir: "left", n: a }, { dir: "right", n: a }]; }
+  else if (kind === "same") { const a = rint(2, 8) * 5, b = rint(1, 6) * 5; f = [{ dir: h[0], n: a }, { dir: h[0], n: b }]; }
+  else if (kind === "three") { const a = rint(1, 6) * 5, b = rint(1, 6) * 5, c = rint(2, 12) * 5; f = [{ dir: h[0], n: a }, { dir: h[0], n: b }, { dir: h[1], n: c }]; }
+  else { const w = rint(3, 10) * 10, up = Math.random() < .3 ? w : w + rint(-2, 3) * 10 || w + 10; f = [{ dir: "down", n: w }, { dir: "up", n: Math.max(10, up) }]; }
+  const r = netForce(f);
+  const tot = f.reduce((s, x) => s + x.n, 0);
+  const opp = r.dir === "left" ? "right" : r.dir === "right" ? "left" : r.dir === "up" ? "down" : r.dir === "down" ? "up" : (r.axis === "y" ? "up" : "right");
+  const distract = [netLabel(r), r.n ? `${r.n} N ${opp}` : `${f[0].n} N ${f[0].dir}`, `${tot} N ${r.dir === "none" ? (r.axis === "y" ? "up" : "right") : r.dir}`, r.n ? "0 N (balanced)" : `${tot} N ${r.axis === "y" ? "down" : "left"}`];
+  const extra = [`${Math.abs(f[0].n - (f[1] ? f[1].n : 0)) + 5} N ${r.dir === "none" ? "right" : r.dir}`, `${r.n + 10} N ${r.dir === "none" ? "left" : r.dir}`];
+  let opts = uniq(distract); for (const e of extra) if (opts.length < 4 && !opts.includes(e)) opts.push(e);
+  return { forces: f, net: r, answer: netLabel(r), opts: opts.slice(0, 4), kind };
+}
+function forceExplain(p) {
+  const f = p.forces, r = p.net;
+  const sums = {}; f.forEach(x => sums[x.dir] = (sums[x.dir] || 0) + x.n);
+  const parts = Object.entries(sums).map(([d, n]) => `${n} N ${d}` + (f.filter(x => x.dir === d).length > 1 ? ` (${f.filter(x => x.dir === d).map(x => x.n).join(" + ")})` : ""));
+  if (r.n === 0) return `The forces are equal and opposite (${parts.join(" vs ")}), so they cancel: net force = 0 N. The forces are <b>balanced</b>, so the motion does not change.`;
+  if (parts.length === 1) return `Both forces point the same way, so you <b>add</b> them: ${f.map(x => x.n).join(" + ")} = ${r.n} N ${r.dir}. The forces are <b>unbalanced</b>.`;
+  return `Opposite forces: <b>subtract</b> the smaller total from the larger. ${parts.join(" vs ")} → ${r.n} N toward the ${r.dir === "up" || r.dir === "down" ? r.dir + "ward" : r.dir} (the bigger side). The forces are <b>unbalanced</b>, so the motion changes in that direction.`;
+}
+
+const KEY = "dbaPracticeTest_v1";
+const st = loadStore(KEY);
+$("sName").value = st.name || ""; $("sPeriod").value = st.period || "";
+["sName", "sPeriod"].forEach(id => $(id).addEventListener("input", () => { st.name = $("sName").value; st.period = $("sPeriod").value; saveStore(KEY, st); }));
+
+/* ---------- seeded random ---------- */
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function makeR(seed) { const f = mulberry32(seed); const R = { f, int: (a, b) => a + Math.floor(f() * (b - a + 1)), pick: arr => arr[Math.floor(f() * arr.length)], shuffle: arr => { arr = arr.slice(); for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(f() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; } }; return R; }
+const r2 = n => Math.round(n * 100) / 100;
+
+/* ---------- drawing helpers ---------- */
+function dtAxes(ctx, W, H, tMax, dMax, tStep, dStep, xl, yl) {
+  const L = 70, R = W - 20, T = 16, B = H - 50, X = t => L + (R - L) * t / tMax, Y = d => B - (B - T) * d / dMax;
+  ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = "#e1e8ee"; ctx.lineWidth = 1; ctx.fillStyle = "#516273"; ctx.font = "13px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+  for (let t = 0; t <= tMax; t += tStep) { ctx.beginPath(); ctx.moveTo(X(t), T); ctx.lineTo(X(t), B); ctx.stroke(); ctx.fillText(t, X(t), B + 5); }
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  for (let d = 0; d <= dMax; d += dStep) { ctx.beginPath(); ctx.moveTo(L, Y(d)); ctx.lineTo(R, Y(d)); ctx.stroke(); ctx.fillText(d, L - 6, Y(d)); }
+  ctx.strokeStyle = "#153047"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, B); ctx.lineTo(R, B); ctx.stroke();
+  ctx.fillStyle = "#153047"; ctx.font = "bold 13px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic"; ctx.fillText(xl, (L + R) / 2, H - 8);
+  ctx.save(); ctx.translate(18, (T + B) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(yl, 0, 0); ctx.restore();
+  return { X, Y };
+}
+function polyline(ctx, pts, X, Y, color, w) { ctx.strokeStyle = color; ctx.lineWidth = w; ctx.lineJoin = "round"; ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(X(a), Y(b)) : ctx.moveTo(X(a), Y(b))); ctx.stroke(); }
+function segGraph(speeds, labels = true) {
+  return (ctx, W, H) => {
+    const pts = [[0, 0]]; speeds.forEach((s, i) => pts.push([5 * (i + 1), pts[i][1] + 5 * s]));
+    const { X, Y } = dtAxes(ctx, W, H, 20, 40, 5, 5, "Time (s)", "Distance (m)");
+    polyline(ctx, pts, X, Y, "#287c8e", 4);
+    if (labels) ["1", "2", "3", "4"].forEach((l, i) => { const x = X(i * 5 + 2.5), y = Y((pts[i][1] + pts[i + 1][1]) / 2) - 20; ctx.fillStyle = "#f4b942"; ctx.beginPath(); ctx.arc(x, y, 13, 0, 7); ctx.fill(); ctx.fillStyle = "#153047"; ctx.font = "bold 14px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(l, x, y); });
+  };
+}
+function segSpeeds(R) { let s; do { s = [0, 1, 2, 3].map(() => R.int(0, 4)); } while (s.filter(x => x === 0).length !== 1 || s.reduce((a, b) => a + b, 0) > 8 || new Set(s).size < 3); return s; }
+const WORD = { 0: "stops", 1: "walks slowly", 2: "jogs", 3: "runs", 4: "sprints" };
+function forceGen(R) {
+  const kind = R.pick(["opp", "opp", "bal", "same", "vert"]), h = R.f() < .5 ? ["left", "right"] : ["right", "left"];
+  let f;
+  if (kind === "opp") { const a = R.int(2, 9) * 5, b = a + R.int(1, 5) * 5; f = [{ dir: h[0], n: a }, { dir: h[1], n: b }]; }
+  else if (kind === "bal") { const a = R.int(3, 12) * 5; f = [{ dir: "left", n: a }, { dir: "right", n: a }]; }
+  else if (kind === "same") { const a = R.int(2, 8) * 5, b = R.int(1, 5) * 5; f = [{ dir: h[0], n: a }, { dir: h[0], n: b }]; }
+  else { const w = R.int(4, 10) * 10, u = w + R.pick([-20, -10, 10, 20]); f = [{ dir: "down", n: w }, { dir: "up", n: u }]; }
+  return f;
+}
+
+/* ---------- item bank ---------- */
+const MC = (t, stem, a, w, why, extra) => Object.assign({ t, type: "mc", stem, a, opts: [a, ...w], why }, extra || {});
+const BANK = {
+  "7.6D": [
+    R => { const [so, sv, nm] = R.pick([["salt", "water", "salt water"], ["sugar", "water", "sugar water"], ["drink mix powder", "water", "a fruit drink"]]);
+      return MC("7.6D", `A student stirs ${so} into ${sv} until it completely dissolves, making ${nm}. Which choice correctly identifies the solute and the solvent?`, `Solute: ${so}; Solvent: ${sv}`, [`Solute: ${sv}; Solvent: ${so}`, `Solute: ${nm}; Solvent: ${so}`, `Solute: ${so}; Solvent: ${nm}`], `The <b>solute</b> is the substance that dissolves (${so}). The <b>solvent</b> does the dissolving (${sv}).`); },
+    R => { const combos = R.shuffle([[10, 100], [10, 200], [20, 100], [15, 250], [5, 100], [30, 300], [25, 500]]).slice(0, 4); const conc = combos.map(([g, m]) => g / m); const mx = Math.max(...conc);
+      if (conc.filter(c => c === mx).length > 1) combos[0] = [40, 100];
+      const c2 = combos.map(([g, m]) => g / m), best = c2.indexOf(Math.max(...c2)), L = "ABCD";
+      return MC("7.6D", `Four students each made a sugar solution.<table class="datatable"><tr><th>Beaker</th><th>Sugar (g)</th><th>Water (mL)</th></tr>${combos.map(([g, m], i) => `<tr><td>${L[i]}</td><td>${g}</td><td>${m}</td></tr>`).join("")}</table>Which beaker has the <b>most concentrated</b> solution?`, `Beaker ${L[best]}`, [0, 1, 2, 3].filter(i => i !== best).map(i => `Beaker ${L[i]}`), `Concentration compares solute to solvent. Beaker ${L[best]} has the most sugar for each mL of water (${combos[best][0]} g in ${combos[best][1]} mL).`); },
+    R => MC("7.6D", "A student adds 200 mL of water to a glass of lemonade. Which statement best describes what happens?", "The lemonade becomes less concentrated, but the amount of drink mix stays the same.", ["The lemonade becomes more concentrated.", "The amount of drink mix in the glass decreases.", "The water becomes the solute."], "Adding solvent is <b>dilution</b>. The same amount of solute is spread through more water, so the solution is <b>less concentrated</b>."),
+    R => ({ t: "7.6D", type: "multi", n: 2, stem: "Which <b>TWO</b> actions would make a salt-water solution <b>more concentrated</b>?", a: ["Dissolve more salt in it", "Let some of the water evaporate"], opts: ["Dissolve more salt in it", "Let some of the water evaporate", "Add more water", "Stir it for a longer time", "Pour half of it into another cup"], why: "More solute, or less solvent, means more solute per amount of water. Stirring and pouring some out don't change the concentration." })
+  ],
+  "7.6E": [
+    R => { const f = R.pick(["temp", "sa", "ag"]);
+      const rows = f === "temp" ? [["Water temperature", ["10 °C", "25 °C", "50 °C"]], "Sugar dissolves faster in warmer water."] : f === "sa" ? [["Form of sugar", ["Whole cube", "Broken pieces", "Crushed"]], "Sugar with more surface area dissolves faster."] : [["Stirring", ["None", "Gentle swirling", "Constant stirring"]], "Sugar dissolves faster when the water is stirred more."];
+      const base = R.int(110, 140), times = [base, Math.round(base * .7), Math.round(base * .45)];
+      return MC("7.6E", `A student measured how long a sugar sample took to dissolve in 200 mL of water.<table class="datatable"><tr><th>${rows[0][0]}</th><th>Time to dissolve (s)</th></tr>${rows[0][1].map((v, i) => `<tr><td>${v}</td><td>${times[i]}</td></tr>`).join("")}</table>Which conclusion is best supported by the data?`, rows[1], [f === "temp" ? "Sugar dissolves slower in warmer water." : f === "sa" ? "A whole cube dissolves fastest because it is largest." : "Stirring slows down dissolving.", "The variable tested had no effect on dissolving.", f === "temp" ? "Crushing the sugar made it dissolve faster." : "Hot water made the sugar dissolve faster."], `The times get <b>shorter</b> down the table, so dissolving got <b>faster</b>. The last distractor names a variable that wasn't tested.`); },
+    R => { const f = R.pick([["temperature", "the form of the sugar (whole or crushed)", "how much the water is stirred", "the temperature of the water"], ["surface area", "the temperature of the water", "how much the water is stirred", "the form of the sugar (whole or crushed)"], ["stirring", "the temperature of the water", "the form of the sugar (whole or crushed)", "how much the water is stirred"]]);
+      return { t: "7.6E", type: "multi", n: 2, stem: `A student wants to test how <b>${f[0]}</b> affects how fast sugar dissolves. Which <b>TWO</b> variables should be kept the same in every trial?`, a: [f[1], f[2]], opts: [f[1], f[2], f[3], "the time it takes the sugar to dissolve", "which beaker finishes first"], why: `In a fair test only the variable being tested (${f[0]}) changes. The time to dissolve is the <b>dependent</b> variable that gets measured, so it is not kept the same.` }; },
+    R => MC("7.6E", "Why does crushed sugar dissolve faster than a sugar cube of the same mass?", "More surface area is exposed, so more water particles can contact the sugar at once.", ["Crushed sugar is a different substance than a sugar cube.", "Crushing the sugar makes the water hotter.", "Crushed sugar has more mass than the cube."], "Crushing increases <b>surface area</b>. More sugar touches the water at the same time, so it dissolves faster."),
+    R => ({ t: "7.6E", type: "inline", stem: "Sugar dissolves faster in hot water than in cold water because the hot water particles move {0} and collide with the sugar {1} often.", sel: [["faster", "slower"], ["more", "less"]], a: ["faster", "more"], why: "Higher temperature means particles move <b>faster</b> and hit the solute <b>more</b> often, pulling sugar particles away quicker." })
+  ],
+  "7.7A": [
+    R => { const s = R.pick([0.5, 1, 1.5, 2, 2.5, 3, 3.5]), t = R.int(4, 12), d = r2(s * t);
+      return { t: "7.7A", type: "num", stem: `A toy car rolls ${d} m in ${t} s. What is its average speed? Type your answer in meters per second.`, a: s, unit: "m/s", tol: .01, why: `Speed = distance ÷ time = ${d} ÷ ${t} = <b>${s} m/s</b>.` }; },
+    R => { const names = ["Runner 1", "Runner 2", "Runner 3"]; let rows, sp; do { rows = names.map(() => [R.int(4, 10) * 20, R.int(4, 12) * 5]); sp = rows.map(([d, t]) => d / t); } while (new Set(sp.map(x => x.toFixed(3))).size < 3); const bi = sp.indexOf(Math.max(...sp));
+      return MC("7.7A", `The table shows data from three runners.<table class="datatable"><tr><th>Runner</th><th>Distance (m)</th><th>Time (s)</th></tr>${rows.map(([d, t], i) => `<tr><td>${names[i]}</td><td>${d}</td><td>${t}</td></tr>`).join("")}</table>Which runner had the greatest average speed?`, names[bi], [...names.filter((_, i) => i !== bi), "They all had the same speed"], `Divide distance by time: ${rows.map(([d, t], i) => `${names[i]} = ${r2(d / t)} m/s`).join(", ")}. The biggest is ${names[bi]}. The longest distance isn't automatically the fastest!`); },
+    R => { let t1, t2, s1, s2, avg, k = 0; do { t1 = R.pick([20, 30, 40, 50]); t2 = R.pick([10, 20, 30]); s1 = R.int(1, 4); s2 = R.int(5, 9); avg = (s1 * t1 + s2 * t2) / (t1 + t2); k++; } while ((avg % 1 !== 0 || avg === (s1 + s2) / 2) && k < 500); const d1 = s1 * t1, d2 = s2 * t2;
+      return { t: "7.7A", type: "num", stem: `A cyclist rides ${d1} m in ${t1} s, then rides ${d2} m in ${t2} s. What is the cyclist's average speed for the whole trip, in m/s?`, a: avg, unit: "m/s", tol: .01, why: `Total distance ÷ total time = ${d1 + d2} m ÷ ${t1 + t2} s = <b>${avg} m/s</b>. Don't average the two speeds.` }; },
+    R => ({ t: "7.7A", type: "multi", n: 2, stem: "A student wants to calculate the average speed of a toy car. Which <b>TWO</b> measurements does the student need?", a: ["The distance the car travels", "The time the car takes"], opts: ["The distance the car travels", "The time the car takes", "The mass of the car", "The height of the table", "The color of the car"], why: "Average speed = distance ÷ time, so you need <b>distance</b> and <b>time</b>." })
+  ],
+  "7.7B": [
+    R => { const L = R.pick([200, 400]); return MC("7.7B", `A runner completes one full lap around a ${L} m track and stops exactly where she started. What is her displacement?`, "0 m", [`${L} m`, `${L / 2} m`, `${L * 2} m`], `Displacement is the straight-line distance from start to finish. She ended where she started, so displacement = <b>0 m</b> (her distance was ${L} m).`); },
+    R => { const a = R.int(3, 9) * 10, b = R.int(1, a / 10 - 1) * 10; return MC("7.7B", `A student walks ${a} m east and then ${b} m west. Which correctly describes the distance and displacement?`, `Distance: ${a + b} m; Displacement: ${a - b} m east`, [`Distance: ${a - b} m; Displacement: ${a + b} m east`, `Distance: ${a + b} m; Displacement: ${a + b} m east`, `Distance: ${a + b} m; Displacement: ${a - b} m west`], `Distance adds every step: ${a} + ${b} = ${a + b} m. Displacement is where you end up from the start: ${a} − ${b} = ${a - b} m <b>east</b>.`); },
+    R => ({ t: "7.7B", type: "inline", stem: "A car drives around a circular track at a steady 15 m/s. Its {0} stays the same, but its {1} keeps changing because its {2} keeps changing.", sel: [["speed", "velocity"], ["velocity", "speed"], ["direction", "mass"]], a: ["speed", "velocity", "direction"], why: "Speed has no direction, so it stays 15 m/s. <b>Velocity</b> includes direction, and on a curve the direction changes constantly." }),
+    R => { const n = R.int(5, 30), d = R.pick(["north", "south", "east", "west"]); return MC("7.7B", "Which measurement describes a <b>velocity</b>?", `${n} m/s ${d}`, [`${n} m/s`, `${n} m ${d}`, `${n} s`], `Velocity needs a speed (m/s) <b>and</b> a direction.`); }
+  ],
+  "7.7C": [
+    R => { const s = segSpeeds(R), L = "1234"[s.indexOf(0)]; return MC("7.7C", "The distance-time graph shows a student's walk. During which segment was the student <b>not moving</b>?", `Segment ${L}`, ["1", "2", "3", "4"].filter(x => x !== L).map(x => `Segment ${x}`), `Segment ${L} is flat. The time changes but the distance does not, so the student was stopped.`, { draw: segGraph(s) }); },
+    R => { const s = segSpeeds(R), i = s.findIndex(v => v > 0), L = "1234"[i]; return { t: "7.7C", type: "num", stem: `Use the graph. What was the student's speed during segment ${L}, in m/s?`, a: s[i], unit: "m/s", tol: .01, draw: segGraph(s), why: `In segment ${L} the distance rises ${s[i] * 5} m over 5 s: ${s[i] * 5} ÷ 5 = <b>${s[i]} m/s</b>.` }; },
+    R => { const s = segSpeeds(R), story = x => x.map(v => WORD[v]).join(", then "); const alts = [[...s].reverse(), [s[1], s[0], s[2], s[3]], [s[0], s[1], s[3], s[2]], [s[2], s[1], s[0], s[3]]].filter(x => x.join() !== s.join()); const uniqAlts = []; alts.forEach(x => { if (!uniqAlts.some(y => y.join() === x.join())) uniqAlts.push(x); }); while (uniqAlts.length < 3) uniqAlts.push(s.map(v => v === 0 ? 2 : v === 2 ? 0 : v));
+      return MC("7.7C", "Which description matches the distance-time graph? (Each segment lasts 5 seconds.)", "The student " + story(s) + ".", uniqAlts.slice(0, 3).map(x => "The student " + story(x) + "."), "Flat = stops. Gentle slope = walks or jogs. Steep slope = runs or sprints. Read the segments left to right.", { draw: segGraph(s, false) }); },
+    R => { let s; do { s = segSpeeds(R); } while (s.filter(v => v === Math.max(...s)).length > 1); const i = s.indexOf(Math.max(...s)), rng = t => `${t * 5}–${t * 5 + 5} s`;
+      return MC("7.7C", "Between which times was the student moving the <b>fastest</b>?", rng(i), [0, 1, 2, 3].filter(k => k !== i).map(rng), `The steepest part of the graph is from ${rng(i)}, where the student covered ${s[i] * 5} m in 5 s.`, { draw: segGraph(s, false) }); }
+  ],
+  "7.7D": [
+    R => { const pool = R.shuffle([["A book resting on a shelf", 0], ["A car speeding up as a light turns green", 1], ["An elevator moving up at a constant speed", 0], ["A soccer ball slowing down as it rolls on grass", 1], ["A lamp hanging still from the ceiling", 0], ["A bike turning a corner", 1], ["A hockey puck sliding at a constant velocity on smooth ice", 0], ["A skateboarder starting to roll after a push", 1]]); let rows = pool.slice(0, 4); if (rows.every(x => x[1] === rows[0][1])) rows[3] = pool.find(x => x[1] !== rows[0][1]);
+      return { t: "7.7D", type: "table", stem: "Decide whether the forces on each object are <b>balanced</b> or <b>unbalanced</b>.", rows: rows.map(x => x[0]), cols: ["Balanced", "Unbalanced"], a: rows.map(x => x[1]), why: "If the motion is <b>changing</b> (starting, speeding up, slowing down, turning), the forces are unbalanced. At rest or at a constant velocity in a straight line means the forces are balanced." }; },
+    R => { const f = forceGen(R), r = netForce(f), lab = netLabel(r), tot = f.reduce((a, b) => a + b.n, 0); const opp = { left: "right", right: "left", up: "down", down: "up" }; const vert = r.axis === "y";
+      const w = uniq([r.n ? `${r.n} N ${opp[r.dir]}` : `${f[0].n} N ${f[0].dir}`, `${tot} N ${r.n ? r.dir : (vert ? "up" : "right")}`, r.n ? "0 N (balanced)" : `${tot} N ${vert ? "down" : "left"}`, `${r.n + 10} N ${r.n ? r.dir : "left"}`]).filter(x => x !== lab).slice(0, 3);
+      return MC("7.7D", vert ? "A crate hangs from a rope. The diagram shows the forces on it. What is the net force on the crate?" : "The diagram shows the forces acting on a box. What is the net force on the box?", lab, w, forceExplain({ forces: f, net: r }), { draw: (ctx, W, H) => drawForceDiagram(ctx, W, H, f, 0, { label: vert ? "CRATE" : "BOX" }) }); },
+    R => R.pick([
+      MC("7.7D", "A school bus stops suddenly, and the standing students lurch forward. Which statement best explains this?", "The students' inertia keeps them moving forward when the bus stops.", ["The bus pushes the students forward.", "Gravity pulls the students forward.", "The students have no inertia while the bus is moving."], "The students were moving with the bus. Their <b>inertia</b> keeps them moving forward until an unbalanced force (like holding a pole) stops them."),
+      MC("7.7D", "A tablecloth is yanked quickly from under a set of dishes, and the dishes stay on the table. Which statement best explains this?", "The dishes were at rest and tended to stay at rest because of their inertia.", ["The tablecloth pushed the dishes backward.", "Gravity stopped working on the dishes.", "The dishes had no mass."], "Objects at rest tend to stay at rest (<b>inertia</b>). The fast pull didn't give friction enough time to move the dishes.")
+    ]),
+    R => ({ t: "7.7D", type: "multi", n: 2, stem: "Which <b>TWO</b> statements agree with Newton's First Law of Motion?", a: ["An object at rest stays at rest unless an unbalanced force acts on it.", "An object moving at a constant velocity keeps moving that way unless an unbalanced force acts on it."], opts: ["An object at rest stays at rest unless an unbalanced force acts on it.", "An object moving at a constant velocity keeps moving that way unless an unbalanced force acts on it.", "A moving object always slows down and stops on its own.", "Balanced forces make an object speed up.", "Objects with more mass have less inertia."], why: "Newton's First Law: motion changes only when an <b>unbalanced</b> force acts. Objects slow down because of friction, and more mass means <b>more</b> inertia." }),
+    R => { const m = R.shuffle([2, 5, 12, 20]); const mx = Math.max(...m); return MC("7.7D", `Four identical carts are loaded with different masses: ${m.map((x, i) => `Cart ${"ABCD"[i]}: ${x} kg`).join(", ")}. Which cart has the <b>most inertia</b>?`, `Cart ${"ABCD"[m.indexOf(mx)]}`, [0, 1, 2, 3].filter(i => m[i] !== mx).map(i => `Cart ${"ABCD"[i]}`), "Inertia depends on <b>mass</b>. The cart with the most mass resists changes in motion the most."); }
+  ],
+  "7.8A": [
+    R => { const pool = R.shuffle([["A metal spoon gets hot in a cup of hot cocoa", 0], ["Your hand warms up holding a mug of tea", 0], ["Ice melts in your hand", 0], ["Hot air rises from a heater and cool air sinks", 1], ["Water circulates in a pot on the stove", 1], ["A sea breeze blows toward land on a sunny day", 1], ["Sunlight warms a sidewalk", 2], ["You feel the warmth of a campfire from a few feet away", 2], ["A heat lamp keeps food warm", 2]]); const rows = [pool.find(x => x[1] === 0), pool.find(x => x[1] === 1), pool.find(x => x[1] === 2)]; rows.push(pool.find(x => !rows.includes(x))); const rr = R.shuffle(rows);
+      return { t: "7.8A", type: "table", stem: "Identify the main type of thermal energy transfer in each example.", rows: rr.map(x => x[0]), cols: ["Conduction", "Convection", "Radiation"], a: rr.map(x => x[1]), why: "<b>Conduction</b> = direct contact. <b>Convection</b> = currents in liquids or gases. <b>Radiation</b> = waves, no contact needed." }; },
+    R => MC("7.8A", "A student holds a marshmallow above a campfire without letting it touch the flames, and it turns golden brown. How did most of the thermal energy reach the marshmallow?", "Radiation", ["Conduction", "Convection", "Evaporation"], "The marshmallow isn't touching anything hot, and energy travels from the fire as <b>radiation</b>. (Some hot air rising by convection helps, but radiation is the main way.)"),
+    R => MC("7.8A", "A pot of water is heated on a stove. Which statement best describes how the water heats up?", "Warm water near the bottom becomes less dense and rises while cooler water sinks, forming a current.", ["Warm water sinks to the bottom because it is heavier.", "Cold moves from the water into the pot.", "The water heats only by radiation from the light in the room."], "This is <b>convection</b>: heated fluid is less dense and rises, and cooler fluid sinks to be heated, making a convection current."),
+    R => { const yes = R.shuffle(["A metal pan handle gets hot on the stove", "A hand warms up while holding a hot mug", "An ice cube melts while sitting on a warm plate"]).slice(0, 2); const no = R.shuffle(["The Sun warms a car seat through the window", "Warm air rises above a heater", "A campfire warms your face from far away"]).slice(0, 3);
+      return { t: "7.8A", type: "multi", n: 2, stem: "Which <b>TWO</b> are examples of <b>conduction</b>?", a: yes, opts: [...yes, ...no], why: "Conduction needs <b>direct contact</b> between objects. The others are radiation (Sun, campfire) or convection (rising air)." }; }
+  ],
+  "7.8B": [
+    R => { const T1 = R.int(7, 9) * 10, T2 = R.pick([15, 20, 25]); return MC("7.8B", `A ${T1} °C metal block is placed in a container of ${T2} °C water. What happens next?`, "Thermal energy moves from the block to the water until they reach the same temperature.", ["Thermal energy moves from the water to the block until the block is cooler.", "Cold moves from the water into the block.", `The block stays at ${T1} °C and the water heats up to ${T1} °C.`], `Thermal energy flows from <b>warmer to cooler</b> until <b>thermal equilibrium</b>, where both end at a temperature between ${T2} and ${T1} °C.`); },
+    R => { const hot = R.int(70, 90), cold = R.int(10, 25), eq = Math.round((hot + cold) / 2), m = R.pick([8, 10, 12]);
+      return MC("7.8B", `A hot metal can and a cup of cool water are placed in contact. The graph shows their temperatures over time. What is happening after ${m} minutes, when the two lines meet?`, "The objects have reached thermal equilibrium, so there is no more net transfer of thermal energy.", ["The cool water is now hotter than the can.", "Thermal energy is moving from the water to the can faster than before.", "Both objects have lost all of their thermal energy."], `When both temperatures are equal (about ${eq} °C) the objects are at <b>thermal equilibrium</b>. Energy no longer flows from one to the other.`,
+        { draw: (ctx, W, H) => { const { X, Y } = dtAxes(ctx, W, H, 16, 100, 2, 10, "Time (min)", "Temperature (°C)"); const h = [], c = []; for (let t = 0; t <= 16; t += .5) { const k = t >= m ? 1 : 1 - Math.pow(1 - t / m, 2); h.push([t, hot - (hot - eq) * k]); c.push([t, cold + (eq - cold) * k]); } polyline(ctx, h, X, Y, "#c0392b", 4); polyline(ctx, c, X, Y, "#1f5fa8", 4); ctx.font = "bold 13px Arial"; ctx.textAlign = "left"; ctx.fillStyle = "#c0392b"; ctx.fillText("metal can", X(.4), Y(hot) - 10); ctx.fillStyle = "#1f5fa8"; ctx.fillText("water", X(.4), Y(cold) + 18); } }); },
+    R => ({ t: "7.8B", type: "inline", stem: "When a student holds an ice cube, thermal energy moves from the {0} to the {1}. The student's hand feels cold because the hand is {2} thermal energy.", sel: [["hand", "ice"], ["ice", "hand"], ["losing", "gaining"]], a: ["hand", "ice", "losing"], why: "Energy flows from warmer (hand) to cooler (ice). \"Cold\" doesn't move. Your hand feels cold because it is <b>losing</b> thermal energy." })
+  ],
+  "7.8C": [
+    R => { const a = R.int(70, 90), b = R.int(10, 25); return MC("7.8C", `Beaker A holds water at ${a} °C and Beaker B holds the same amount of water at ${b} °C. Which statement is correct?`, "The particles in Beaker A have more kinetic energy and move faster.", ["The particles in Beaker B have more kinetic energy and move faster.", "The particles in both beakers move at the same speed.", "The particles in Beaker A have stopped moving."], "Higher temperature = greater average <b>kinetic energy</b> = particles moving <b>faster</b>."); },
+    R => MC("7.8C", "As the temperature of a substance increases, what happens to the average kinetic energy of its particles?", "It increases.", ["It decreases.", "It stays the same.", "It drops to zero."], "Temperature is a measure of the average <b>kinetic energy</b> of the particles. Raising the temperature means the particles move faster."),
+    R => MC("7.8C", "The liquid in a thermometer rises when the thermometer is placed in hot water. Which statement best explains why?", "The liquid's particles gain kinetic energy, move faster, and spread farther apart.", ["The liquid's particles lose kinetic energy and slow down.", "Cold leaves the thermometer and enters the water.", "The number of particles in the liquid increases."], "Hot water transfers thermal energy to the liquid. Its particles move <b>faster</b> and spread out, so the liquid expands up the tube.")
+  ]
+};
+const PLAN = { "7.6D": 2, "7.6E": 3, "7.7A": 3, "7.7B": 2, "7.7C": 3, "7.7D": 4, "7.8A": 3, "7.8B": 2, "7.8C": 2 };
+const SKILL = {
+  "7.6D": ["Solutions: solute, solvent, concentration, dilution", [["Dissolution Lab", "dissolution/"], ["Vocab Vault", "vocab-review/"]]],
+  "7.6E": ["Rate of dissolution: temperature, surface area, agitation", [["Dissolution Lab", "dissolution/"]]],
+  "7.7A": ["Calculating average speed", [["DBA Boss Battle", "dba-boss-battle/"], ["Rescue Run", "rescue-run/"]]],
+  "7.7B": ["Speed vs. velocity; distance vs. displacement", [["DBA Boss Battle", "dba-boss-battle/"]]],
+  "7.7C": ["Distance-time graphs", [["Graph Lab", "graph-lab/"]]],
+  "7.7D": ["Balanced/unbalanced forces & Newton's 1st Law", [["Force Detective", "force-detective/"], ["Inertia Arcade", "inertia-arcade/"]]],
+  "7.8A": ["Conduction, convection, radiation", [["CCR Challenge", "ccr-challenge/"], ["Marshmallow Meltdown", "https://theunexpectedscienceteacher-blip.github.io/marshmallow-virtual-lab/"]]],
+  "7.8B": ["Thermal energy flow & thermal equilibrium", [["Marshmallow Meltdown", "https://theunexpectedscienceteacher-blip.github.io/marshmallow-virtual-lab/"], ["Study Guide", "study-guide/"]]],
+  "7.8C": ["Temperature & particle kinetic energy", [["Vocab Vault", "vocab-review/"], ["Study Guide", "study-guide/"]]]
+};
+function buildTest(seed) {
+  const R = makeR(seed), items = [];
+  Object.entries(PLAN).forEach(([t, k]) => R.shuffle(BANK[t].map((_, i) => i)).slice(0, k).forEach(i => items.push(BANK[t][i](R))));
+  const order = R.shuffle(items);
+  order.forEach(it => { if (it.type === "mc" || it.type === "multi") it.opts = R.shuffle(it.opts); });
+  return order;
+}
+
+/* ---------- state ---------- */
+let S = st.cur || null, ITEMS = null, tick = null;
+if (S && !S.submitted) $("resumeBtn").classList.remove("hidden");
+if (st.history && st.history.length) { const h = st.history[st.history.length - 1]; $("lastLine").textContent = `Your last practice test: ${h.score}/${h.of} (${h.pct}%) on ${h.date}.`; }
+function save() { st.cur = S; saveStore(KEY, st); }
+$("startBtn").onclick = () => { S = { seed: Math.floor(Math.random() * 1e9), ans: {}, flags: [], i: 0, start: Date.now(), submitted: false }; save(); openTest(); };
+$("resumeBtn").onclick = openTest;
+$("newBtn").onclick = () => { $("results").classList.add("hidden"); $("intro").classList.remove("hidden"); $("resumeBtn").classList.add("hidden"); window.scrollTo(0, 0); };
+function openTest() {
+  ITEMS = buildTest(S.seed);
+  ["intro", "review", "results"].forEach(id => $(id).classList.add("hidden")); $("test").classList.remove("hidden");
+  if (tick) clearInterval(tick); tick = setInterval(updTimer, 1000); updTimer();
+  show(S.i || 0);
+}
+function updTimer() { const s = Math.floor((Date.now() - S.start) / 1000); $("timer").textContent = `⏱ ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; }
+function isAnswered(i) { const it = ITEMS[i], a = S.ans[i]; if (a == null) return false; if (it.type === "multi") return a.length === it.n; if (it.type === "num") return String(a).trim() !== ""; if (it.type === "inline") return a.every(x => x); if (it.type === "table") return a.every(x => x != null); return true; }
+function renderPalette(el, onClick, mode) {
+  el.innerHTML = ""; ITEMS.forEach((it, i) => { const b = document.createElement("button"); b.textContent = i + 1;
+    if (mode === "result") b.classList.add(isCorrect(i) ? "right" : "wrong"); else { if (isAnswered(i)) b.classList.add("ans"); if (i === S.i && mode !== "review") b.classList.add("cur"); }
+    if (S.flags.includes(i)) b.classList.add("flag"); b.onclick = () => onClick(i); el.appendChild(b); });
+}
+function show(i) {
+  S.i = i; save(); const it = ITEMS[i];
+  $("qLabel").textContent = `Question ${i + 1} of ${ITEMS.length}`;
+  $("flagBtn").textContent = S.flags.includes(i) ? "🚩 Unflag" : "🚩 Flag";
+  $("prevBtn").disabled = i === 0; $("nextBtn").textContent = i === ITEMS.length - 1 ? "Review & submit →" : "Next →";
+  renderPalette($("palette"), j => show(j));
+  $("answeredLine").textContent = `${ITEMS.filter((_, k) => isAnswered(k)).length} of ${ITEMS.length} answered`;
+  const body = $("qBody"); body.innerHTML = "";
+  renderItem(body, it, i, false);
+}
+function renderItem(body, it, i, readOnly) {
+  const stem = document.createElement("div"); stem.className = "stem";
+  if (it.type === "inline") {
+    let html = it.stem; it.sel.forEach((opts, k) => { html = html.replace(`{${k}}`, `<select data-k="${k}" ${readOnly ? "disabled" : ""}><option value="">choose…</option>${opts.map(o => `<option>${o}</option>`).join("")}</select>`); });
+    stem.className = "stem inline"; stem.innerHTML = html;
+  } else stem.innerHTML = it.stem;
+  body.appendChild(stem);
+  if (it.draw) { const c = document.createElement("canvas"); c.width = 640; c.height = 300; c.className = "qcanvas"; body.insertBefore(c, stem.nextSibling); it.draw(c.getContext("2d"), 640, 300); }
+  const a = S.ans[i];
+  if (it.type === "mc" || it.type === "multi") {
+    if (it.type === "multi") { const p = document.createElement("p"); p.className = "small"; p.innerHTML = `<b>Select ${it.n === 2 ? "TWO" : it.n} answers.</b>`; body.appendChild(p); }
+    it.opts.forEach((o, k) => { const b = document.createElement("button"); b.className = "opt" + (it.type === "multi" ? " multi" : ""); b.innerHTML = `<span class="let">${"ABCDE"[k]}</span><span>${o}</span>`;
+      const on = it.type === "multi" ? (a || []).includes(o) : a === o; if (on) b.classList.add("on");
+      if (!readOnly) b.onclick = () => { if (it.type === "mc") S.ans[i] = o; else { let cur = (S.ans[i] || []).slice(); if (cur.includes(o)) cur = cur.filter(x => x !== o); else { if (cur.length >= it.n) cur.shift(); cur.push(o); } S.ans[i] = cur; } save(); show(i); };
+      else b.disabled = true;
+      body.appendChild(b); });
+  } else if (it.type === "num") {
+    const row = document.createElement("div"); row.className = "row"; row.innerHTML = `<label>Answer: <input type="number" step="any" inputmode="decimal" style="width:140px" ${readOnly ? "disabled" : ""}> ${it.unit}</label>`; body.appendChild(row);
+    const inp = row.querySelector("input"); inp.value = a != null ? a : ""; if (!readOnly) inp.oninput = () => { S.ans[i] = inp.value; save(); $("answeredLine").textContent = `${ITEMS.filter((_, k) => isAnswered(k)).length} of ${ITEMS.length} answered`; renderPalette($("palette"), j => show(j)); };
+  } else if (it.type === "inline") {
+    stem.querySelectorAll("select").forEach(s => { const k = Number(s.dataset.k); if (a && a[k]) s.value = a[k]; if (!readOnly) s.onchange = () => { const cur = (S.ans[i] || it.sel.map(() => "")).slice(); cur[k] = s.value; S.ans[i] = cur; save(); renderPalette($("palette"), j => show(j)); $("answeredLine").textContent = `${ITEMS.filter((_, q) => isAnswered(q)).length} of ${ITEMS.length} answered`; }; });
+  } else if (it.type === "table") {
+    const t = document.createElement("table"); t.className = "dtable"; t.innerHTML = `<tr><th></th>${it.cols.map(c => `<th>${c}</th>`).join("")}</tr>` + it.rows.map((r, ri) => `<tr><td>${r}</td>${it.cols.map((c, ci) => `<td><input type="radio" name="q${i}r${ri}${readOnly ? "x" : ""}" value="${ci}" ${a && a[ri] === ci ? "checked" : ""} ${readOnly ? "disabled" : ""} aria-label="${r}: ${c}"></td>`).join("")}</tr>`).join("");
+    body.appendChild(t);
+    if (!readOnly) t.querySelectorAll("input").forEach(inp => inp.onchange = () => { const ri = Number(inp.name.split("r")[1]); const cur = (S.ans[i] || it.rows.map(() => null)).slice(); cur[ri] = Number(inp.value); S.ans[i] = cur; save(); renderPalette($("palette"), j => show(j)); $("answeredLine").textContent = `${ITEMS.filter((_, q) => isAnswered(q)).length} of ${ITEMS.length} answered`; });
+  }
+}
+$("prevBtn").onclick = () => { if (S.i > 0) { show(S.i - 1); window.scrollTo(0, 0); } };
+$("nextBtn").onclick = () => { if (S.i < ITEMS.length - 1) { show(S.i + 1); window.scrollTo(0, 0); } else openReview(); };
+$("flagBtn").onclick = () => { const i = S.i; S.flags = S.flags.includes(i) ? S.flags.filter(x => x !== i) : [...S.flags, i]; save(); show(i); };
+$("refBtn").onclick = () => $("refBox").classList.toggle("hidden");
+
+let confirmArm = false;
+function openReview() {
+  $("test").classList.add("hidden"); $("review").classList.remove("hidden"); confirmArm = false; $("submitBtn").textContent = "✅ Submit test"; $("submitNote").textContent = "";
+  const un = ITEMS.map((_, i) => i).filter(i => !isAnswered(i)), fl = S.flags;
+  $("reviewMsg").innerHTML = (un.length ? `⚠️ You have <b>${un.length} unanswered</b> question${un.length > 1 ? "s" : ""}: ${un.map(i => i + 1).join(", ")}.` : "✅ Every question is answered.") + (fl.length ? `<br>🚩 Flagged: ${fl.map(i => i + 1).join(", ")}.` : "") + "<br><span class='small'>Click a number to go back to that question.</span>";
+  renderPalette($("reviewList"), i => { $("review").classList.add("hidden"); $("test").classList.remove("hidden"); show(i); }, "review");
+  window.scrollTo(0, 0);
+}
+$("backBtn").onclick = () => { $("review").classList.add("hidden"); $("test").classList.remove("hidden"); show(S.i); };
+$("submitBtn").onclick = () => {
+  const un = ITEMS.filter((_, i) => !isAnswered(i)).length;
+  if (!confirmArm) { confirmArm = true; $("submitBtn").textContent = "✅ Yes, submit my test"; $("submitNote").textContent = un ? `Are you sure? ${un} question${un > 1 ? "s are" : " is"} still blank and will be marked wrong. Click again to submit.` : "Click again to confirm. You can't change answers after submitting."; return; }
+  finish();
+};
+
+/* ---------- scoring ---------- */
+function isCorrect(i) {
+  const it = ITEMS[i], a = S.ans[i]; if (!isAnswered(i)) return false;
+  if (it.type === "mc") return a === it.a;
+  if (it.type === "multi") return a.length === it.a.length && it.a.every(x => a.includes(x));
+  if (it.type === "num") return Math.abs(Number(a) - it.a) <= (it.tol || .001);
+  if (it.type === "inline") return it.a.every((x, k) => a[k] === x);
+  if (it.type === "table") return it.a.every((x, k) => a[k] === x);
+}
+function fmtAns(it, a) {
+  if (a == null || (Array.isArray(a) && !a.some(x => x != null && x !== ""))) return "(no answer)";
+  if (it.type === "multi") return a.join(" | ");
+  if (it.type === "num") return `${a} ${it.unit}`;
+  if (it.type === "inline") return a.map(x => x || "—").join(" / ");
+  if (it.type === "table") return it.rows.map((r, k) => `${r} → ${a[k] == null ? "—" : it.cols[a[k]]}`).join("; ");
+  return a;
+}
+function fmtKey(it) { if (it.type === "num") return `${it.a} ${it.unit}`; if (it.type === "table") return fmtAns(it, it.a); if (it.type === "multi") return it.a.join(" | "); if (it.type === "inline") return it.a.join(" / "); return it.a; }
+function finish() {
+  if (tick) clearInterval(tick);
+  S.submitted = true; S.end = Date.now();
+  const score = ITEMS.filter((_, i) => isCorrect(i)).length, pct = Math.round(score / ITEMS.length * 100);
+  const byT = {}; ITEMS.forEach((it, i) => { byT[it.t] = byT[it.t] || { r: 0, n: 0 }; byT[it.t].n++; if (isCorrect(i)) byT[it.t].r++; });
+  S.result = { score, pct, byT };
+  st.history = st.history || []; st.history.push({ score, of: ITEMS.length, pct, date: new Date().toLocaleDateString() }); save();
+  $("review").classList.add("hidden"); $("results").classList.remove("hidden");
+  const mins = Math.round((S.end - S.start) / 60000);
+  $("resTitle").textContent = pct >= 80 ? "🏆 On track for the DBA!" : pct >= 60 ? "⚔️ Almost there!" : "📚 Time to review";
+  $("resMsg").innerHTML = `You scored <b>${score} / ${ITEMS.length} (${pct}%)</b> in about ${mins} minute${mins === 1 ? "" : "s"}. ` + (pct >= 80 ? "Look over anything you missed, then try another practice test." : "Use the practice links below for your lowest skills, then take a new practice test.");
+  $("tekTable").innerHTML = "<tr><th>TEKS</th><th>Skill</th><th>Correct</th><th>Practice</th></tr>" + Object.keys(PLAN).map(t => { const b = byT[t] || { r: 0, n: 0 }, ok = b.r === b.n; return `<tr><td>${t}</td><td>${SKILL[t][0]}</td><td>${ok ? "✅" : b.r / b.n >= .5 ? "🟡" : "🔴"} ${b.r}/${b.n}</td><td>${SKILL[t][1].map(([n, u]) => `<a href="${u.startsWith("http") ? u : "../" + u}" target="_blank">${n}</a>`).join(" · ")}</td></tr>`; }).join("");
+  const weak = Object.keys(PLAN).filter(t => byT[t] && byT[t].r / byT[t].n < .67);
+  $("practiceBox").innerHTML = weak.length ? `<div class="fb hint"><b>🎯 Focus on these before the DBA:</b> ${weak.map(t => `${t} (${SKILL[t][0]})`).join("; ")}.</div>` : `<div class="fb good"><b>Strong across every skill!</b> Keep it fresh with one more practice test before the DBA.</div>`;
+  const rv = $("reviewAll"); rv.innerHTML = "";
+  ITEMS.forEach((it, i) => { const ok = isCorrect(i), d = document.createElement("div"); d.className = "rv " + (ok ? "ok" : "no");
+    d.innerHTML = `<b>${i + 1}. ${ok ? "✅" : "❌"}</b> <span class="small">${it.t}</span>`; const inner = document.createElement("div"); renderItem(inner, it, i, true); d.appendChild(inner);
+    const info = document.createElement("div"); info.innerHTML = `<p class="small"><b>Your answer:</b> ${fmtAns(it, S.ans[i])}</p>${ok ? "" : `<p class="small"><b>Correct answer:</b> ${fmtKey(it)}</p>`}<div class="fb ${ok ? "good" : "bad"}">${it.why}</div>`; d.appendChild(info); rv.appendChild(d); });
+  window.scrollTo(0, 0);
+}
+$("compileBtn").onclick = () => {
+  if (!S || !S.result) return; const { score, pct, byT } = S.result;
+  $("resultsTxt").value = [
+    "DBA PRACTICE TEST RESULTS",
+    `Name: ${$("sName").value}   Period: ${$("sPeriod").value}   Date: ${new Date().toLocaleDateString()}`,
+    `Score: ${score}/${ITEMS.length} (${pct}%)   Time: about ${Math.round((S.end - S.start) / 60000)} min`,
+    "",
+    "BY TEKS:",
+    ...Object.keys(PLAN).map(t => `${t} ${SKILL[t][0]}: ${(byT[t] || { r: 0 }).r}/${(byT[t] || { n: 0 }).n}`),
+    "",
+    "MISSED QUESTIONS: " + (ITEMS.map((_, i) => i).filter(i => !isCorrect(i)).map(i => `#${i + 1} (${ITEMS[i].t})`).join(", ") || "none!"),
+    "",
+    "PRACTICE TEST HISTORY: " + (st.history || []).map(h => `${h.date} ${h.pct}%`).join(", ")
+  ].join("\n");
+};
+$("copyBtn").onclick = e => { $("compileBtn").click(); copyResults("resultsTxt", e.target); };
+</script>
+</body>
+</html>
