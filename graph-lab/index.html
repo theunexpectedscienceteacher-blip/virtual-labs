@@ -76,9 +76,9 @@ th{background:var(--ink);color:#fff}
 
   <section id="matcher" class="card">
     <h2>🏃 Station 1: Motion Matcher</h2>
-    <p>Press <b>Start</b>, then change the runner's speed so the <b style="color:#287c8e">teal line</b> follows the <b style="color:#c98f12">gold dashed target</b>. A steeper line means faster, and a flat line means stopped. You can also press keys <b>1–4</b>.</p>
+    <p>Press <b>Start</b>, then change the runner's speed so the <b style="color:#287c8e">teal line</b> follows the <b style="color:#c98f12">gold dashed target</b>. A steeper line means faster, a flat line means stopped, and a line going <b>down</b> means heading back toward the start. You can also press keys <b>1–5</b>.</p>
     <div class="row" style="margin-bottom:8px">
-      <label>Challenge: <select id="mChal"><option value="0">Target 1</option><option value="1">Target 2</option><option value="2">Target 3</option><option value="r">🎲 Random target</option><option value="f">Free play (no target)</option></select></label>
+      <label>Challenge: <select id="mChal"><option value="0">Target 1</option><option value="1">Target 2</option><option value="2">Target 3</option><option value="3">Target 4 (comes back!)</option><option value="r">🎲 Random target</option><option value="f">Free play (no target)</option></select></label>
       <button class="primary" id="mGo">▶ Start</button>
     </div>
     <canvas id="mCv" width="800" height="440"></canvas>
@@ -87,6 +87,7 @@ th{background:var(--ink);color:#fff}
       <button data-s="1">2 🚶 Walk<br><small>1 m/s</small></button>
       <button data-s="2">3 🏃 Jog<br><small>2 m/s</small></button>
       <button data-s="4">4 ⚡ Sprint<br><small>4 m/s</small></button>
+      <button data-s="-2">5 ◀ Back<br><small>2 m/s toward start</small></button>
     </div>
     <div id="mFb" class="fb hidden"></div>
     <p class="small" id="mBest"></p>
@@ -94,7 +95,7 @@ th{background:var(--ink);color:#fff}
 
   <section id="builder" class="card hidden">
     <h2>✏️ Station 2: Graph Builder</h2>
-    <p class="big" id="bStory"></p>
+    <div class="big" id="bStory" style="margin:10px 0"></div>
     <p class="small">Click on the graph to place a point at <b>5 s, 10 s, 15 s, and 20 s</b>. The point at 0 s is already placed. Click again in the same column to move a point. Points snap to the nearest 5 m.</p>
     <canvas id="bCv" width="800" height="400"></canvas>
     <div class="row" style="margin-top:10px"><button class="primary" id="bCheck">✔ Check my graph</button><button id="bPlay">▶ Play my graph</button><button id="bClear">Clear points</button><button class="hidden" id="bNext">Next story →</button></div>
@@ -272,7 +273,7 @@ function axes(ctx, B, tMax, dMax, tStep, dStep, small) {
   if (!small) {
     ctx.fillStyle = "#153047"; ctx.font = "bold 14px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
     ctx.fillText("Time (s)", B.x + B.w / 2, B.y + B.h + 36);
-    ctx.save(); ctx.translate(B.x - 44, B.y + B.h / 2); ctx.rotate(-Math.PI / 2); ctx.fillText("Distance (m)", 0, 0); ctx.restore();
+    ctx.save(); ctx.translate(B.x - 44, B.y + B.h / 2); ctx.rotate(-Math.PI / 2); ctx.fillText("Distance from start (m)", 0, 0); ctx.restore();
   }
   return { X, Y };
 }
@@ -284,12 +285,12 @@ function track(ctx, x0, x1, y, dMax, d, speed) {
   ctx.fillStyle = "#516273"; ctx.font = "11px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "top";
   for (let m = 0; m <= dMax; m += 5) { const x = x0 + (x1 - x0) * m / dMax; ctx.fillRect(x - 1, y + 8, 2, 6); ctx.fillText(m + " m", x, y + 15); }
   const x = x0 + (x1 - x0) * Math.min(d, dMax) / dMax;
-  emoji(ctx, speed === 0 ? "🧍" : speed <= 1 ? "🚶" : "🏃", x, y - 22, 40, speed > 0);
+  emoji(ctx, speed === 0 ? "🧍" : Math.abs(speed) <= 1 ? "🚶" : "🏃", x, y - 22, 40, speed > 0);
 }
 
 /* ================= STATION 1: MOTION MATCHER ================= */
 const mc = $("mCv"), mx = mc.getContext("2d"), MB = { x: 70, y: 110, w: 700, h: 270 };
-const TARGETS = [[2, 2, 0, 4], [1, 4, 0, 1], [4, 0, 2, 1]];
+const TARGETS = [[2, 2, 0, 4], [1, 4, 0, 1], [4, 0, 2, 1], [2, 4, 0, -2]];
 let Mm = { running: false, countdown: 0, speed: 0, t: 0, d: 0, path: [[0, 0]], target: TARGETS[0], err: 0, n: 0, key: "0" };
 function tgtD(t) { if (!Mm.target) return null; let d = 0; for (let i = 0; i < 4; i++) { const a = i * 5; if (t <= a) break; d += Mm.target[i] * Math.min(5, t - a); } return d; }
 function drawMatcher() {
@@ -304,11 +305,11 @@ function drawMatcher() {
 }
 function setSpeed(s) { Mm.speed = s; document.querySelectorAll("#speedBtns button").forEach(b => b.classList.toggle("primary", Number(b.dataset.s) === s)); }
 document.querySelectorAll("#speedBtns button").forEach(b => b.onclick = () => setSpeed(Number(b.dataset.s)));
-document.addEventListener("keydown", e => { if ($("matcher").classList.contains("hidden") || e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return; const m = { "1": 0, "2": 1, "3": 2, "4": 4 }[e.key]; if (m != null) setSpeed(m); });
+document.addEventListener("keydown", e => { if ($("matcher").classList.contains("hidden") || e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return; const m = { "1": 0, "2": 1, "3": 2, "4": 4, "5": -2 }[e.key]; if (m != null) setSpeed(m); });
 function pickTarget() {
   const v = $("mChal").value; Mm.key = v;
   if (v === "f") return null;
-  if (v === "r") { let s; do { s = [0, 1, 2, 3].map(() => pickOne([0, 1, 2, 4])); } while (s.reduce((a, b) => a + b, 0) * 5 > 40 || s.every(x => x === s[0]) || !s.some(x => x > 0)); return s; }
+  if (v === "r") { let s, ok; do { s = [0, 1, 2, 3].map(() => pickOne([0, 1, 2, 4, -2])); let d = 0; ok = !s.every(x => x === s[0]) && s[0] > 0; s.forEach(x => { d += 5 * x; if (d < 0 || d > 40) ok = false; }); } while (!ok); return s; }
   return TARGETS[Number(v)];
 }
 $("mChal").onchange = () => { if (!Mm.running) { Mm.target = pickTarget(); Mm.t = 0; Mm.d = 0; Mm.path = [[0, 0]]; drawMatcher(); $("mFb").classList.add("hidden"); } };
@@ -321,7 +322,7 @@ $("mGo").onclick = () => {
     const dt = Math.min(.1, (now - last) / 1000); last = now;
     if (Mm.countdown > 0) { Mm.countdown -= dt; if (Mm.countdown <= 0) { Mm.countdown = 0; Mm.running = true; } }
     else if (Mm.running) {
-      Mm.t = Math.min(20, Mm.t + dt); Mm.d = Math.min(40, Mm.d + Mm.speed * dt); Mm.path.push([Mm.t, Mm.d]);
+      Mm.t = Math.min(20, Mm.t + dt); Mm.d = Math.max(0, Math.min(40, Mm.d + Mm.speed * dt)); Mm.path.push([Mm.t, Mm.d]);
       const td = tgtD(Mm.t); if (td != null) { Mm.err += Math.abs(Mm.d - td); Mm.n++; }
       if (Mm.t >= 20) { Mm.running = false; drawMatcher(); finishMatcher(); return; }
     }
@@ -338,8 +339,8 @@ function finishMatcher() {
   const name = Mm.key === "r" ? "Random" : `Target ${Number(Mm.key) + 1}`;
   if (Mm.key !== "r") { const k = name; if (!st.matcher[k] || score > st.matcher[k]) st.matcher[k] = score; } else { if (!st.matcher.Random || score > st.matcher.Random) st.matcher.Random = score; }
   saveStore(KEY, st); showBest();
-  const rows = Mm.target.map((s, i) => `<tr><td>${i * 5}–${i * 5 + 5} s</td><td>${s} m/s ${s === 0 ? "(flat line)" : ""}</td><td>${blocks[i].toFixed(1)} m/s</td></tr>`).join("");
-  feedback($("mFb"), score >= 75 ? "good" : "bad", `🏁 <b>Match score: ${score}%</b> ${stars}<br>${score >= 90 ? "Amazing match!" : score >= 75 ? "Nice! Try for 90%+." : "Tip: watch the slope of the gold line. Steeper means pick a faster speed, and flat means Stop. Switch speeds right at 5, 10 and 15 s."}<table><tr><th>Time</th><th>Target speed (slope)</th><th>Your speed</th></tr>${rows}</table>`);
+  const rows = Mm.target.map((s, i) => `<tr><td>${i * 5}–${i * 5 + 5} s</td><td>${s < 0 ? `${-s} m/s back toward start (line slopes down)` : `${s} m/s ${s === 0 ? "(flat line)" : ""}`}</td><td>${blocks[i] < -0.05 ? `${(-blocks[i]).toFixed(1)} m/s back` : `${blocks[i].toFixed(1)} m/s`}</td></tr>`).join("");
+  feedback($("mFb"), score >= 75 ? "good" : "bad", `🏁 <b>Match score: ${score}%</b> ${stars}<br>${score >= 90 ? "Amazing match!" : score >= 75 ? "Nice! Try for 90%+." : "Tip: watch the slope of the gold line. Steeper means pick a faster speed, flat means Stop, and a line going down means go Back toward the start. Switch speeds right at 5, 10 and 15 s."}<table><tr><th>Time</th><th>Target speed (slope)</th><th>Your speed</th></tr>${rows}</table>`);
 }
 function showBest() { const e = Object.entries(st.matcher); $("mBest").textContent = e.length ? "Best scores: " + e.map(([k, v]) => `${k} ${v}%`).join(" · ") : ""; }
 Mm.target = TARGETS[0]; drawMatcher(); showBest();
@@ -350,17 +351,21 @@ const NAMES = ["Maya", "Leo", "Ava", "Diego", "Zoe", "Mateo", "Lily", "Jayden"];
 const STOPS = ["stops to tie a shoe", "waits at a crosswalk", "stops to talk to a friend", "stops for a water break"];
 function segText(s, first) {
   if (s === 0) return `${pickOne(STOPS)} for 5 seconds`;
+  if (s < 0) return Math.random() < .5 ? `turns around and walks back toward the start at ${-s} m/s for 5 seconds` : `heads back ${-s * 5} m toward the start in 5 seconds`;
   const verb = { 1: "walks", 2: "jogs", 3: "runs", 4: "sprints" }[s];
   return Math.random() < .5 ? `${verb} at ${s} m/s for 5 seconds` : `${verb} ${s * 5} m in 5 seconds`;
 }
 function makeStory() {
-  let s; do { s = [0, 1, 2, 3].map(() => rint(0, 4)); } while (!s.includes(0) || new Set(s.filter(x => x)).size < 2 || s.reduce((a, b) => a + b, 0) > 8 || s[0] === 0);
+  let s, ok; const back = Bd.done === 2 || Math.random() < .3; do { s = [0, 1, 2, 3].map(() => rint(back ? -2 : 0, 4)); let d = 0; ok = s.includes(0) && new Set(s.filter(x => x)).size >= 2 && s[0] > 0 && (!back || s.filter(x => x < 0).length === 1) && (back || s.every(x => x >= 0)); s.forEach(x => { d += 5 * x; if (d < 0 || d > 40) ok = false; }); } while (!ok);
   const n = pickOne(NAMES), parts = s.map((v, i) => segText(v, i === 0));
   return { speeds: s, text: `${n} ${parts[0]}, then ${parts[1]}, then ${parts[2]}, and finally ${parts[3]}.`, name: n };
 }
 let Bd = { story: null, pts: [0, null, null, null, null], checks: 0, done: 0, firstTry: 0, playing: false, showAns: false };
-function newStory() { Bd.story = makeStory(); Bd.pts = [0, null, null, null, null]; Bd.checks = 0; Bd.showAns = false; Bd.marks = null; $("bStory").textContent = `📖 ${Bd.story.text}`; $("bFb").classList.add("hidden"); $("bNext").classList.add("hidden"); $("bCheck").disabled = false; drawBuilder(0, null); bProg(); }
-function bProg() { $("bProg").textContent = `Stories completed: ${Bd.done} / 3 · Correct on the first try: ${Bd.firstTry}`; }
+const B_TOTAL = 4;
+function newStory() { Bd.story = makeStory(); Bd.pts = [0, null, null, null, null]; Bd.checks = 0; Bd.showAns = false; Bd.marks = null;
+  if (Bd.done % 2 === 1) { const d = cumPts(Bd.story.speeds, 5).map(q => q[1]); Bd.story.name = "the toy car"; $("bStory").innerHTML = `📋 A student recorded a toy car's distance from the start line every 5 seconds. Graph the data.<table class="datatable" style="width:auto;margin-top:8px"><tr><th>Time (s)</th>${[0, 5, 10, 15, 20].map(t => `<td>${t}</td>`).join("")}</tr><tr><th>Distance from start (m)</th>${d.map(v => `<td>${v}</td>`).join("")}</tr></table>`; }
+  else $("bStory").textContent = `📖 ${Bd.story.text}`; $("bFb").classList.add("hidden"); $("bNext").classList.add("hidden"); $("bCheck").disabled = false; drawBuilder(0, null); bProg(); }
+function bProg() { $("bProg").textContent = `Graphs completed: ${Bd.done} / ${B_TOTAL} · Correct on the first try: ${Bd.firstTry}`; }
 function truth() { return cumPts(Bd.story.speeds, 5).map(p => p[1]); }
 function drawBuilder(walkD, walkT) {
   bx.clearRect(0, 0, 800, 400);
@@ -388,10 +393,10 @@ $("bCheck").onclick = () => {
     Bd.done++; if (Bd.checks === 1) Bd.firstTry++; $("bCheck").disabled = true;
     st.builder = { done: Bd.done, firstTry: Bd.firstTry }; saveStore(KEY, st); bProg();
     feedback($("bFb"), "good", `✅ <b>Perfect graph!</b> Press <b>▶ Play my graph</b> to watch ${Bd.story.name} move. Notice the flat part is where ${Bd.story.name} stopped.`);
-    if (Bd.done < 3) $("bNext").classList.remove("hidden"); else $("bFb").innerHTML += "<br>🎉 You finished all 3 stories! Go on to Station 3.";
+    if (Bd.done < B_TOTAL) $("bNext").classList.remove("hidden"); else $("bFb").innerHTML += `<br>🎉 You finished all ${B_TOTAL} graphs! Go on to Station 3.`;
   } else {
     const i = Bd.marks.findIndex((m, k) => k > 0 && !m), s = Bd.story.speeds[i - 1];
-    let hint = `Check the point at <b>${i * 5} s</b>. From ${(i - 1) * 5} to ${i * 5} s, ${Bd.story.name} ${s === 0 ? "was <b>stopped</b>, so the distance should stay the same (flat line)" : `moved at ${s} m/s, so the distance goes up by ${s} × 5 = <b>${s * 5} m</b>`}. Remember, each point is the <b>total</b> distance so far.`;
+    let hint = `Check the point at <b>${i * 5} s</b>. From ${(i - 1) * 5} to ${i * 5} s, ${Bd.story.name} ${s === 0 ? "was <b>stopped</b>, so the distance should stay the same (flat line)" : s < 0 ? `moved <b>back toward the start</b> at ${-s} m/s, so the distance goes <b>down</b> by ${-s} × 5 = <b>${-s * 5} m</b>` : `moved at ${s} m/s, so the distance goes up by ${s} × 5 = <b>${s * 5} m</b>`}. Remember, each point is the <b>total</b> distance so far.`;
     if (Bd.checks >= 2) { Bd.showAns = true; drawBuilder(0, null); hint += "<br>The correct graph is shown as a gold dashed line. Move your points onto it and check again."; }
     feedback($("bFb"), "bad", "❌ Not quite. " + hint);
   }
@@ -416,7 +421,9 @@ function drawBig(s) { dx.clearRect(0, 0, 800, 340); const B = { x: 80, y: 20, w:
   ["A", "B", "C", "D"].forEach((l, i) => { const mx2 = X(i * 5 + 2.5), my = Y((P[i][1] + P[i + 1][1]) / 2) - 22; dx.fillStyle = "#f4b942"; dx.beginPath(); dx.arc(mx2, my, 14, 0, 7); dx.fill(); dx.fillStyle = "#153047"; dx.font = "bold 15px Arial"; dx.textAlign = "center"; dx.textBaseline = "middle"; dx.fillText(l, mx2, my); }); }
 function drawFour(list) { dx.clearRect(0, 0, 800, 340); list.forEach((s, i) => { const B = { x: 50 + (i % 2) * 390, y: 18 + Math.floor(i / 2) * 165, w: 320, h: 120 }; const { X, Y } = axes(dx, B, 20, 40, 5, 10, true); line(dx, cumPts(s, 5), X, Y, "#287c8e", 3.5); dx.fillStyle = "#153047"; dx.font = "bold 18px Arial"; dx.textAlign = "left"; dx.textBaseline = "top"; dx.fillText("Graph " + "ABCD"[i], B.x + 8, B.y + 4); }); }
 function variants(s) { const out = [s]; const cand = [[...s].reverse(), [s[1], s[0], s[2], s[3]], [s[0], s[2], s[1], s[3]], [s[0], s[1], s[3], s[2]], [s[3], s[1], s[2], s[0]], s.map(v => v === 0 ? 2 : v === 4 ? 0 : v)]; for (const c of shuffle(cand)) if (out.length < 4 && !out.some(o => o.join() === c.join())) out.push(c); while (out.length < 4) { const r = makeG(); if (!out.some(o => o.join() === r.join())) out.push(r); } return out; }
+function makeGR() { let s, ok; do { s = [0, 1, 2, 3].map(() => rint(-2, 4)); let d = 0; ok = s[0] > 0 && s.filter(x => x < 0).length === 1 && new Set(s).size >= 3; s.forEach(x => { d += 5 * x; if (d < 0 || d > 40) ok = false; }); } while (!ok); return s; }
 const DQ = [
+  () => { const s = makeGR(), L = "ABCD"[s.findIndex(v => v < 0)]; return { prompt: "The graph shows the runner's distance <b>from the starting line</b>. During which segment is the runner moving <b>back toward the start</b>?", draw: () => drawBig(s), opts: ["A", "B", "C", "D"].map(x => "Segment " + x), a: "Segment " + L, why: `Segment ${L} slopes <b>down</b>: the distance from the start is shrinking, so the runner is heading back.` }; },
   () => { const s = makeG(), L = "ABCD"[s.indexOf(0)]; return { prompt: "During which segment is the runner <b>stopped</b>?", draw: () => drawBig(s), opts: ["A", "B", "C", "D"].map(x => "Segment " + x), a: "Segment " + L, why: `Segment ${L} is <b>flat</b>: time passes, but the distance stays the same.` }; },
   () => { let s; do { s = makeG(); } while (s.filter(v => v === Math.max(...s)).length > 1); const L = "ABCD"[s.indexOf(Math.max(...s))]; return { prompt: "During which segment is the runner moving <b>fastest</b>?", draw: () => drawBig(s), opts: ["A", "B", "C", "D"].map(x => "Segment " + x), a: "Segment " + L, why: `Segment ${L} is the <b>steepest</b>, with the most distance covered in 5 s (${Math.max(...s) * 5} m).` }; },
   () => { let s, mn; do { s = makeG(); mn = Math.min(...s.filter(v => v)); } while (s.filter(v => v === mn).length > 1); const L = "ABCD"[s.indexOf(mn)]; return { prompt: "Which segment shows the runner moving, but <b>slowest</b>?", draw: () => drawBig(s), opts: ["A", "B", "C", "D"].map(x => "Segment " + x), a: "Segment " + L, why: `Segment ${L} has the gentlest slope that is not flat. A flat segment is <b>stopped</b>, not slow.` }; },
@@ -457,7 +464,7 @@ $("compileBtn").onclick = () => {
     `Name: ${$("sName").value}   Period: ${$("sPeriod").value}   Date: ${new Date().toLocaleDateString()}`,
     "",
     "Station 1 Motion Matcher (best match %): " + (m.length ? m.map(([k, v]) => `${k} ${v}%`).join(", ") : "not done"),
-    "Station 2 Graph Builder: " + (st.builder ? `${st.builder.done}/3 stories, ${st.builder.firstTry} correct on first try` : "not done"),
+    "Station 2 Graph Builder: " + (st.builder ? `${st.builder.done}/4 graphs, ${st.builder.firstTry} correct on first try` : "not done"),
     "Station 3 Graph Detective: " + (st.detective ? `latest ${st.detective.score}/${st.detective.of}, best ${st.detBest}/${st.detective.of}` : "not done"),
     "",
     "MY EXPLANATION:",
