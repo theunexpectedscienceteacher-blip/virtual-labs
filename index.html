@@ -20,6 +20,10 @@
     .lab h2 { margin:10px 0 6px; font-size:22px; }
     .lab p { margin:0 0 14px; color:var(--muted); }
     .go { font-weight:700; color:var(--teal); }
+    .sec { margin:8px 0 12px; font-size:24px; }
+    .sec + p { margin:-6px 0 16px; color:var(--muted); }
+    .review .lab { border-top-color:var(--gold); }
+    .gap { height:28px; }
   </style>
 </head>
 <body>
@@ -28,6 +32,42 @@
     <p>Choose your lab below. Follow each section in order and finish every part before you submit.</p>
   </header>
   <main>
+    <h2 class="sec">📚 DBA Review</h2>
+    <p>Getting ready for the DBA? Start with the practice test. It tells you exactly which skills to practice.</p>
+    <div class="labs review">
+      <a class="lab" href="dba-practice-test/">
+        <span class="tag">All units · Test practice</span>
+        <h2>DBA Practice Test</h2>
+        <p>24 test-style questions from Force &amp; Motion, Thermal Energy and Solutions. Results by TEKS with links to what to practice.</p>
+        <span class="go">Start &rarr;</span>
+      </a>
+      <a class="lab" href="dba-boss-battle/">
+        <span class="tag">Force &amp; Motion</span>
+        <h2>DBA Boss Battle</h2>
+        <p>Beat five bosses on speed, velocity, distance-time graphs, net force and Newton's 1st Law, then see what to study.</p>
+        <span class="go">Play &rarr;</span>
+      </a>
+      <a class="lab" href="graph-lab/">
+        <span class="tag">Distance-time graphs</span>
+        <h2>Graph Lab</h2>
+        <p>Control a runner to match a graph, build graphs from stories, and solve graph detective cases.</p>
+        <span class="go">Open &rarr;</span>
+      </a>
+      <a class="lab" href="vocab-review/">
+        <span class="tag">All units · Vocabulary</span>
+        <h2>Vocab Vault</h2>
+        <p>Flashcards, a matching race and a quick quiz for every DBA vocabulary word.</p>
+        <span class="go">Open &rarr;</span>
+      </a>
+      <a class="lab" href="study-guide/">
+        <span class="tag">All units · Printable</span>
+        <h2>One-Page Study Guide</h2>
+        <p>Formulas, graph rules, net force, heat transfer and solutions on one page you can print or keep open.</p>
+        <span class="go">Open &rarr;</span>
+      </a>
+    </div>
+    <div class="gap"></div>
+    <h2 class="sec">🔬 Labs &amp; Games</h2>
     <div class="labs">
       <!-- To add a lab: copy one <a class="lab"> block below and change the folder name, title and description. -->
       <a class="lab" href="rescue-run/">
@@ -46,12 +86,6 @@
         <span class="tag">Newton's 1st Law</span>
         <h2>Inertia Arcade</h2>
         <p>Predict, watch and explain six inertia machines: tablecloth trick, seatbelt stop, space puck and more.</p>
-        <span class="go">Open lab &rarr;</span>
-      </a>
-      <a class="lab" href="dba-boss-battle/">
-        <span class="tag">Force &amp; Motion · DBA Review</span>
-        <h2>DBA Boss Battle</h2>
-        <p>Beat five bosses on speed, velocity, distance-time graphs, net force and Newton's 1st Law, then see what to study.</p>
         <span class="go">Open lab &rarr;</span>
       </a>
       <a class="lab" href="ccr-challenge/">
