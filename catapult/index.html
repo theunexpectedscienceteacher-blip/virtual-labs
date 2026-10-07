@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catapult Lab</title>
+<style>
+:root{--ink:#153047;--muted:#516273;--line:#c9d6df;--bg:#f3f7fa;--gold:#f4b942;--teal:#287c8e;--good:#1f7a4d;--goodbg:#e3f5ea;--bad:#b3261e;--badbg:#fdeceb;--warnbg:#fff5d6}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);line-height:1.4}
+header{background:var(--ink);color:#fff;padding:18px clamp(16px,4vw,48px);border-bottom:8px solid var(--gold)}
+header a{color:var(--gold);font-weight:700;text-decoration:none}
+header h1{margin:6px 0 4px;font-size:clamp(26px,4.5vw,40px);line-height:1.1}
+header p{margin:0;color:#d8eef4}
+main{max-width:1000px;margin:0 auto;padding:20px 16px 48px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin:0 0 16px;box-shadow:0 6px 20px rgba(21,48,71,.08)}
+h2{margin:0 0 10px}
+h3{margin:14px 0 8px}
+button{font:inherit;font-weight:700;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:10px;padding:10px 16px;cursor:pointer}
+button.primary{background:var(--ink);color:#fff}
+button.gold{background:var(--gold);border-color:#c98f12}
+button:disabled{opacity:.45;cursor:default}
+.big{font-size:1.15rem}
+.small{font-size:.9rem;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.hidden{display:none!important}
+.tag{display:inline-block;background:var(--warnbg);color:#7a5a00;font-size:13px;font-weight:700;padding:3px 8px;border-radius:6px;margin:2px 4px 2px 0}
+.seg{display:inline-flex;border:2px solid var(--ink);border-radius:10px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;border-radius:0;background:#fff}
+.seg button.on{background:var(--ink);color:#fff}
+.choice{display:block;width:100%;text-align:left;margin:8px 0;background:#eef4f8;border-color:transparent;font-weight:600}
+.choice:hover:not(:disabled){border-color:var(--teal)}
+.choice.good{background:var(--goodbg);border-color:var(--good);opacity:1}
+.choice.bad{background:var(--badbg);border-color:var(--bad);opacity:1}
+.choice.gone{visibility:hidden}
+.choice:disabled{cursor:default;opacity:.75}
+.fb{margin-top:12px;padding:12px 14px;border-radius:8px;border-left:5px solid var(--teal);background:#eef6f8}
+.fb.good{background:var(--goodbg);border-color:var(--good)}
+.fb.bad{background:var(--badbg);border-color:var(--bad)}
+.fb.hint{background:var(--warnbg);border-color:var(--gold)}
+canvas{width:100%;height:auto;display:block;border-radius:10px;background:#f7fbfd;border:1px solid var(--line)}
+.bar{height:12px;background:#e3eaf0;border-radius:6px;overflow:hidden}
+.bar>div{height:100%;width:0;background:var(--teal);transition:width .3s}
+input,select,textarea{font:inherit;padding:9px 10px;border:2px solid var(--line);border-radius:8px;color:var(--ink)}
+textarea{width:100%;min-height:90px}
+textarea.results{min-height:200px;font-family:"Courier New",monospace;font-size:.9rem}
+table{border-collapse:collapse;width:100%;margin:8px 0}
+th,td{border:1px solid var(--line);padding:8px;text-align:left}
+th{background:var(--ink);color:#fff}
+.stat{background:#eef4f8;border-radius:10px;padding:10px 14px;min-width:110px}
+.stat span{display:block;font-size:.8rem;color:var(--muted);font-weight:700;text-transform:uppercase}
+.stat strong{font-size:1.4rem}
+.pop{animation:pop .4s}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+.shake{animation:shake .45s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-7px)}80%{transform:translateX(7px)}}
+@media print{header a,.noprint,button{display:none!important}body{background:#fff}.card{box-shadow:none}}
+.ctrls{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.ctrls label{display:flex;flex-direction:column;gap:4px;font-weight:600;background:#f4f8fb;border-radius:10px;padding:8px 10px}
+.ctrls input[type=range]{width:100%}
+.tablewrap{overflow-x:auto}
+#frameBox{font-size:17px}
+@media (max-width:700px){.ctrls{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header>
+  <a href="../">&larr; All Labs</a>
+  <h1>🏹 Catapult Lab</h1>
+  <p>Design, launch, and test a virtual catapult, and see Newton's 1st Law in action.</p>
+</header>
+<main>
+  <section class="card">
+    <span class="tag">7.7D Newton's 1st Law &amp; inertia</span><span class="tag">6.7B Balanced &amp; unbalanced forces</span><span class="tag">Engineering Design Process</span>
+    <div class="row" style="margin:10px 0">
+      <label>Your name <input id="sName" placeholder="First and last name"></label>
+      <label>Period <input id="sPeriod" style="width:80px"></label>
+    </div>
+    <div class="seg" id="tabSeg"><button data-t="lab" class="on">🏹 1 Launch Lab</button><button data-t="check">✅ 2 Inertia Check</button><button data-t="edp">📝 3 Design Write-Up</button></div>
+  </section>
+
+  <section id="lab" class="card">
+    <div class="seg" id="modeSeg" style="margin-bottom:10px"><button data-m="free" class="on">🔬 Experiment</button><button data-m="target">🎯 Target Challenge</button></div>
+    <p class="small" id="modeHelp"></p>
+    <div class="ctrls">
+      <label>Pull-back <b id="vStretch"></b><input type="range" id="stretch" min="1" max="5" value="3"></label>
+      <label>Rubber bands <b id="vBands"></b><input type="range" id="bands" min="1" max="3" value="2"></label>
+      <label>Launch angle <b id="vAngle"></b><input type="range" id="angle" min="15" max="75" step="15" value="45"></label>
+      <label>Projectile
+        <select id="proj"></select></label>
+    </div>
+    <div class="row" style="margin:10px 0">
+      <button class="primary big" id="launch">🚀 Launch!</button>
+      <label><input type="checkbox" id="slowmo"> 🔍 Force freeze-frames (pause and show forces)</label>
+    </div>
+    <canvas id="cv" width="900" height="380"></canvas>
+    <div id="frameBox" class="fb hint hidden"><div id="frameTxt"></div><button class="primary" id="frameGo" style="margin-top:8px">Continue ▶</button></div>
+    <div id="lFb" class="fb hidden"></div>
+    <div id="tgtStats" class="row hidden" style="margin-top:8px"><div class="stat"><span>Targets hit</span><strong id="tHit">0/3</strong></div><div class="stat"><span>Launches</span><strong id="tShots">0</strong></div><div class="stat"><span>Target</span><strong id="tDist">-</strong></div></div>
+    <h3>📊 Trials table</h3>
+    <p class="small">Good scientists run <b>at least 3 trials</b> with the same setup and find the average, and change only <b>one</b> variable at a time.</p>
+    <div class="tablewrap"><table class="datatable" id="trials"><thead><tr><th>#</th><th>Pull-back</th><th>Bands</th><th>Angle</th><th>Projectile (mass)</th><th>Distance (cm)</th></tr></thead><tbody></tbody></table></div>
+    <div id="avgs" class="small" style="margin-top:6px"></div>
+    <div class="row noprint" style="margin-top:6px"><button id="clearTrials">Clear table</button></div>
+  </section>
+
+  <section id="check" class="card hidden">
+    <div class="spread"><h2 style="margin:0">✅ Inertia Check</h2><div class="row"><div class="stat"><span>Question</span><strong id="qNum">1/6</strong></div><div class="stat"><span>Score</span><strong id="qScore">0</strong></div></div></div>
+    <p class="big" id="qPrompt"></p>
+    <div id="qChoices"></div>
+    <div id="qFb" class="fb hidden"></div>
+    <div class="row" style="margin-top:10px"><button class="primary hidden" id="qNext">Next →</button><button class="hidden" id="qAgain">🔁 Try again</button></div>
+  </section>
+
+  <section id="edp" class="card hidden">
+    <h2>📝 Design Write-Up</h2>
+    <p class="small">Use your trials table to answer. Answer in complete sentences.</p>
+    <label><b>Ask &amp; Plan:</b> Which ONE variable did you test (pull-back, rubber bands, angle, or projectile)? Which variables did you keep the same?</label>
+    <textarea id="w1"></textarea>
+    <label><b>Test:</b> What happened to the distance when you changed your variable? Use numbers from your table.</label>
+    <textarea id="w2"></textarea>
+    <label><b>Explain:</b> The arm stops at the crossbar, but the projectile keeps flying. Use Newton's 1st Law and the word <i>inertia</i> to explain why.</label>
+    <textarea id="w3"></textarea>
+    <label><b>Explain:</b> Describe the forces on the projectile (1) sitting in the cup before launch and (2) flying through the air. Are they balanced or unbalanced?</label>
+    <textarea id="w4"></textarea>
+    <label><b>Improve:</b> What settings would you use to land a projectile exactly 3 meters (300 cm) away? Test it, then explain how you would improve a real catapult.</label>
+    <textarea id="w5"></textarea>
+    <h3>Submit</h3>
+    <ol class="small"><li>Run at least 6 trials, try the Target Challenge, and finish the Inertia Check.</li><li>Click <b>Make my results</b>, then <b>Copy</b>, and paste it into Schoology.</li></ol>
+    <div class="row noprint"><button class="primary" id="compileBtn">📄 Make my results</button><button id="copyBtn">📋 Copy my results</button></div>
+    <textarea id="results" class="results" readonly placeholder="Your results will appear here." style="margin-top:8px"></textarea>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pickOne = a => a[Math.floor(Math.random() * a.length)];
+const uniq = a => [...new Set(a)];
+function loadStore(key) { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { return {}; } }
+function saveStore(key, d) { try { localStorage.setItem(key, JSON.stringify(d)); } catch (e) {} }
+
+/* Multiple choice: opts = array of strings (answer included). cb(ok, chosen) */
+function askMC(el, opts, answer, cb) {
+  el.innerHTML = ""; let done = false;
+  shuffle(uniq(opts)).forEach(o => {
+    const b = document.createElement("button"); b.className = "choice"; b.textContent = o;
+    b.onclick = () => {
+      if (done) return; done = true; const ok = o === answer;
+      b.classList.add(ok ? "good" : "bad");
+      if (!ok) [...el.children].find(c => c.textContent === answer).classList.add("good");
+      [...el.children].forEach(c => c.disabled = true);
+      cb(ok, o);
+    };
+    el.appendChild(b);
+  });
+}
+function fiftyFifty(el, answer) {
+  const wrong = [...el.querySelectorAll(".choice")].filter(c => c.textContent !== answer && !c.classList.contains("gone"));
+  shuffle(wrong).slice(0, Math.min(2, wrong.length - 1)).forEach(c => c.classList.add("gone"));
+}
+function feedback(el, cls, html) { el.className = "fb " + cls; el.innerHTML = html; el.classList.remove("hidden"); }
+function copyResults(taId, btn) {
+  const ta = $(taId); ta.focus(); ta.select();
+  let ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+  if (navigator.clipboard) navigator.clipboard.writeText(ta.value).catch(() => {});
+  const old = btn.textContent; btn.textContent = "✓ Copied! Now paste it in Schoology"; setTimeout(() => btn.textContent = old, 2500);
+}
+function bump(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+/* ---- canvas helpers ---- */
+function fitCanvas(c) { return c.getContext("2d"); }
+function arrow(ctx, x1, y1, x2, y2, color, w, label, labelPos) {
+  const ang = Math.atan2(y2 - y1, x2 - x1), hl = Math.max(12, w * 2.6);
+  ctx.save(); ctx.strokeStyle = ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(ang) * hl * .8, y2 - Math.sin(ang) * hl * .8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - hl * Math.cos(ang - .45), y2 - hl * Math.sin(ang - .45));
+  ctx.lineTo(x2 - hl * Math.cos(ang + .45), y2 - hl * Math.sin(ang + .45)); ctx.closePath(); ctx.fill();
+  if (label) {
+    ctx.font = "bold 20px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    let lx = (x1 + x2) / 2, ly = (y1 + y2) / 2;
+    if (labelPos) { lx += labelPos[0]; ly += labelPos[1]; } else if (Math.abs(y2 - y1) < 2) ly -= 20; else lx += 34;
+    const tw = ctx.measureText(label).width + 12;
+    ctx.fillStyle = "rgba(255,255,255,.92)"; ctx.fillRect(lx - tw / 2, ly - 13, tw, 26);
+    ctx.fillStyle = color; ctx.fillText(label, lx, ly);
+  }
+  ctx.restore();
+}
+function emoji(ctx, e, x, y, size, flip) { ctx.save(); if (flip) { ctx.translate(x, 0); ctx.scale(-1, 1); x = 0; } ctx.font = size + "px 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(e, x, y); ctx.restore(); }
+function rrect(ctx, x, y, w, h, r, fill, stroke) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); } }
+
+/* Force diagram: forces = [{dir:'left'|'right'|'up'|'down', n:Number}] ; offset = box shift along motion */
+function drawForceDiagram(ctx, W, H, forces, offset, opts) {
+  opts = opts || {};
+  ctx.clearRect(0, 0, W, H);
+  const vertical = forces.some(f => f.dir === "up" || f.dir === "down");
+  const bw = 120, bh = 90;
+  let cx = W / 2, by;
+  if (vertical) {
+    by = (H - bh) / 2 + (offset || 0);
+    ctx.fillStyle = "#eaf3fb"; ctx.fillRect(0, 0, W, H);
+  } else {
+    cx += offset || 0;
+    const gy = H - 60; by = gy - bh;
+    ctx.fillStyle = "#dfe8ee"; ctx.fillRect(0, gy, W, H - gy);
+    ctx.strokeStyle = "#8aa0b0"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+  }
+  const cy = by + bh / 2;
+  rrect(ctx, cx - bw / 2, by, bw, bh, 8, "#c8955c", "#7a5530");
+  ctx.strokeStyle = "#a7763f"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx - bw / 2 + 8, by + bh - 22); ctx.lineTo(cx + bw / 2 - 8, by + bh - 22); ctx.stroke();
+  ctx.fillStyle = "#4a3115"; ctx.font = "bold 20px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(opts.label || "BOX", cx, by + 34);
+  const colors = { left: "#1f5fa8", right: "#c0392b", up: "#1f7a4d", down: "#7b3fa0" };
+  const len = n => 40 + Math.min(n, 120) * 1.6;
+  ["left", "right", "up", "down"].forEach(dir => {
+    const fs = forces.filter(f => f.dir === dir), m = fs.length;
+    fs.forEach((f, k) => {
+      const off = m === 1 ? 0 : (k - (m - 1) / 2) * 40, L = len(f.n), c = colors[dir], lab = f.n + " N";
+      if (dir === "right") arrow(ctx, cx + bw / 2 + 4, cy + off, cx + bw / 2 + 4 + L, cy + off, c, 8, lab, [L / 2 - (L / 2) + 0, m > 1 ? (off < 0 ? -20 : 20) : -22]);
+      if (dir === "left") arrow(ctx, cx - bw / 2 - 4, cy + off, cx - bw / 2 - 4 - L, cy + off, c, 8, lab, [0, m > 1 ? (off < 0 ? -20 : 20) : -22]);
+      if (dir === "up") arrow(ctx, cx + off, by - 4, cx + off, Math.max(8, by - 4 - L), c, 8, lab, [48, 0]);
+      if (dir === "down") arrow(ctx, cx + off, by + bh + 4, cx + off, Math.min(H - 8, by + bh + 4 + L), c, 8, lab, [48, 0]);
+    });
+  });
+}
+/* net of forces -> {n, dir} */
+function netForce(forces) {
+  let x = 0, y = 0;
+  forces.forEach(f => { if (f.dir === "right") x += f.n; if (f.dir === "left") x -= f.n; if (f.dir === "up") y += f.n; if (f.dir === "down") y -= f.n; });
+  if (x !== 0) return { n: Math.abs(x), dir: x > 0 ? "right" : "left", axis: "x", s: x };
+  if (y !== 0) return { n: Math.abs(y), dir: y > 0 ? "up" : "down", axis: "y", s: y };
+  return { n: 0, dir: "none", axis: forces.some(f => f.dir === "up" || f.dir === "down") ? "y" : "x", s: 0 };
+}
+const netLabel = r => r.n === 0 ? "0 N (balanced)" : `${r.n} N ${r.dir}`;
+/* generate a force problem. level: 'basic'|'challenge' */
+function makeForceProblem(level, kind) {
+  kind = kind || pickOne(level === "challenge" ? ["opp", "opp", "bal", "same", "three", "three", "vert"] : ["opp", "opp", "bal", "same", "vert"]);
+  const h = Math.random() < .5 ? ["left", "right"] : ["right", "left"];
+  let f;
+  if (kind === "opp") { const a = rint(2, 9) * 5, b = a + rint(1, 6) * (Math.random() < .5 ? 1 : 2); f = [{ dir: h[0], n: a }, { dir: h[1], n: b }]; }
+  else if (kind === "bal") { const a = rint(2, 12) * 5; f = [{ dir: "left", n: a }, { dir: "right", n: a }]; }
+  else if (kind === "same") { const a = rint(2, 8) * 5, b = rint(1, 6) * 5; f = [{ dir: h[0], n: a }, { dir: h[0], n: b }]; }
+  else if (kind === "three") { const a = rint(1, 6) * 5, b = rint(1, 6) * 5, c = rint(2, 12) * 5; f = [{ dir: h[0], n: a }, { dir: h[0], n: b }, { dir: h[1], n: c }]; }
+  else { const w = rint(3, 10) * 10, up = Math.random() < .3 ? w : w + rint(-2, 3) * 10 || w + 10; f = [{ dir: "down", n: w }, { dir: "up", n: Math.max(10, up) }]; }
+  const r = netForce(f);
+  const tot = f.reduce((s, x) => s + x.n, 0);
+  const opp = r.dir === "left" ? "right" : r.dir === "right" ? "left" : r.dir === "up" ? "down" : r.dir === "down" ? "up" : (r.axis === "y" ? "up" : "right");
+  const distract = [netLabel(r), r.n ? `${r.n} N ${opp}` : `${f[0].n} N ${f[0].dir}`, `${tot} N ${r.dir === "none" ? (r.axis === "y" ? "up" : "right") : r.dir}`, r.n ? "0 N (balanced)" : `${tot} N ${r.axis === "y" ? "down" : "left"}`];
+  const extra = [`${Math.abs(f[0].n - (f[1] ? f[1].n : 0)) + 5} N ${r.dir === "none" ? "right" : r.dir}`, `${r.n + 10} N ${r.dir === "none" ? "left" : r.dir}`];
+  let opts = uniq(distract); for (const e of extra) if (opts.length < 4 && !opts.includes(e)) opts.push(e);
+  return { forces: f, net: r, answer: netLabel(r), opts: opts.slice(0, 4), kind };
+}
+function forceExplain(p) {
+  const f = p.forces, r = p.net;
+  const sums = {}; f.forEach(x => sums[x.dir] = (sums[x.dir] || 0) + x.n);
+  const parts = Object.entries(sums).map(([d, n]) => `${n} N ${d}` + (f.filter(x => x.dir === d).length > 1 ? ` (${f.filter(x => x.dir === d).map(x => x.n).join(" + ")})` : ""));
+  if (r.n === 0) return `The forces are equal and opposite (${parts.join(" vs ")}), so they cancel: net force = 0 N. The forces are <b>balanced</b>, so the motion does not change.`;
+  if (parts.length === 1) return `Both forces point the same way, so you <b>add</b> them: ${f.map(x => x.n).join(" + ")} = ${r.n} N ${r.dir}. The forces are <b>unbalanced</b>.`;
+  return `Opposite forces: <b>subtract</b> the smaller total from the larger. ${parts.join(" vs ")} → ${r.n} N toward the ${r.dir === "up" || r.dir === "down" ? r.dir + "ward" : r.dir} (the bigger side). The forces are <b>unbalanced</b>, so the motion changes in that direction.`;
+}
+
+/* ===== Catapult Lab: 7.7D / 6.7B ===== */
+const KEY = "catapultLab_v1";
+const store = loadStore(KEY); store.trials = store.trials || [];
+function save() { saveStore(KEY, store); }
+["sName", "sPeriod", "w1", "w2", "w3", "w4", "w5"].forEach(id => { const el = $(id); if (store[id]) el.value = store[id]; el.addEventListener("input", () => { store[id] = el.value; save(); }); });
+document.querySelectorAll("#tabSeg button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#tabSeg button").forEach(x => x.classList.toggle("on", x === b));
+  ["lab", "check", "edp"].forEach(id => $(id).classList.toggle("hidden", id !== b.dataset.t));
+});
+
+/* ---------- setup ---------- */
+const PROJ = [
+  { id: "cotton", name: "Cotton ball", m: 0.001, c: 0.0003, r: 8, col: "#ffffff", edge: "#bbb" },
+  { id: "ping", name: "Ping-pong ball", m: 0.003, c: 0.00004, r: 8, col: "#ff9f43", edge: "#c06a12" },
+  { id: "bouncy", name: "Bouncy ball", m: 0.010, c: 0.00003, r: 7, col: "#e74c3c", edge: "#962d22" },
+  { id: "golf", name: "Golf ball", m: 0.046, c: 0.00003, r: 9, col: "#f4f4f4", edge: "#777" }
+];
+PROJ.forEach(p => $("proj").insertAdjacentHTML("beforeend", `<option value="${p.id}">${p.name} (${Math.round(p.m * 1000)} g)</option>`));
+$("proj").value = "ping";
+const STRETCH = ["", "1 (tiny)", "2", "3", "4", "5 (max)"];
+const ctrl = () => ({ s: +$("stretch").value, b: +$("bands").value, a: +$("angle").value, p: PROJ.find(x => x.id === $("proj").value) });
+function showVals() { const c = ctrl(); $("vStretch").textContent = STRETCH[c.s]; $("vBands").textContent = c.b; $("vAngle").textContent = c.a + "°"; if (!anim) drawScene(); }
+["stretch", "bands", "angle", "proj"].forEach(id => $(id).addEventListener("input", showVals));
+
+/* ---------- world ---------- */
+const cv = $("cv"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+const S = 100, PX = 210, GY = 345, PY = 305, L = 70; // 100 px per meter, pivot, ground, arm length (px)
+let OX = PX; // ruler zero = where the projectile leaves the cup
+const wx = x => OX + x * S, wy = y => GY - y * S;
+function setOrigin(a, p) { OX = Math.round(ballPos(stopPhi(a), p)[0]); }
+const G = 9.8, EMAX = 0.555, ARM_M = 0.02;
+let mode = "free", anim = null, target = null, tHits = 0, tShots = 0;
+const stopPhi = a => (a + 90) * Math.PI / 180;            // arm direction (math angle) at the crossbar
+const cockPhi = (a, s) => Math.min(stopPhi(a) + (20 + s * 12) * Math.PI / 180, 205 * Math.PI / 180);
+const armEnd = phi => [PX + L * Math.cos(phi), PY - L * Math.sin(phi)];
+
+function drawGround() {
+  ctx.clearRect(0, 0, W, H);
+  const sky = ctx.createLinearGradient(0, 0, 0, GY); sky.addColorStop(0, "#dff1fb"); sky.addColorStop(1, "#f7fbfd"); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, GY);
+  ctx.fillStyle = "#cfe3c4"; ctx.fillRect(0, GY, W, H - GY); ctx.strokeStyle = "#7a9a6c"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, GY); ctx.lineTo(W, GY); ctx.stroke();
+  ctx.fillStyle = "#334"; ctx.font = "12px sans-serif"; ctx.textAlign = "center";
+  for (let cm = 0; wx(cm / 100) < W - 5; cm += 50) { const x = wx(cm / 100); ctx.beginPath(); ctx.moveTo(x, GY); ctx.lineTo(x, GY + (cm % 100 ? 6 : 12)); ctx.strokeStyle = "#445"; ctx.lineWidth = 1; ctx.stroke(); if (cm % 100 === 0) ctx.fillText(cm ? cm + " cm" : "0 (release)", x, GY + 26); }
+  if (mode === "target" && target) {
+    const x = wx(target / 100); ctx.fillStyle = "#3b5bdb"; ctx.beginPath(); ctx.moveTo(x - 17, GY - 26); ctx.lineTo(x + 17, GY - 26); ctx.lineTo(x + 13, GY); ctx.lineTo(x - 13, GY); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#fff"; ctx.font = "bold 11px sans-serif"; ctx.fillText("🎯", x, GY - 12); ctx.fillStyle = "#3b5bdb"; ctx.font = "bold 13px sans-serif"; ctx.fillText(target + " cm", x, GY - 34);
+  }
+}
+function drawCatapult(phi, bands) {
+  // base
+  ctx.fillStyle = "#9c6b3c"; ctx.fillRect(PX - 70, GY - 14, 150, 12);
+  ctx.fillStyle = "#555"; [PX - 55, PX + 62].forEach(x => { ctx.beginPath(); ctx.arc(x, GY - 3, 7, 0, 7); ctx.fill(); });
+  // support post
+  ctx.fillStyle = "#7d5230"; ctx.fillRect(PX - 6, PY, 12, GY - 14 - PY);
+  // crossbar (stop) placed where the arm stops
+  const a = ctrl().a, sp = stopPhi(a), cx = PX + 0.55 * L * Math.cos(sp) + 8 * Math.cos(sp - Math.PI / 2), cy = PY - 0.55 * L * Math.sin(sp) - 8 * Math.sin(sp - Math.PI / 2);
+  ctx.strokeStyle = "#5b3b1f"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(PX + 40, GY - 14); ctx.lineTo(cx, cy); ctx.stroke();
+  ctx.fillStyle = "#3d2814"; ctx.beginPath(); ctx.arc(cx, cy, 5, 0, 7); ctx.fill();
+  // rubber bands
+  const bx = PX + 0.35 * L * Math.cos(phi), by = PY - 0.35 * L * Math.sin(phi);
+  for (let i = 0; i < bands; i++) { ctx.strokeStyle = ["#e84393", "#fdcb6e", "#00b894"][i]; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(bx + i * 2, by + i * 2); ctx.lineTo(PX + 70, GY - 14 - i * 3); ctx.stroke(); }
+  // arm
+  const [ex, ey] = armEnd(phi);
+  ctx.strokeStyle = "#a0703f"; ctx.lineWidth = 8; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(PX, PY); ctx.lineTo(ex, ey); ctx.stroke();
+  ctx.fillStyle = "#444"; ctx.beginPath(); ctx.arc(PX, PY, 5, 0, 7); ctx.fill();
+  // cup
+  ctx.strokeStyle = "#555"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(ex, ey, 11, phi - Math.PI / 2 - 1.2 + Math.PI, phi - Math.PI / 2 + 1.2 + Math.PI, true); ctx.stroke();
+}
+function ballPos(phi, p) { const [ex, ey] = armEnd(phi); const n = phi - Math.PI / 2; return [ex + (p.r + 2) * Math.cos(n + Math.PI), ey - (p.r + 2) * Math.sin(n + Math.PI)]; }
+function drawBall(x, y, p) { ctx.beginPath(); ctx.arc(x, y, p.r, 0, 7); ctx.fillStyle = p.col; ctx.fill(); ctx.strokeStyle = p.edge; ctx.lineWidth = 1.5; ctx.stroke(); }
+function drawScene() { const c = ctrl(); setOrigin(c.a, c.p); drawGround(); const phi = cockPhi(c.a, c.s); drawCatapult(phi, c.b); const [bx, by] = ballPos(phi, c.p); drawBall(bx, by, c.p); }
+
+/* ---------- launch ---------- */
+function predict(c) { const E = EMAX * ((c.s + 1) / 6) ** 2 * c.b / 3, v = Math.sqrt(2 * E / (c.p.m + ARM_M)), th = c.a * Math.PI / 180; let x = 0, y = (GY - ballPos(stopPhi(c.a), c.p)[1]) / S, vx = v * Math.cos(th), vy = v * Math.sin(th); const h = 0.002;
+  while (y > 0) { const vv = Math.hypot(vx, vy), k = c.p.c * vv / c.p.m; vx += -k * vx * h; vy += (-G - k * vy) * h; x += vx * h; y += vy * h; } return Math.round(x * 100); }
+function randn() { return (Math.random() + Math.random() + Math.random() - 1.5) / 1.5; }
+function launch() {
+  if (anim) return;
+  const c = ctrl(); const E = EMAX * ((c.s + 1) / 6) ** 2 * c.b / 3;
+  const v0 = Math.sqrt(2 * E / (c.p.m + ARM_M)) * (1 + 0.025 * randn());
+  const th = c.a * Math.PI / 180;
+  setOrigin(c.a, c.p);
+  anim = { c, phase: "rest", t: 0, phi: cockPhi(c.a, c.s), v0, th, trail: [], frames: $("slowmo").checked, shown: {} };
+  $("lFb").classList.add("hidden"); $("launch").disabled = true;
+  if (anim.frames) freeze("rest"); else requestAnimationFrame(step);
+}
+let last = 0;
+function step(ts) {
+  const A = anim; if (!A || A.paused) return;
+  const dt = Math.min(0.03, last ? (ts - last) / 1000 : 0.016) * 0.7; last = ts;
+  const c = A.c;
+  if (A.phase === "rest") { A.t += dt; if (A.t > 0.25) { A.phase = "swing"; A.t = 0; } }
+  else if (A.phase === "swing") {
+    A.t += dt; const T = 0.16, f = Math.min(1, A.t / T), p0 = cockPhi(c.a, c.s), p1 = stopPhi(c.a);
+    A.phi = p0 + (p1 - p0) * f * f;
+    if (A.frames && f > 0.5 && !A.shown.swing) { last = 0; return freeze("swing"); }
+    if (f >= 1) {
+      const [bx, by] = ballPos(p1, c.p); A.x = 0; A.y = (GY - by) / S; A.vx = A.v0 * Math.cos(A.th); A.vy = A.v0 * Math.sin(A.th); A.phase = "flight"; A.ft = 0;
+      if (A.frames) { last = 0; return freeze("stop"); }
+    }
+  } else if (A.phase === "flight") {
+    const sub = 8, h = dt / sub; A.ft += dt;
+    for (let i = 0; i < sub; i++) {
+      const v = Math.hypot(A.vx, A.vy), k = c.p.c * v / c.p.m;
+      const px = A.x, py = A.y;
+      A.vx += -k * A.vx * h; A.vy += (-G - k * A.vy) * h; A.x += A.vx * h; A.y += A.vy * h;
+      if (A.y <= 0) { const f = py / (py - A.y); A.x = px + (A.x - px) * f; A.y = 0; A.land = A.x; A.phase = "slide"; A.t = 0; A.slideV = Math.max(0.15, A.vx * (c.p.id === "bouncy" ? 0.3 : 0.12)); break; }
+    }
+    A.trail.push([wx(A.x), wy(A.y) - c.p.r]);
+    if (A.frames && !A.shown.air && A.vy < 0 && A.phase === "flight") { last = 0; return freeze("air"); }
+    if (A.phase === "slide" && A.frames) { last = 0; return freeze("land"); }
+  } else if (A.phase === "slide") {
+    A.t += dt; A.x += A.slideV * dt; A.slideV = Math.max(0, A.slideV - 2.2 * dt);
+    if (A.slideV <= 0 || A.t > 0.6) { render(); return finish(); }
+  }
+  render(); requestAnimationFrame(step);
+}
+function render(arrows) {
+  const A = anim, c = A.c; drawGround();
+  if (A.trail.length > 1) { ctx.strokeStyle = "rgba(40,124,142,.55)"; ctx.setLineDash([5, 5]); ctx.lineWidth = 2; ctx.beginPath(); A.trail.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); ctx.setLineDash([]); }
+  drawCatapult(A.phi, c.b);
+  let bx, by;
+  if (A.phase === "rest" || A.phase === "swing") [bx, by] = ballPos(A.phi, c.p); else { bx = wx(A.x); by = wy(A.y) - c.p.r; }
+  drawBall(bx, by, c.p);
+  if (A.phase === "slide" || A.done) { const lx = wx(A.land); ctx.strokeStyle = "#c0392b"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(lx, GY - 4); ctx.lineTo(lx, GY + 4); ctx.stroke(); }
+  if (arrows) arrows(bx, by);
+  return [bx, by];
+}
+/* ---------- force freeze-frames ---------- */
+const FR = {
+  rest: { t: "<b>1. Before launch: forces are BALANCED.</b> Gravity pulls the projectile down, and the cup pushes up with an equal force. Net force = 0 N, so the projectile <b>stays at rest</b> (Newton's 1st Law).",
+    draw: (x, y) => { arrow(ctx, x, y, x, y + 45, "#c0392b", 4, "Gravity", [-48, 12]); arrow(ctx, x, y, x, y - 45, "#2563eb", 4, "Cup pushes up", [0, -48]); } },
+  swing: { t: "<b>2. Launch: forces are UNBALANCED.</b> The stretched rubber bands pull the arm, and the arm pushes the projectile with a force much bigger than gravity. An unbalanced force <b>changes the projectile's motion</b>: it speeds up.",
+    draw: (x, y) => { const n = anim.phi - Math.PI / 2; arrow(ctx, x, y, x + 85 * Math.cos(n), y - 85 * Math.sin(n), "#16a34a", 6, "Arm pushes", [0, -24]); arrow(ctx, x, y, x, y + 30, "#c0392b", 3, "Gravity", [-48, 10]); } },
+  stop: { t: "<b>3. The arm hits the crossbar and STOPS... but the projectile keeps going!</b> That's <b>inertia</b>: an object in motion stays in motion unless a force acts on it. Nothing holds the projectile back, so it leaves the cup.",
+    draw: (x, y) => { arrow(ctx, x, y, x + 70 * Math.cos(anim.th), y - 70 * Math.sin(anim.th), "#7c3aed", 3, "motion →", [0, -22]); } },
+  air: { t: "<b>4. In the air: NOTHING is pushing it forward.</b> The arm is gone! The projectile keeps moving forward because of <b>inertia</b>. Gravity is an unbalanced force pulling down, so the path curves toward the ground. Air resistance pushes back a little (a lot for a cotton ball!).",
+    draw: (x, y) => { const A = anim, v = Math.hypot(A.vx, A.vy), ux = A.vx / v, uy = A.vy / v; arrow(ctx, x, y, x, y + 55, "#c0392b", 4, "Gravity", [48, 14]); const drag = Math.max(30, Math.min(55, A.c.p.c * v * v / A.c.p.m * 5)); arrow(ctx, x, y, x - drag * ux, y + drag * uy, "#d97706", 3, "Air resistance", [-70, 30]); ctx.save(); ctx.setLineDash([4, 4]); arrow(ctx, x, y, x + 60 * ux, y - 60 * uy, "#7c3aed", 2, "motion (not a force)", [60, -30]); ctx.restore(); } },
+  land: { t: "<b>5. Landing: unbalanced forces stop it.</b> The ground pushes up, and <b>friction</b> acts opposite the motion until the projectile stops. Without friction, it would keep sliding!",
+    draw: (x, y) => { arrow(ctx, x, y, x - 60, y, "#d97706", 4, "Friction", [-20, -24]); arrow(ctx, x, y, x, y - 50, "#2563eb", 3, "Ground pushes up", [0, -40]); arrow(ctx, x, y, x, y + 28, "#c0392b", 3, "Gravity", [48, 8]); } }
+};
+function freeze(k) {
+  const A = anim; A.paused = true; A.shown[k] = true; A.frameK = k;
+  render(FR[k].draw); $("frameTxt").innerHTML = FR[k].t; $("frameBox").classList.remove("hidden"); $("frameGo").focus({ preventScroll: true });
+}
+$("frameGo").onclick = () => { if (!anim) return; $("frameBox").classList.add("hidden"); anim.paused = false; last = 0; requestAnimationFrame(step); };
+
+function finish() {
+  const A = anim, c = A.c; A.done = true;
+  const d = Math.max(0, Math.round(A.land * 100));
+  store.trials.push({ s: c.s, b: c.b, a: c.a, p: c.p.id, d }); if (store.trials.length > 40) store.trials.shift(); save(); drawTable();
+  let msg = `📏 The ${c.p.name.toLowerCase()} landed <b>${d} cm</b> from the catapult.`;
+  if (mode === "target") {
+    tShots++; const off = d - target;
+    if (Math.abs(off) <= 15) { tHits++; msg += ` 🎯 <b>Bullseye! In the bucket!</b>`; if (tHits >= 3) { msg += ` 🏆 Challenge complete in <b>${tShots}</b> launches!`; store.tgtBest = Math.min(store.tgtBest || 999, tShots); store.tgtDone = true; save(); } else newTarget(); }
+    else msg += ` ${off < 0 ? "Too short" : "Too far"} by ${Math.abs(off)} cm. ${off < 0 ? "Try more pull-back, more bands, an angle closer to 45°, or a lighter projectile." : "Try less pull-back, fewer bands, or a heavier projectile."}`;
+    store.tgtHits = tHits; store.tgtShots = tShots; save(); updTgt();
+  } else if (c.p.id === "cotton" && store.trials.filter(t => t.p === "cotton").length === 1) msg += " Notice the cotton ball doesn't go far even though it's light: air resistance is big compared to its tiny mass.";
+  feedback($("lFb"), "good", msg);
+  anim = null; $("launch").disabled = false; last = 0;
+  // keep the final picture with the landing marker
+  drawGround(); drawCatapult(stopPhi(c.a), c.b); const lx = wx(d / 100); drawBall(lx, GY - c.p.r, c.p); ctx.fillStyle = "#c0392b"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "center"; ctx.fillText(d + " cm", lx, GY - c.p.r * 2 - 10);
+  if (mode === "target" && tHits < 3) setTimeout(() => { if (!anim) drawScene(); }, 1600);
+}
+$("launch").onclick = launch;
+
+/* ---------- target mode ---------- */
+function newTarget() { let t; do { t = 10 * rint(15, 45); } while (target && Math.abs(t - target) < 60); target = t; updTgt(); }
+function updTgt() { $("tHit").textContent = Math.min(tHits, 3) + "/3"; $("tShots").textContent = tShots; $("tDist").textContent = target ? target + " cm" : "-"; }
+const HELP = { free: "<b>Experiment:</b> change ONE variable at a time and run at least 3 trials for each setup. Your trials and averages appear in the table.", target: "<b>Target Challenge:</b> land in the bucket (within 15 cm of the target) 3 times. Use your trials table to predict good settings. Fewer launches = better engineering!" };
+document.querySelectorAll("#modeSeg button").forEach(b => b.onclick = () => {
+  if (anim) return; document.querySelectorAll("#modeSeg button").forEach(x => x.classList.toggle("on", x === b)); mode = b.dataset.m; $("modeHelp").innerHTML = HELP[mode];
+  $("tgtStats").classList.toggle("hidden", mode !== "target"); if (mode === "target") { tHits = 0; tShots = 0; target = null; newTarget(); } drawScene();
+});
+
+/* ---------- trials table ---------- */
+const pName = id => { const p = PROJ.find(x => x.id === id); return `${p.name} (${Math.round(p.m * 1000)} g)`; };
+function drawTable() {
+  const tb = $("trials").querySelector("tbody"); tb.innerHTML = store.trials.map((t, i) => `<tr><td>${i + 1}</td><td>${t.s}</td><td>${t.b}</td><td>${t.a}°</td><td>${pName(t.p)}</td><td><b>${t.d}</b></td></tr>`).join("") || `<tr><td colspan="6" class="small">No trials yet. Press Launch!</td></tr>`;
+  const groups = {}; store.trials.forEach(t => { const k = `${t.s}|${t.b}|${t.a}|${t.p}`; (groups[k] = groups[k] || []).push(t.d); });
+  const lines = Object.entries(groups).filter(([, v]) => v.length >= 2).map(([k, v]) => { const [s, b, a, p] = k.split("|"); return `Pull-back ${s}, ${b} band${b > 1 ? "s" : ""}, ${a}°, ${pName(p)}: ${v.length} trials, <b>average ${Math.round(v.reduce((x, y) => x + y, 0) / v.length)} cm</b>`; });
+  $("avgs").innerHTML = lines.length ? "<b>Averages (setups with 2+ trials):</b><br>" + lines.join("<br>") : "";
+}
+$("clearTrials").onclick = () => { store.trials = []; save(); drawTable(); };
+
+/* ---------- inertia check ---------- */
+const QS = [
+  ["Before launch, the projectile sits still in the cup. Which describes the forces on it?", "Balanced: gravity down equals the cup pushing up, so it stays at rest", ["Unbalanced: gravity is stronger, so it stays at rest", "There are no forces on it because it isn't moving", "Unbalanced: the cup pushes harder than gravity"], "An object at rest has balanced forces (net force 0 N), so it stays at rest."],
+  ["The arm slams into the crossbar and stops, but the projectile flies forward. Why?", "Inertia: the projectile keeps moving because no force stops it when it leaves the cup", ["The crossbar pushes the projectile forward", "Gravity pulls the projectile forward", "The projectile has no mass, so it can't stop"], "Newton's 1st Law: an object in motion stays in motion unless an unbalanced force acts on it."],
+  ["While the projectile is flying through the air, what force pushes it forward?", "No force pushes it forward; it keeps moving forward because of inertia", ["The force of the rubber bands stays with it", "The force of the arm travels with it", "Air pushes it forward"], "Once it leaves the cup, only gravity and air resistance act on it. Neither pushes forward. Inertia keeps it moving."],
+  ["With the same pull-back and bands, a golf ball lands much closer than a ping-pong ball. What is the best explanation?", "The golf ball has more mass, so it has more inertia and the same force changes its motion less", ["The golf ball has less inertia, so it slows down faster", "Gravity only acts on heavy objects", "The ping-pong ball has more mass"], "More mass = more inertia = harder to change its motion. The same push gives the heavier ball less speed."],
+  ["If a catapult launched a ball in deep space (no gravity, no air), what would the ball do after leaving the cup?", "Keep moving in a straight line at a constant speed forever", ["Slow down and stop", "Curve back toward the catapult", "Speed up forever"], "With no unbalanced forces, an object in motion keeps the same speed and direction (Newton's 1st Law)."],
+  ["The cotton ball is the lightest projectile but does NOT go the farthest. Why?", "Air resistance is a big unbalanced force compared to its tiny mass, so it slows down quickly", ["Light objects have more inertia", "Gravity is stronger on cotton", "The cotton ball has balanced forces in the air"], "Air resistance acts opposite the motion. For a very light object, that force changes its motion a lot."]
+];
+const Q = { i: 0, score: 0, list: [] };
+function qStart() { Q.list = shuffle(QS); Q.i = 0; Q.score = 0; $("qAgain").classList.add("hidden"); qShow(); }
+function qShow() {
+  const q = Q.list[Q.i]; $("qNum").textContent = (Q.i + 1) + "/" + Q.list.length; $("qScore").textContent = Q.score; $("qPrompt").textContent = q[0];
+  $("qFb").classList.add("hidden"); $("qNext").classList.add("hidden");
+  askMC($("qChoices"), [q[1], ...q[2]], q[1], ok => {
+    if (ok) Q.score++; $("qScore").textContent = Q.score;
+    feedback($("qFb"), ok ? "good" : "bad", (ok ? "✅ Correct! " : "Not quite. ") + q[3]);
+    if (Q.i < Q.list.length - 1) $("qNext").classList.remove("hidden");
+    else { store.quizLast = Q.score; store.quizBest = Math.max(store.quizBest || 0, Q.score); save(); $("qAgain").classList.remove("hidden"); $("qFb").innerHTML += `<br><br>🏁 <b>Score: ${Q.score}/${Q.list.length}</b>`; }
+  });
+}
+$("qNext").onclick = () => { Q.i++; qShow(); };
+$("qAgain").onclick = qStart;
+
+/* ---------- results ---------- */
+$("compileBtn").onclick = () => {
+  const t = [`CATAPULT LAB RESULTS (7.7D Newton's 1st Law)`, `Name: ${$("sName").value || "(no name)"}   Period: ${$("sPeriod").value || "-"}`, `Date: ${new Date().toLocaleString()}`, ``, `TRIALS (${store.trials.length}):`];
+  store.trials.forEach((x, i) => t.push(`${i + 1}. pull-back ${x.s}, ${x.b} band(s), ${x.a} deg, ${pName(x.p)}: ${x.d} cm`));
+  const av = $("avgs").innerText.trim(); if (av) t.push("", av);
+  t.push("", `Target Challenge: ${store.tgtDone ? `completed, best ${store.tgtBest} launches for 3 hits` : `${store.tgtHits || 0}/3 hits in ${store.tgtShots || 0} launches`}`);
+  t.push(`Inertia Check: ${store.quizLast != null ? `${store.quizLast}/6 (best ${store.quizBest}/6)` : "not finished"}`, "");
+  [["Ask & Plan", "w1"], ["Test", "w2"], ["Explain (inertia)", "w3"], ["Explain (forces)", "w4"], ["Improve", "w5"]].forEach(([h, id]) => t.push(`${h}: ${$(id).value.trim() || "(not answered)"}`));
+  const miss = []; if (store.trials.length < 6) miss.push("6+ trials"); if (store.quizLast == null) miss.push("Inertia Check");
+  if (miss.length) t.push("", "Not finished yet: " + miss.join(", "));
+  $("results").value = t.join("\n");
+};
+$("copyBtn").onclick = () => { if (!$("results").value) $("compileBtn").click(); copyResults("results", $("copyBtn")); };
+
+$("modeHelp").innerHTML = HELP.free; showVals(); drawTable(); qStart();
+</script>
+</body>
+</html>
