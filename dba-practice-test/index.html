@@ -89,14 +89,14 @@ th{background:var(--ink);color:#fff}
 <header>
   <a href="../">&larr; All Labs</a>
   <h1>📝 DBA Practice Test</h1>
-  <p>Test-style practice for Force &amp; Motion, Thermal Energy, and Solutions.</p>
+  <p>Test-style practice for the 2nd six weeks DBA: Force &amp; Motion, plus a little 1st six weeks review.</p>
 </header>
 <main>
   <section id="intro" class="card">
-    <span class="tag">7.6D–E Solutions</span><span class="tag">7.7A–D Force &amp; Motion</span><span class="tag">7.8A–C Thermal Energy</span>
+    <span class="tag">7.7A–D Force &amp; Motion</span><span class="tag">6.7B Net force</span><span class="tag">7.6A–E Spiral review</span>
     <h2>Before you begin</h2>
     <ul class="big">
-      <li><b>24 questions</b>, mixed from all three units. They work like the real test: choose one, select two, type a number, drop-down sentences, and tables.</li>
+      <li><b>24 questions</b>: 20 on speed, velocity, distance-time graphs, net force and Newton's 1st Law, plus 4 review questions from the 1st six weeks (matter and solutions). They work like the real test: choose one, select two, type a number, drop-down sentences, and tables.</li>
       <li><b>No hints and no right/wrong until you submit.</b> Take your time and read every word.</li>
       <li>Use 🚩 <b>Flag</b> to mark questions you want to come back to. The 📐 <b>Reference</b> button shows the speed formula.</li>
       <li>Your answers save on this device as you go. Each new test has different questions.</li>
@@ -273,7 +273,7 @@ function forceExplain(p) {
   return `Opposite forces: <b>subtract</b> the smaller total from the larger. ${parts.join(" vs ")} → ${r.n} N toward the ${r.dir === "up" || r.dir === "down" ? r.dir + "ward" : r.dir} (the bigger side). The forces are <b>unbalanced</b>, so the motion changes in that direction.`;
 }
 
-const KEY = "dbaPracticeTest_v1";
+const KEY = "dbaPracticeTest_v2";
 const st = loadStore(KEY);
 $("sName").value = st.name || ""; $("sPeriod").value = st.period || "";
 ["sName", "sPeriod"].forEach(id => $(id).addEventListener("input", () => { st.name = $("sName").value; st.period = $("sPeriod").value; saveStore(KEY, st); }));
@@ -300,12 +300,30 @@ function polyline(ctx, pts, X, Y, color, w) { ctx.strokeStyle = color; ctx.lineW
 function segGraph(speeds, labels = true) {
   return (ctx, W, H) => {
     const pts = [[0, 0]]; speeds.forEach((s, i) => pts.push([5 * (i + 1), pts[i][1] + 5 * s]));
-    const { X, Y } = dtAxes(ctx, W, H, 20, 40, 5, 5, "Time (s)", "Distance (m)");
+    const { X, Y } = dtAxes(ctx, W, H, 20, 40, 5, 5, "Time (s)", "Distance from start (m)");
     polyline(ctx, pts, X, Y, "#287c8e", 4);
     if (labels) ["1", "2", "3", "4"].forEach((l, i) => { const x = X(i * 5 + 2.5), y = Y((pts[i][1] + pts[i + 1][1]) / 2) - 20; ctx.fillStyle = "#f4b942"; ctx.beginPath(); ctx.arc(x, y, 13, 0, 7); ctx.fill(); ctx.fillStyle = "#153047"; ctx.font = "bold 14px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(l, x, y); });
   };
 }
 function segSpeeds(R) { let s; do { s = [0, 1, 2, 3].map(() => R.int(0, 4)); } while (s.filter(x => x === 0).length !== 1 || s.reduce((a, b) => a + b, 0) > 8 || new Set(s).size < 3); return s; }
+function segSpeedsR(R) { let s, ok; do { s = [0, 1, 2, 3].map(() => R.pick([-2, -1, 0, 1, 2, 3, 4])); let d = 0, mn = 0, mx = 0; s.forEach(v => { d += 5 * v; mn = Math.min(mn, d); mx = Math.max(mx, d); }); ok = s.filter(x => x < 0).length === 1 && mn >= 0 && mx <= 40 && s[0] > 0 && new Set(s).size >= 3; } while (!ok); return s; }
+function miniGraphs(lists) {
+  return (ctx, W, H) => {
+    ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+    lists.forEach((s, k) => {
+      const ox = (k % 2) * W / 2, oy = Math.floor(k / 2) * H / 2, L = ox + 40, Rr = ox + W / 2 - 16, T = oy + 26, B = oy + H / 2 - 24;
+      const X = t => L + (Rr - L) * t / 20, Y = d => B - (B - T) * d / 40;
+      ctx.strokeStyle = "#e1e8ee"; ctx.lineWidth = 1;
+      for (let t = 0; t <= 20; t += 5) { ctx.beginPath(); ctx.moveTo(X(t), T); ctx.lineTo(X(t), B); ctx.stroke(); }
+      for (let d = 0; d <= 40; d += 10) { ctx.beginPath(); ctx.moveTo(L, Y(d)); ctx.lineTo(Rr, Y(d)); ctx.stroke(); }
+      ctx.strokeStyle = "#153047"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, B); ctx.lineTo(Rr, B); ctx.stroke();
+      ctx.fillStyle = "#516273"; ctx.font = "11px Arial"; ctx.textAlign = "right"; ctx.textBaseline = "middle"; [0, 20, 40].forEach(d => ctx.fillText(d, L - 4, Y(d)));
+      ctx.textAlign = "center"; ctx.textBaseline = "top"; [0, 10, 20].forEach(t => ctx.fillText(t, X(t), B + 3));
+      const pts = [[0, 0]]; s.forEach((v, i) => pts.push([5 * (i + 1), pts[i][1] + 5 * v])); polyline(ctx, pts, X, Y, "#287c8e", 3);
+      ctx.fillStyle = "#153047"; ctx.font = "bold 15px Arial"; ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText("Graph " + (k + 1), L + 6, oy + 4);
+    });
+  };
+}
 const WORD = { 0: "stops", 1: "walks slowly", 2: "jogs", 3: "runs", 4: "sprints" };
 function forceGen(R) {
   const kind = R.pick(["opp", "opp", "bal", "same", "vert"]), h = R.f() < .5 ? ["left", "right"] : ["right", "left"];
@@ -320,6 +338,34 @@ function forceGen(R) {
 /* ---------- item bank ---------- */
 const MC = (t, stem, a, w, why, extra) => Object.assign({ t, type: "mc", stem, a, opts: [a, ...w], why }, extra || {});
 const BANK = {
+  "6.7B": [
+    R => { const f = forceGen(R), r = netForce(f), lab = netLabel(r), tot = f.reduce((a, b) => a + b.n, 0); const opp = { left: "right", right: "left", up: "down", down: "up" }; const vert = r.axis === "y";
+      const w = uniq([r.n ? `${r.n} N ${opp[r.dir]}` : `${f[0].n} N ${f[0].dir}`, `${tot} N ${r.n ? r.dir : (vert ? "up" : "right")}`, r.n ? "0 N (balanced)" : `${tot} N ${vert ? "down" : "left"}`, `${r.n + 10} N ${r.n ? r.dir : "left"}`]).filter(x => x !== lab).slice(0, 3);
+      return MC("6.7B", vert ? "A crate hangs from a rope. The diagram shows the forces on it. What is the net force on the crate?" : "The diagram shows the forces acting on a box. What is the net force on the box?", lab, w, forceExplain({ forces: f, net: r }), { draw: (ctx, W, H) => drawForceDiagram(ctx, W, H, f, 0, { label: vert ? "CRATE" : "BOX" }) }); },
+    R => { const [a, av, b, bv] = R.pick([["100 people", "pull", "An elephant", "pulls"], ["Team A", "pulls", "Team B", "pulls"], ["The 7th graders", "pull", "the 8th graders", "pull"]]); const p = R.pick([90, 105, 120, 135, 150]), e = p + R.pick([-30, -15, 0, 0, 15, 45]), net = e - p, tot = p + e;
+      const ans = net === 0 ? "0 N, balanced" : `${Math.abs(net)} N ${net > 0 ? "right" : "left"}, unbalanced`;
+      const w = uniq([`${tot} N ${net >= 0 ? "right" : "left"}, unbalanced`, net === 0 ? `${p} N left, unbalanced` : `${Math.abs(net)} N ${net > 0 ? "left" : "right"}, unbalanced`, net === 0 ? `${tot} N right, unbalanced` : "0 N, balanced", `${Math.abs(net) + 10} N ${net >= 0 ? "right" : "left"}, unbalanced`]).filter(x => x !== ans).slice(0, 3);
+      return MC("6.7B", `In a game of tug-of-war, ${a} ${av} with ${p} newtons to the <b>left</b>. ${b[0].toUpperCase() + b.slice(1)} ${bv} with ${e} newtons to the <b>right</b>. What is the net force, and are the forces balanced or unbalanced?`, ans, w, net === 0 ? `Equal forces in opposite directions cancel: ${e} − ${p} = <b>0 N</b>. The forces are <b>balanced</b>, so the rope doesn't move.` : `Opposite directions, so subtract: ${Math.max(p, e)} − ${Math.min(p, e)} = <b>${Math.abs(net)} N toward the ${net > 0 ? "right" : "left"}</b> (the bigger side). The forces are <b>unbalanced</b>.`); },
+    R => { const f = forceGen(R), r = netForce(f), bal = r.n === 0, vert = r.axis === "y";
+      return MC("6.7B", "Look at the forces in the diagram. Are they balanced or unbalanced, and what will happen to the object's motion?", bal ? "Balanced: its motion will not change" : `Unbalanced: it will start moving ${r.dir}`, [bal ? `Unbalanced: it will start moving ${vert ? "up" : "right"}` : "Balanced: its motion will not change", bal ? "Balanced: it will speed up" : `Unbalanced: it will start moving ${({ left: "right", right: "left", up: "down", down: "up" })[r.dir]}`, "You can't tell without knowing its color"], forceExplain({ forces: f, net: r }), { draw: (ctx, W, H) => drawForceDiagram(ctx, W, H, f, 0, { label: vert ? "CRATE" : "BOX" }) }); },
+    R => { const a = R.int(2, 8) * 5, b = a + R.int(1, 5) * 5, d = b - a;
+      return MC("6.7B", `A box has ${a} N pushing it to the right and ${b} N pushing it to the left. Which change would make the forces <b>balanced</b>?`, `Add ${d} N to the right`, [`Add ${d} N to the left`, `Add ${a + b} N to the right`, `Add ${b} N to the left`], `Right side = ${a} N, left side = ${b} N. To balance, the right side needs ${b} − ${a} = <b>${d} N more</b>, so the net force becomes 0 N.`); }
+  ],
+  "7.6A": [
+    R => { const comp = R.shuffle(["H₂O", "CO₂", "NaCl", "C₆H₁₂O₆", "NH₃", "CH₄"]), el = R.shuffle(["O₂", "Fe", "He", "Na", "N₂", "Au", "Cu"]); return MC("7.6A", "Which chemical formula represents a <b>compound</b>?", comp[0], el.slice(0, 3), `A compound has <b>two or more different elements</b> chemically combined. ${comp[0]} contains more than one kind of element. O₂ and N₂ are made of only one element, and Fe, He, Na, Au and Cu are single elements.`); },
+    R => MC("7.6A", "What is the difference between an element and a compound?", "An element is made of one kind of atom; a compound is made of two or more kinds of atoms chemically combined.", ["An element is always a gas; a compound is always a solid.", "An element can be broken down by physical changes; a compound cannot.", "An element is made of many kinds of atoms; a compound has only one kind."], "Elements are on the periodic table and contain only one type of atom. Compounds, like H₂O, combine different elements in a fixed ratio.")
+  ],
+  "7.6B": [
+    R => { const f = R.pick([["H₂SO₄", { H: 2, S: 1, O: 4 }], ["C₆H₁₂O₆", { C: 6, H: 12, O: 6 }], ["CaCO₃", { Ca: 1, C: 1, O: 3 }], ["NaHCO₃", { Na: 1, H: 1, C: 1, O: 3 }], ["NH₄Cl", { N: 1, H: 4, Cl: 1 }], ["Al₂O₃", { Al: 2, O: 3 }], ["C₃H₈", { C: 3, H: 8 }]]); const tot = Object.values(f[1]).reduce((a, b) => a + b, 0);
+      return { t: "7.6B", type: "num", stem: `How many atoms in total are in one molecule of ${f[0]}?`, a: tot, unit: "atoms", tol: .01, why: `Add the subscripts (no subscript means 1): ${Object.entries(f[1]).map(([e, n]) => `${e} = ${n}`).join(", ")}. Total = <b>${tot} atoms</b>.` }; },
+    R => { const f = R.pick([["H₂SO₄", "oxygen", 4, "S", 1], ["C₆H₁₂O₆", "hydrogen", 12, "C", 6], ["CaCO₃", "oxygen", 3, "Ca", 1], ["NH₄Cl", "hydrogen", 4, "N", 1], ["Al₂O₃", "aluminum", 2, "O", 3]]);
+      return MC("7.6B", `How many <b>${f[1]}</b> atoms are in one molecule of ${f[0]}?`, String(f[2]), uniq([String(f[2] + 1), String(f[4]), String(f[2] * 2), "1"]).filter(x => x !== String(f[2])).slice(0, 3), `The subscript right after the ${f[1]} symbol tells how many ${f[1]} atoms there are: <b>${f[2]}</b>.`); }
+  ],
+  "7.6C": [
+    R => { const pool = R.shuffle([["Burning a piece of wood", 1], ["Melting an ice cube", 0], ["Baking a cake", 1], ["Cutting paper into pieces", 0], ["An iron nail rusting", 1], ["Dissolving sugar in water", 0], ["Boiling water", 0], ["Mixing baking soda and vinegar so it fizzes", 1], ["A banana turning brown", 1], ["Crushing a soda can", 0]]); const rows = pool.slice(0, 4); if (rows.every(x => x[1] === rows[0][1])) rows[3] = pool.find(x => x[1] !== rows[0][1]);
+      return { t: "7.6C", type: "table", stem: "Classify each as a <b>physical</b> or <b>chemical</b> change.", rows: rows.map(x => x[0]), cols: ["Physical change", "Chemical change"], a: rows.map(x => x[1]), why: "A <b>chemical change</b> makes a new substance (signs: new gas, color change, temperature change, light, new solid, new odor). A <b>physical change</b> changes only size, shape or state, so it's still the same substance." }; },
+    R => MC("7.6C", "Which observation is the best evidence that a <b>chemical change</b> happened?", "Bubbles of a new gas form when two liquids are mixed", ["Ice melts into liquid water", "A piece of paper is torn in half", "Salt dissolves in water"], "Signs of a chemical change include a new gas (bubbles), color change, temperature change, light, a new solid, or a new odor, because a <b>new substance</b> forms.")
+  ],
   "7.6D": [
     R => { const [so, sv, nm] = R.pick([["salt", "water", "salt water"], ["sugar", "water", "sugar water"], ["drink mix powder", "water", "a fruit drink"]]);
       return MC("7.6D", `A student stirs ${so} into ${sv} until it completely dissolves, making ${nm}. Which choice correctly identifies the solute and the solvent?`, `Solute: ${so}; Solvent: ${sv}`, [`Solute: ${sv}; Solvent: ${so}`, `Solute: ${nm}; Solvent: ${so}`, `Solute: ${so}; Solvent: ${nm}`], `The <b>solute</b> is the substance that dissolves (${so}). The <b>solvent</b> does the dissolving (${sv}).`); },
@@ -347,13 +393,17 @@ const BANK = {
       return MC("7.7A", `The table shows data from three runners.<table class="datatable"><tr><th>Runner</th><th>Distance (m)</th><th>Time (s)</th></tr>${rows.map(([d, t], i) => `<tr><td>${names[i]}</td><td>${d}</td><td>${t}</td></tr>`).join("")}</table>Which runner had the greatest average speed?`, names[bi], [...names.filter((_, i) => i !== bi), "They all had the same speed"], `Divide distance by time: ${rows.map(([d, t], i) => `${names[i]} = ${r2(d / t)} m/s`).join(", ")}. The biggest is ${names[bi]}. The longest distance isn't automatically the fastest!`); },
     R => { let t1, t2, s1, s2, avg, k = 0; do { t1 = R.pick([20, 30, 40, 50]); t2 = R.pick([10, 20, 30]); s1 = R.int(1, 4); s2 = R.int(5, 9); avg = (s1 * t1 + s2 * t2) / (t1 + t2); k++; } while ((avg % 1 !== 0 || avg === (s1 + s2) / 2) && k < 500); const d1 = s1 * t1, d2 = s2 * t2;
       return { t: "7.7A", type: "num", stem: `A cyclist rides ${d1} m in ${t1} s, then rides ${d2} m in ${t2} s. What is the cyclist's average speed for the whole trip, in m/s?`, a: avg, unit: "m/s", tol: .01, why: `Total distance ÷ total time = ${d1 + d2} m ÷ ${t1 + t2} s = <b>${avg} m/s</b>. Don't average the two speeds.` }; },
-    R => ({ t: "7.7A", type: "multi", n: 2, stem: "A student wants to calculate the average speed of a toy car. Which <b>TWO</b> measurements does the student need?", a: ["The distance the car travels", "The time the car takes"], opts: ["The distance the car travels", "The time the car takes", "The mass of the car", "The height of the table", "The color of the car"], why: "Average speed = distance ÷ time, so you need <b>distance</b> and <b>time</b>." })
+    R => ({ t: "7.7A", type: "multi", n: 2, stem: "A student wants to calculate the average speed of a toy car. Which <b>TWO</b> measurements does the student need?", a: ["The distance the car travels", "The time the car takes"], opts: ["The distance the car travels", "The time the car takes", "The mass of the car", "The height of the table", "The color of the car"], why: "Average speed = distance ÷ time, so you need <b>distance</b> and <b>time</b>." }),
+    R => { const sp = R.pick([2, 3, 4, 5, 6, 8]), t = R.int(3, 12), d = sp * t; return { t: "7.7A", type: "num", stem: `A robot travels ${d} m at an average speed of ${sp} m/s. How long does the trip take, in seconds?`, a: t, unit: "s", tol: .01, why: `Time = distance ÷ speed = ${d} m ÷ ${sp} m/s = <b>${t} s</b>. (Rearrange speed = distance ÷ time.)` }; },
+    R => { const [who, what] = R.pick([["A student", "pushes a friend in a rolling chair down the hallway"], ["A cheetah", "sprints across the savanna"], ["A swimmer", "swims one race"], ["A skateboarder", "rolls down a long sidewalk"]]); const sp = R.pick([2, 3, 4, 5, 10, 25]), t = R.pick([5, 10, 20, 40]), d = sp * t;
+      return MC("7.7A", `${who} ${what}, traveling ${d} meters in ${t} seconds. What is the average speed?`, `${sp} m/s`, uniq([`${d * t} m/s`, `${r2(t / d)} m/s`, `${d - t} m/s`, `${sp * 2} m/s`]).filter(x => x !== `${sp} m/s`).slice(0, 3), `Speed = distance ÷ time = ${d} m ÷ ${t} s = <b>${sp} m/s</b>. Don't forget your units!`); }
   ],
   "7.7B": [
     R => { const L = R.pick([200, 400]); return MC("7.7B", `A runner completes one full lap around a ${L} m track and stops exactly where she started. What is her displacement?`, "0 m", [`${L} m`, `${L / 2} m`, `${L * 2} m`], `Displacement is the straight-line distance from start to finish. She ended where she started, so displacement = <b>0 m</b> (her distance was ${L} m).`); },
     R => { const a = R.int(3, 9) * 10, b = R.int(1, a / 10 - 1) * 10; return MC("7.7B", `A student walks ${a} m east and then ${b} m west. Which correctly describes the distance and displacement?`, `Distance: ${a + b} m; Displacement: ${a - b} m east`, [`Distance: ${a - b} m; Displacement: ${a + b} m east`, `Distance: ${a + b} m; Displacement: ${a + b} m east`, `Distance: ${a + b} m; Displacement: ${a - b} m west`], `Distance adds every step: ${a} + ${b} = ${a + b} m. Displacement is where you end up from the start: ${a} − ${b} = ${a - b} m <b>east</b>.`); },
     R => ({ t: "7.7B", type: "inline", stem: "A car drives around a circular track at a steady 15 m/s. Its {0} stays the same, but its {1} keeps changing because its {2} keeps changing.", sel: [["speed", "velocity"], ["velocity", "speed"], ["direction", "mass"]], a: ["speed", "velocity", "direction"], why: "Speed has no direction, so it stays 15 m/s. <b>Velocity</b> includes direction, and on a curve the direction changes constantly." }),
-    R => { const n = R.int(5, 30), d = R.pick(["north", "south", "east", "west"]); return MC("7.7B", "Which measurement describes a <b>velocity</b>?", `${n} m/s ${d}`, [`${n} m/s`, `${n} m ${d}`, `${n} s`], `Velocity needs a speed (m/s) <b>and</b> a direction.`); }
+    R => { const n = R.int(5, 30), d = R.pick(["north", "south", "east", "west"]); return MC("7.7B", "Which measurement describes a <b>velocity</b>?", `${n} m/s ${d}`, [`${n} m/s`, `${n} m ${d}`, `${n} s`], `Velocity needs a speed (m/s) <b>and</b> a direction.`); },
+    R => MC("7.7B", "Which example describes a <b>velocity</b>?<br><b>Example 1:</b> An airplane flies 180 miles from Houston to Dallas in 3 hours.<br><b>Example 2:</b> An airplane flies west out of Houston at 270 miles per hour.", "Example 2, because it gives a speed and a direction", ["Example 1, because it gives a distance and a time", "Both examples, because airplanes are always moving", "Neither example, because velocity is measured in meters"], "Velocity needs a speed <b>and a direction</b>. Example 2 gives 270 mph <b>west</b>. Example 1 only gives distance and time (you could calculate a speed of 60 mph, but there's no direction).")
   ],
   "7.7C": [
     R => { const s = segSpeeds(R), L = "1234"[s.indexOf(0)]; return MC("7.7C", "The distance-time graph shows a student's walk. During which segment was the student <b>not moving</b>?", `Segment ${L}`, ["1", "2", "3", "4"].filter(x => x !== L).map(x => `Segment ${x}`), `Segment ${L} is flat. The time changes but the distance does not, so the student was stopped.`, { draw: segGraph(s) }); },
@@ -361,57 +411,43 @@ const BANK = {
     R => { const s = segSpeeds(R), story = x => x.map(v => WORD[v]).join(", then "); const alts = [[...s].reverse(), [s[1], s[0], s[2], s[3]], [s[0], s[1], s[3], s[2]], [s[2], s[1], s[0], s[3]]].filter(x => x.join() !== s.join()); const uniqAlts = []; alts.forEach(x => { if (!uniqAlts.some(y => y.join() === x.join())) uniqAlts.push(x); }); while (uniqAlts.length < 3) uniqAlts.push(s.map(v => v === 0 ? 2 : v === 2 ? 0 : v));
       return MC("7.7C", "Which description matches the distance-time graph? (Each segment lasts 5 seconds.)", "The student " + story(s) + ".", uniqAlts.slice(0, 3).map(x => "The student " + story(x) + "."), "Flat = stops. Gentle slope = walks or jogs. Steep slope = runs or sprints. Read the segments left to right.", { draw: segGraph(s, false) }); },
     R => { let s; do { s = segSpeeds(R); } while (s.filter(v => v === Math.max(...s)).length > 1); const i = s.indexOf(Math.max(...s)), rng = t => `${t * 5}–${t * 5 + 5} s`;
-      return MC("7.7C", "Between which times was the student moving the <b>fastest</b>?", rng(i), [0, 1, 2, 3].filter(k => k !== i).map(rng), `The steepest part of the graph is from ${rng(i)}, where the student covered ${s[i] * 5} m in 5 s.`, { draw: segGraph(s, false) }); }
+      return MC("7.7C", "Between which times was the student moving the <b>fastest</b>?", rng(i), [0, 1, 2, 3].filter(k => k !== i).map(rng), `The steepest part of the graph is from ${rng(i)}, where the student covered ${s[i] * 5} m in 5 s.`, { draw: segGraph(s, false) }); },
+    R => { const s = segSpeedsR(R), i = s.findIndex(v => v < 0), L = "1234"[i]; return MC("7.7C", "The graph shows a student's distance from the starting line. During which segment is the student moving <b>back toward the start</b>?", `Segment ${L}`, ["1", "2", "3", "4"].filter(x => x !== L).map(x => `Segment ${x}`), `In segment ${L} the line slopes <b>down</b>. The distance from the start is getting smaller, so the student is heading back toward the starting line.`, { draw: segGraph(s) }); },
+    R => { const s = segSpeeds(R), pts = [0]; s.forEach((v, i) => pts.push(pts[i] + 5 * v)); const list = [s]; [[...s].reverse(), [s[1], s[0], s[2], s[3]], [s[0], s[1], s[3], s[2]], [s[0], s[2], s[1], s[3]]].forEach(a => { if (list.length < 4 && !list.some(x => x.join() === a.join())) list.push(a); }); while (list.length < 4) { const a = segSpeeds(R); if (!list.some(x => x.join() === a.join())) list.push(a); }
+      const sh = R.shuffle(list), k = sh.findIndex(x => x.join() === s.join());
+      return MC("7.7C", `A student recorded a toy car's distance every 5 seconds.<table class="datatable"><tr><th>Time (s)</th>${[0, 5, 10, 15, 20].map(t => `<td>${t}</td>`).join("")}</tr><tr><th>Distance (m)</th>${pts.map(d => `<td>${d}</td>`).join("")}</tr></table>Which graph matches the data?`, `Graph ${k + 1}`, [0, 1, 2, 3].filter(j => j !== k).map(j => `Graph ${j + 1}`), `Plot each pair: ${pts.map((d, i) => `(${i * 5} s, ${d} m)`).join(", ")}. Graph ${k + 1} passes through every point. Where the distance doesn't change, the line is flat.`, { draw: miniGraphs(sh) }); }
   ],
   "7.7D": [
     R => { const pool = R.shuffle([["A book resting on a shelf", 0], ["A car speeding up as a light turns green", 1], ["An elevator moving up at a constant speed", 0], ["A soccer ball slowing down as it rolls on grass", 1], ["A lamp hanging still from the ceiling", 0], ["A bike turning a corner", 1], ["A hockey puck sliding at a constant velocity on smooth ice", 0], ["A skateboarder starting to roll after a push", 1]]); let rows = pool.slice(0, 4); if (rows.every(x => x[1] === rows[0][1])) rows[3] = pool.find(x => x[1] !== rows[0][1]);
       return { t: "7.7D", type: "table", stem: "Decide whether the forces on each object are <b>balanced</b> or <b>unbalanced</b>.", rows: rows.map(x => x[0]), cols: ["Balanced", "Unbalanced"], a: rows.map(x => x[1]), why: "If the motion is <b>changing</b> (starting, speeding up, slowing down, turning), the forces are unbalanced. At rest or at a constant velocity in a straight line means the forces are balanced." }; },
-    R => { const f = forceGen(R), r = netForce(f), lab = netLabel(r), tot = f.reduce((a, b) => a + b.n, 0); const opp = { left: "right", right: "left", up: "down", down: "up" }; const vert = r.axis === "y";
-      const w = uniq([r.n ? `${r.n} N ${opp[r.dir]}` : `${f[0].n} N ${f[0].dir}`, `${tot} N ${r.n ? r.dir : (vert ? "up" : "right")}`, r.n ? "0 N (balanced)" : `${tot} N ${vert ? "down" : "left"}`, `${r.n + 10} N ${r.n ? r.dir : "left"}`]).filter(x => x !== lab).slice(0, 3);
-      return MC("7.7D", vert ? "A crate hangs from a rope. The diagram shows the forces on it. What is the net force on the crate?" : "The diagram shows the forces acting on a box. What is the net force on the box?", lab, w, forceExplain({ forces: f, net: r }), { draw: (ctx, W, H) => drawForceDiagram(ctx, W, H, f, 0, { label: vert ? "CRATE" : "BOX" }) }); },
     R => R.pick([
       MC("7.7D", "A school bus stops suddenly, and the standing students lurch forward. Which statement best explains this?", "The students' inertia keeps them moving forward when the bus stops.", ["The bus pushes the students forward.", "Gravity pulls the students forward.", "The students have no inertia while the bus is moving."], "The students were moving with the bus. Their <b>inertia</b> keeps them moving forward until an unbalanced force (like holding a pole) stops them."),
       MC("7.7D", "A tablecloth is yanked quickly from under a set of dishes, and the dishes stay on the table. Which statement best explains this?", "The dishes were at rest and tended to stay at rest because of their inertia.", ["The tablecloth pushed the dishes backward.", "Gravity stopped working on the dishes.", "The dishes had no mass."], "Objects at rest tend to stay at rest (<b>inertia</b>). The fast pull didn't give friction enough time to move the dishes.")
     ]),
     R => ({ t: "7.7D", type: "multi", n: 2, stem: "Which <b>TWO</b> statements agree with Newton's First Law of Motion?", a: ["An object at rest stays at rest unless an unbalanced force acts on it.", "An object moving at a constant velocity keeps moving that way unless an unbalanced force acts on it."], opts: ["An object at rest stays at rest unless an unbalanced force acts on it.", "An object moving at a constant velocity keeps moving that way unless an unbalanced force acts on it.", "A moving object always slows down and stops on its own.", "Balanced forces make an object speed up.", "Objects with more mass have less inertia."], why: "Newton's First Law: motion changes only when an <b>unbalanced</b> force acts. Objects slow down because of friction, and more mass means <b>more</b> inertia." }),
-    R => { const m = R.shuffle([2, 5, 12, 20]); const mx = Math.max(...m); return MC("7.7D", `Four identical carts are loaded with different masses: ${m.map((x, i) => `Cart ${"ABCD"[i]}: ${x} kg`).join(", ")}. Which cart has the <b>most inertia</b>?`, `Cart ${"ABCD"[m.indexOf(mx)]}`, [0, 1, 2, 3].filter(i => m[i] !== mx).map(i => `Cart ${"ABCD"[i]}`), "Inertia depends on <b>mass</b>. The cart with the most mass resists changes in motion the most."); }
-  ],
-  "7.8A": [
-    R => { const pool = R.shuffle([["A metal spoon gets hot in a cup of hot cocoa", 0], ["Your hand warms up holding a mug of tea", 0], ["Ice melts in your hand", 0], ["Hot air rises from a heater and cool air sinks", 1], ["Water circulates in a pot on the stove", 1], ["A sea breeze blows toward land on a sunny day", 1], ["Sunlight warms a sidewalk", 2], ["You feel the warmth of a campfire from a few feet away", 2], ["A heat lamp keeps food warm", 2]]); const rows = [pool.find(x => x[1] === 0), pool.find(x => x[1] === 1), pool.find(x => x[1] === 2)]; rows.push(pool.find(x => !rows.includes(x))); const rr = R.shuffle(rows);
-      return { t: "7.8A", type: "table", stem: "Identify the main type of thermal energy transfer in each example.", rows: rr.map(x => x[0]), cols: ["Conduction", "Convection", "Radiation"], a: rr.map(x => x[1]), why: "<b>Conduction</b> = direct contact. <b>Convection</b> = currents in liquids or gases. <b>Radiation</b> = waves, no contact needed." }; },
-    R => MC("7.8A", "A student holds a marshmallow above a campfire without letting it touch the flames, and it turns golden brown. How did most of the thermal energy reach the marshmallow?", "Radiation", ["Conduction", "Convection", "Evaporation"], "The marshmallow isn't touching anything hot, and energy travels from the fire as <b>radiation</b>. (Some hot air rising by convection helps, but radiation is the main way.)"),
-    R => MC("7.8A", "A pot of water is heated on a stove. Which statement best describes how the water heats up?", "Warm water near the bottom becomes less dense and rises while cooler water sinks, forming a current.", ["Warm water sinks to the bottom because it is heavier.", "Cold moves from the water into the pot.", "The water heats only by radiation from the light in the room."], "This is <b>convection</b>: heated fluid is less dense and rises, and cooler fluid sinks to be heated, making a convection current."),
-    R => { const yes = R.shuffle(["A metal pan handle gets hot on the stove", "A hand warms up while holding a hot mug", "An ice cube melts while sitting on a warm plate"]).slice(0, 2); const no = R.shuffle(["The Sun warms a car seat through the window", "Warm air rises above a heater", "A campfire warms your face from far away"]).slice(0, 3);
-      return { t: "7.8A", type: "multi", n: 2, stem: "Which <b>TWO</b> are examples of <b>conduction</b>?", a: yes, opts: [...yes, ...no], why: "Conduction needs <b>direct contact</b> between objects. The others are radiation (Sun, campfire) or convection (rising air)." }; }
-  ],
-  "7.8B": [
-    R => { const T1 = R.int(7, 9) * 10, T2 = R.pick([15, 20, 25]); return MC("7.8B", `A ${T1} °C metal block is placed in a container of ${T2} °C water. What happens next?`, "Thermal energy moves from the block to the water until they reach the same temperature.", ["Thermal energy moves from the water to the block until the block is cooler.", "Cold moves from the water into the block.", `The block stays at ${T1} °C and the water heats up to ${T1} °C.`], `Thermal energy flows from <b>warmer to cooler</b> until <b>thermal equilibrium</b>, where both end at a temperature between ${T2} and ${T1} °C.`); },
-    R => { const hot = R.int(70, 90), cold = R.int(10, 25), eq = Math.round((hot + cold) / 2), m = R.pick([8, 10, 12]);
-      return MC("7.8B", `A hot metal can and a cup of cool water are placed in contact. The graph shows their temperatures over time. What is happening after ${m} minutes, when the two lines meet?`, "The objects have reached thermal equilibrium, so there is no more net transfer of thermal energy.", ["The cool water is now hotter than the can.", "Thermal energy is moving from the water to the can faster than before.", "Both objects have lost all of their thermal energy."], `When both temperatures are equal (about ${eq} °C) the objects are at <b>thermal equilibrium</b>. Energy no longer flows from one to the other.`,
-        { draw: (ctx, W, H) => { const { X, Y } = dtAxes(ctx, W, H, 16, 100, 2, 10, "Time (min)", "Temperature (°C)"); const h = [], c = []; for (let t = 0; t <= 16; t += .5) { const k = t >= m ? 1 : 1 - Math.pow(1 - t / m, 2); h.push([t, hot - (hot - eq) * k]); c.push([t, cold + (eq - cold) * k]); } polyline(ctx, h, X, Y, "#c0392b", 4); polyline(ctx, c, X, Y, "#1f5fa8", 4); ctx.font = "bold 13px Arial"; ctx.textAlign = "left"; ctx.fillStyle = "#c0392b"; ctx.fillText("metal can", X(.4), Y(hot) - 10); ctx.fillStyle = "#1f5fa8"; ctx.fillText("water", X(.4), Y(cold) + 18); } }); },
-    R => ({ t: "7.8B", type: "inline", stem: "When a student holds an ice cube, thermal energy moves from the {0} to the {1}. The student's hand feels cold because the hand is {2} thermal energy.", sel: [["hand", "ice"], ["ice", "hand"], ["losing", "gaining"]], a: ["hand", "ice", "losing"], why: "Energy flows from warmer (hand) to cooler (ice). \"Cold\" doesn't move. Your hand feels cold because it is <b>losing</b> thermal energy." })
-  ],
-  "7.8C": [
-    R => { const a = R.int(70, 90), b = R.int(10, 25); return MC("7.8C", `Beaker A holds water at ${a} °C and Beaker B holds the same amount of water at ${b} °C. Which statement is correct?`, "The particles in Beaker A have more kinetic energy and move faster.", ["The particles in Beaker B have more kinetic energy and move faster.", "The particles in both beakers move at the same speed.", "The particles in Beaker A have stopped moving."], "Higher temperature = greater average <b>kinetic energy</b> = particles moving <b>faster</b>."); },
-    R => MC("7.8C", "As the temperature of a substance increases, what happens to the average kinetic energy of its particles?", "It increases.", ["It decreases.", "It stays the same.", "It drops to zero."], "Temperature is a measure of the average <b>kinetic energy</b> of the particles. Raising the temperature means the particles move faster."),
-    R => MC("7.8C", "The liquid in a thermometer rises when the thermometer is placed in hot water. Which statement best explains why?", "The liquid's particles gain kinetic energy, move faster, and spread farther apart.", ["The liquid's particles lose kinetic energy and slow down.", "Cold leaves the thermometer and enters the water.", "The number of particles in the liquid increases."], "Hot water transfers thermal energy to the liquid. Its particles move <b>faster</b> and spread out, so the liquid expands up the tube.")
+    R => { const m = R.shuffle([2, 5, 12, 20]); const mx = Math.max(...m); return MC("7.7D", `Four identical carts are loaded with different masses: ${m.map((x, i) => `Cart ${"ABCD"[i]}: ${x} kg`).join(", ")}. Which cart has the <b>most inertia</b>?`, `Cart ${"ABCD"[m.indexOf(mx)]}`, [0, 1, 2, 3].filter(i => m[i] !== mx).map(i => `Cart ${"ABCD"[i]}`), "Inertia depends on <b>mass</b>. The cart with the most mass resists changes in motion the most."); },
+    R => ({ t: "7.7D", type: "multi", n: 2, stem: "The forces acting on a shopping cart are <b>balanced</b>. Which <b>TWO</b> describe how the cart could be moving?", a: ["Moving forward at a constant speed", "Remaining in the same spot, not moving"], opts: ["Moving forward at a constant speed", "Remaining in the same spot, not moving", "Moving backward while speeding up", "Moving forward while slowing down", "Turning a corner"], why: "Balanced forces (net force 0 N) mean the motion <b>does not change</b>. The cart either stays at rest or keeps moving at the same speed in the same direction. Speeding up, slowing down or turning all need an unbalanced force." })
   ]
 };
-const PLAN = { "7.6D": 2, "7.6E": 3, "7.7A": 3, "7.7B": 2, "7.7C": 3, "7.7D": 4, "7.8A": 3, "7.8B": 2, "7.8C": 2 };
+const PLAN = { "7.7A": 5, "7.7B": 3, "7.7C": 5, "6.7B": 3, "7.7D": 4 };
+const SPIRAL = ["7.6A", "7.6B", "7.6C", "7.6D", "7.6E"], SPIRAL_N = 4;
+const TEKS_ORDER = ["7.7A", "7.7B", "7.7C", "6.7B", "7.7D", "7.6A", "7.6B", "7.6C", "7.6D", "7.6E"];
 const SKILL = {
+  "6.7B": ["Calculating net force; balanced vs. unbalanced", [["Force Detective", "force-detective/"], ["DBA Boss Battle", "dba-boss-battle/"]]],
+  "7.6A": ["Elements vs. compounds (1st six weeks)", [["Matter Mission", "matter-mission/"]]],
+  "7.6B": ["Counting atoms in a formula (1st six weeks)", [["Matter Mission", "matter-mission/"]]],
+  "7.6C": ["Physical vs. chemical changes (1st six weeks)", [["Matter Mission", "matter-mission/"]]],
   "7.6D": ["Solutions: solute, solvent, concentration, dilution", [["Dissolution Lab", "dissolution/"], ["Vocab Vault", "vocab-review/"]]],
   "7.6E": ["Rate of dissolution: temperature, surface area, agitation", [["Dissolution Lab", "dissolution/"]]],
   "7.7A": ["Calculating average speed", [["DBA Boss Battle", "dba-boss-battle/"], ["Rescue Run", "rescue-run/"]]],
   "7.7B": ["Speed vs. velocity; distance vs. displacement", [["DBA Boss Battle", "dba-boss-battle/"]]],
-  "7.7C": ["Distance-time graphs", [["Graph Lab", "graph-lab/"]]],
-  "7.7D": ["Balanced/unbalanced forces & Newton's 1st Law", [["Force Detective", "force-detective/"], ["Inertia Arcade", "inertia-arcade/"]]],
-  "7.8A": ["Conduction, convection, radiation", [["CCR Challenge", "ccr-challenge/"], ["Marshmallow Meltdown", "https://theunexpectedscienceteacher-blip.github.io/marshmallow-virtual-lab/"]]],
-  "7.8B": ["Thermal energy flow & thermal equilibrium", [["Marshmallow Meltdown", "https://theunexpectedscienceteacher-blip.github.io/marshmallow-virtual-lab/"], ["Study Guide", "study-guide/"]]],
-  "7.8C": ["Temperature & particle kinetic energy", [["Vocab Vault", "vocab-review/"], ["Study Guide", "study-guide/"]]]
+  "7.7C": ["Distance-time graphs", [["Graph Lab", "graph-lab/"], ["DBA Boss Battle", "dba-boss-battle/"]]],
+  "7.7D": ["Balanced/unbalanced forces & Newton's 1st Law", [["Inertia Arcade", "inertia-arcade/"], ["Catapult Lab", "catapult/"]]]
 };
 function buildTest(seed) {
   const R = makeR(seed), items = [];
   Object.entries(PLAN).forEach(([t, k]) => R.shuffle(BANK[t].map((_, i) => i)).slice(0, k).forEach(i => items.push(BANK[t][i](R))));
+  R.shuffle(SPIRAL).slice(0, SPIRAL_N).forEach(t => items.push(R.pick(BANK[t])(R)));
   const order = R.shuffle(items);
   order.forEach(it => { if (it.type === "mc" || it.type === "multi") it.opts = R.shuffle(it.opts); });
   return order;
@@ -524,8 +560,8 @@ function finish() {
   const mins = Math.round((S.end - S.start) / 60000);
   $("resTitle").textContent = pct >= 80 ? "🏆 On track for the DBA!" : pct >= 60 ? "⚔️ Almost there!" : "📚 Time to review";
   $("resMsg").innerHTML = `You scored <b>${score} / ${ITEMS.length} (${pct}%)</b> in about ${mins} minute${mins === 1 ? "" : "s"}. ` + (pct >= 80 ? "Look over anything you missed, then try another practice test." : "Use the practice links below for your lowest skills, then take a new practice test.");
-  $("tekTable").innerHTML = "<tr><th>TEKS</th><th>Skill</th><th>Correct</th><th>Practice</th></tr>" + Object.keys(PLAN).map(t => { const b = byT[t] || { r: 0, n: 0 }, ok = b.r === b.n; return `<tr><td>${t}</td><td>${SKILL[t][0]}</td><td>${ok ? "✅" : b.r / b.n >= .5 ? "🟡" : "🔴"} ${b.r}/${b.n}</td><td>${SKILL[t][1].map(([n, u]) => `<a href="${u.startsWith("http") ? u : "../" + u}" target="_blank">${n}</a>`).join(" · ")}</td></tr>`; }).join("");
-  const weak = Object.keys(PLAN).filter(t => byT[t] && byT[t].r / byT[t].n < .67);
+  $("tekTable").innerHTML = "<tr><th>TEKS</th><th>Skill</th><th>Correct</th><th>Practice</th></tr>" + TEKS_ORDER.filter(t => byT[t]).map(t => { const b = byT[t] || { r: 0, n: 0 }, ok = b.r === b.n; return `<tr><td>${t}</td><td>${SKILL[t][0]}</td><td>${ok ? "✅" : b.r / b.n >= .5 ? "🟡" : "🔴"} ${b.r}/${b.n}</td><td>${SKILL[t][1].map(([n, u]) => `<a href="${u.startsWith("http") ? u : "../" + u}" target="_blank">${n}</a>`).join(" · ")}</td></tr>`; }).join("");
+  const weak = TEKS_ORDER.filter(t => byT[t] && byT[t].r / byT[t].n < .67);
   $("practiceBox").innerHTML = weak.length ? `<div class="fb hint"><b>🎯 Focus on these before the DBA:</b> ${weak.map(t => `${t} (${SKILL[t][0]})`).join("; ")}.</div>` : `<div class="fb good"><b>Strong across every skill!</b> Keep it fresh with one more practice test before the DBA.</div>`;
   const rv = $("reviewAll"); rv.innerHTML = "";
   ITEMS.forEach((it, i) => { const ok = isCorrect(i), d = document.createElement("div"); d.className = "rv " + (ok ? "ok" : "no");
@@ -541,7 +577,7 @@ $("compileBtn").onclick = () => {
     `Score: ${score}/${ITEMS.length} (${pct}%)   Time: about ${Math.round((S.end - S.start) / 60000)} min`,
     "",
     "BY TEKS:",
-    ...Object.keys(PLAN).map(t => `${t} ${SKILL[t][0]}: ${(byT[t] || { r: 0 }).r}/${(byT[t] || { n: 0 }).n}`),
+    ...TEKS_ORDER.filter(t => byT[t]).map(t => `${t} ${SKILL[t][0]}: ${(byT[t] || { r: 0 }).r}/${(byT[t] || { n: 0 }).n}`),
     "",
     "MISSED QUESTIONS: " + (ITEMS.map((_, i) => i).filter(i => !isCorrect(i)).map(i => `#${i + 1} (${ITEMS[i].t})`).join(", ") || "none!"),
     "",
