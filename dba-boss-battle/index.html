@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DBA Boss Battle</title>
+<style>
+:root{--ink:#153047;--muted:#516273;--line:#c9d6df;--bg:#f3f7fa;--gold:#f4b942;--teal:#287c8e;--good:#1f7a4d;--goodbg:#e3f5ea;--bad:#b3261e;--badbg:#fdeceb;--warnbg:#fff5d6}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);line-height:1.4}
+header{background:var(--ink);color:#fff;padding:18px clamp(16px,4vw,48px);border-bottom:8px solid var(--gold)}
+header a{color:var(--gold);font-weight:700;text-decoration:none}
+header h1{margin:6px 0 4px;font-size:clamp(26px,4.5vw,40px);line-height:1.1}
+header p{margin:0;color:#d8eef4}
+main{max-width:1000px;margin:0 auto;padding:20px 16px 48px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin:0 0 16px;box-shadow:0 6px 20px rgba(21,48,71,.08)}
+h2{margin:0 0 10px}
+h3{margin:14px 0 8px}
+button{font:inherit;font-weight:700;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:10px;padding:10px 16px;cursor:pointer}
+button.primary{background:var(--ink);color:#fff}
+button.gold{background:var(--gold);border-color:#c98f12}
+button:disabled{opacity:.45;cursor:default}
+.big{font-size:1.15rem}
+.small{font-size:.9rem;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.hidden{display:none!important}
+.tag{display:inline-block;background:var(--warnbg);color:#7a5a00;font-size:13px;font-weight:700;padding:3px 8px;border-radius:6px;margin:2px 4px 2px 0}
+.seg{display:inline-flex;border:2px solid var(--ink);border-radius:10px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;border-radius:0;background:#fff}
+.seg button.on{background:var(--ink);color:#fff}
+.choice{display:block;width:100%;text-align:left;margin:8px 0;background:#eef4f8;border-color:transparent;font-weight:600}
+.choice:hover:not(:disabled){border-color:var(--teal)}
+.choice.good{background:var(--goodbg);border-color:var(--good);opacity:1}
+.choice.bad{background:var(--badbg);border-color:var(--bad);opacity:1}
+.choice.gone{visibility:hidden}
+.choice:disabled{cursor:default;opacity:.75}
+.fb{margin-top:12px;padding:12px 14px;border-radius:8px;border-left:5px solid var(--teal);background:#eef6f8}
+.fb.good{background:var(--goodbg);border-color:var(--good)}
+.fb.bad{background:var(--badbg);border-color:var(--bad)}
+.fb.hint{background:var(--warnbg);border-color:var(--gold)}
+canvas{width:100%;height:auto;display:block;border-radius:10px;background:#f7fbfd;border:1px solid var(--line)}
+.bar{height:12px;background:#e3eaf0;border-radius:6px;overflow:hidden}
+.bar>div{height:100%;width:0;background:var(--teal);transition:width .3s}
+input,select,textarea{font:inherit;padding:9px 10px;border:2px solid var(--line);border-radius:8px;color:var(--ink)}
+textarea{width:100%;min-height:90px}
+textarea.results{min-height:200px;font-family:"Courier New",monospace;font-size:.9rem}
+table{border-collapse:collapse;width:100%;margin:8px 0}
+th,td{border:1px solid var(--line);padding:8px;text-align:left}
+th{background:var(--ink);color:#fff}
+.stat{background:#eef4f8;border-radius:10px;padding:10px 14px;min-width:110px}
+.stat span{display:block;font-size:.8rem;color:var(--muted);font-weight:700;text-transform:uppercase}
+.stat strong{font-size:1.4rem}
+.pop{animation:pop .4s}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+.shake{animation:shake .45s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-7px)}80%{transform:translateX(7px)}}
+@media print{header a,.noprint,button{display:none!important}body{background:#fff}.card{box-shadow:none}}
+#arena{position:relative;border-radius:14px;padding:18px;background:linear-gradient(180deg,#1d2b4f,#2c3e6b);color:#fff;overflow:hidden;min-height:250px}
+#arena.hit{animation:flash .45s}
+@keyframes flash{0%,100%{box-shadow:inset 0 0 0 0 rgba(214,40,40,0)}40%{box-shadow:inset 0 0 0 999px rgba(214,40,40,.35)}}
+#bossEmoji{font-size:110px;text-align:center;line-height:1.1;transition:opacity .6s,transform .6s}
+#bossEmoji.dead{opacity:0;transform:scale(.3) rotate(40deg)}
+#bossName{text-align:center;font-size:1.4rem;font-weight:700;margin-top:4px}
+#bossSkill{text-align:center;color:#ffd77a;font-size:.95rem}
+.hpwrap{max-width:420px;margin:10px auto 0}
+.hpbar{height:16px;background:rgba(255,255,255,.2);border-radius:8px;overflow:hidden}
+.hpbar>div{height:100%;background:linear-gradient(90deg,#e74c3c,#f39c12);transition:width .4s}
+.hplabel{font-size:.85rem;text-align:right;margin-top:2px}
+#hearts{position:absolute;left:16px;top:14px;font-size:1.6rem;letter-spacing:2px}
+#powers{position:absolute;right:16px;top:14px;font-size:.95rem;text-align:right}
+#dmg{position:absolute;left:50%;top:70px;font-size:2.4rem;font-weight:900;color:#ffd77a;text-shadow:0 2px 6px #000;pointer-events:none;opacity:0;transform:translateX(-50%)}
+#dmg.go{animation:dmg .9s ease-out}
+@keyframes dmg{0%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-70px)}}
+.bossmap{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.bossmap div{flex:1;min-width:120px;background:#eef4f8;border-radius:10px;padding:8px;text-align:center;font-size:.85rem;font-weight:700;border:2px solid transparent}
+.bossmap div.now{border-color:var(--ink)}
+.bossmap div.done{background:var(--goodbg)}
+.bossmap div.fail{background:var(--badbg)}
+.bossmap span{display:block;font-size:1.8rem}
+#qCanvas{margin:8px 0}
+@media (max-width:600px){.bossmap div{min-width:52px;padding:6px 2px;font-size:0}.bossmap span{font-size:1.6rem}#bossEmoji{font-size:80px}}
+</style>
+</head>
+<body>
+<header>
+  <a href="../">&larr; All Labs</a>
+  <h1>👾 DBA Boss Battle</h1>
+  <p>Defeat five force-and-motion bosses to prove you're ready for the DBA.</p>
+</header>
+<main>
+  <section id="intro" class="card">
+    <span class="tag">7.7A Speed</span><span class="tag">7.7B Velocity</span><span class="tag">7.7C Distance-time graphs</span><span class="tag">7.7D Net force &amp; Newton's 1st Law</span>
+    <h2>How to battle</h2>
+    <p class="big">Each correct answer hits the boss for <b>25 damage</b>, and four hits defeat it. A wrong answer lets the boss hit <b>you</b> and you lose a ❤️. Run out of hearts and you can retry that boss with new questions.</p>
+    <div class="row" style="margin:12px 0">
+      <label>Your name <input id="sName" placeholder="First and last name"></label>
+      <label>Period <input id="sPeriod" style="width:80px"></label>
+    </div>
+    <p style="margin:6px 0"><b>Choose your level:</b></p>
+    <div class="seg" id="modeSeg"><button data-mode="support">🛡️ Support</button><button data-mode="standard" class="on">⚔️ Standard</button><button data-mode="advanced">🔥 Advanced</button></div>
+    <p class="small" id="modeInfo"></p>
+    <div class="bossmap" id="introMap"></div>
+    <button class="primary big" id="startBtn">⚔️ Battle!</button>
+    <p class="small" id="bestLine"></p>
+  </section>
+
+  <section id="bossIntro" class="card hidden">
+    <div class="bossmap" id="map1"></div>
+    <div style="text-align:center"><div style="font-size:90px" id="biEmoji"></div><h2 id="biName"></h2><p class="big" id="biSkill"></p></div>
+    <div class="fb"><b>⚡ Power-up reminder:</b> <span id="biTip"></span></div>
+    <div class="row" style="margin-top:14px;justify-content:center"><button class="primary big" id="fightBtn">Fight! ⚔️</button></div>
+  </section>
+
+  <section id="battle" class="card hidden">
+    <div class="bossmap" id="map2"></div>
+    <div id="arena">
+      <div id="hearts"></div>
+      <div id="powers"></div>
+      <div id="dmg"></div>
+      <div id="bossEmoji"></div>
+      <div id="bossName"></div>
+      <div id="bossSkill"></div>
+      <div class="hpwrap"><div class="hpbar"><div id="hp" style="width:100%"></div></div><div class="hplabel" id="hpLabel">100 / 100 HP</div></div>
+    </div>
+    <h3 id="prompt" class="big" style="margin-top:16px"></h3>
+    <canvas id="qCanvas" width="800" height="340" class="hidden"></canvas>
+    <div id="choices"></div>
+    <div id="typed" class="row hidden" style="margin:10px 0">
+      <label>Answer: <input id="typedIn" type="number" step="any" inputmode="decimal" style="width:130px"> <span id="typedUnit"></span></label>
+      <button class="primary" id="typedGo">⚔️ Attack</button>
+    </div>
+    <div class="row noprint" style="margin-top:6px"><button class="gold" id="hintBtn">💡 Hint</button><button class="gold" id="fiftyBtn">✂️ 50/50</button></div>
+    <div id="fb" class="fb hidden"></div>
+    <div class="row" style="margin-top:12px"><button class="primary hidden" id="nextBtn">Continue →</button><button class="hidden" id="skipBtn">Move on to the next boss</button></div>
+  </section>
+
+  <section id="end" class="card hidden">
+    <h2 id="endTitle"></h2>
+    <p class="big" id="endMsg"></p>
+    <div class="bossmap" id="map3"></div>
+    <table id="skillTable"></table>
+    <div id="studyBox"></div>
+    <h3>Submit</h3>
+    <ol class="small"><li>Click <b>Make my results</b>.</li><li>Click <b>Copy</b>, then paste it into your Schoology assignment.</li></ol>
+    <div class="row noprint"><button class="primary" id="compileBtn">📄 Make my results</button><button id="copyBtn">📋 Copy my results</button><button id="againBtn">🔁 Rematch (new questions)</button></div>
+    <textarea id="results" class="results" readonly placeholder="Your results will appear here."></textarea>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pickOne = a => a[Math.floor(Math.random() * a.length)];
+const uniq = a => [...new Set(a)];
+function loadStore(key) { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { return {}; } }
+function saveStore(key, d) { try { localStorage.setItem(key, JSON.stringify(d)); } catch (e) {} }
+
+/* Multiple choice: opts = array of strings (answer included). cb(ok, chosen) */
+function askMC(el, opts, answer, cb) {
+  el.innerHTML = ""; let done = false;
+  shuffle(uniq(opts)).forEach(o => {
+    const b = document.createElement("button"); b.className = "choice"; b.textContent = o;
+    b.onclick = () => {
+      if (done) return; done = true; const ok = o === answer;
+      b.classList.add(ok ? "good" : "bad");
+      if (!ok) [...el.children].find(c => c.textContent === answer).classList.add("good");
+      [...el.children].forEach(c => c.disabled = true);
+      cb(ok, o);
+    };
+    el.appendChild(b);
+  });
+}
+function fiftyFifty(el, answer) {
+  const wrong = [...el.querySelectorAll(".choice")].filter(c => c.textContent !== answer && !c.classList.contains("gone"));
+  shuffle(wrong).slice(0, Math.min(2, wrong.length - 1)).forEach(c => c.classList.add("gone"));
+}
+function feedback(el, cls, html) { el.className = "fb " + cls; el.innerHTML = html; el.classList.remove("hidden"); }
+function copyResults(taId, btn) {
+  const ta = $(taId); ta.focus(); ta.select();
+  let ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+  if (navigator.clipboard) navigator.clipboard.writeText(ta.value).catch(() => {});
+  const old = btn.textContent; btn.textContent = "✓ Copied! Now paste it in Schoology"; setTimeout(() => btn.textContent = old, 2500);
+}
+function bump(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+/* ---- canvas helpers ---- */
+function fitCanvas(c) { return c.getContext("2d"); }
+function arrow(ctx, x1, y1, x2, y2, color, w, label, labelPos) {
+  const ang = Math.atan2(y2 - y1, x2 - x1), hl = Math.max(12, w * 2.6);
+  ctx.save(); ctx.strokeStyle = ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(ang) * hl * .8, y2 - Math.sin(ang) * hl * .8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - hl * Math.cos(ang - .45), y2 - hl * Math.sin(ang - .45));
+  ctx.lineTo(x2 - hl * Math.cos(ang + .45), y2 - hl * Math.sin(ang + .45)); ctx.closePath(); ctx.fill();
+  if (label) {
+    ctx.font = "bold 20px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    let lx = (x1 + x2) / 2, ly = (y1 + y2) / 2;
+    if (labelPos) { lx += labelPos[0]; ly += labelPos[1]; } else if (Math.abs(y2 - y1) < 2) ly -= 20; else lx += 34;
+    const tw = ctx.measureText(label).width + 12;
+    ctx.fillStyle = "rgba(255,255,255,.92)"; ctx.fillRect(lx - tw / 2, ly - 13, tw, 26);
+    ctx.fillStyle = color; ctx.fillText(label, lx, ly);
+  }
+  ctx.restore();
+}
+function emoji(ctx, e, x, y, size, flip) { ctx.save(); if (flip) { ctx.translate(x, 0); ctx.scale(-1, 1); x = 0; } ctx.font = size + "px 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(e, x, y); ctx.restore(); }
+function rrect(ctx, x, y, w, h, r, fill, stroke) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); } }
+
+/* Force diagram: forces = [{dir:'left'|'right'|'up'|'down', n:Number}] ; offset = box shift along motion */
+function drawForceDiagram(ctx, W, H, forces, offset, opts) {
+  opts = opts || {};
+  ctx.clearRect(0, 0, W, H);
+  const vertical = forces.some(f => f.dir === "up" || f.dir === "down");
+  const bw = 120, bh = 90;
+  let cx = W / 2, by;
+  if (vertical) {
+    by = (H - bh) / 2 + (offset || 0);
+    ctx.fillStyle = "#eaf3fb"; ctx.fillRect(0, 0, W, H);
+  } else {
+    cx += offset || 0;
+    const gy = H - 60; by = gy - bh;
+    ctx.fillStyle = "#dfe8ee"; ctx.fillRect(0, gy, W, H - gy);
+    ctx.strokeStyle = "#8aa0b0"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+  }
+  const cy = by + bh / 2;
+  rrect(ctx, cx - bw / 2, by, bw, bh, 8, "#c8955c", "#7a5530");
+  ctx.strokeStyle = "#a7763f"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx - bw / 2 + 8, by + bh - 22); ctx.lineTo(cx + bw / 2 - 8, by + bh - 22); ctx.stroke();
+  ctx.fillStyle = "#4a3115"; ctx.font = "bold 20px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(opts.label || "BOX", cx, by + 34);
+  const colors = { left: "#1f5fa8", right: "#c0392b", up: "#1f7a4d", down: "#7b3fa0" };
+  const len = n => 40 + Math.min(n, 120) * 1.6;
+  ["left", "right", "up", "down"].forEach(dir => {
+    const fs = forces.filter(f => f.dir === dir), m = fs.length;
+    fs.forEach((f, k) => {
+      const off = m === 1 ? 0 : (k - (m - 1) / 2) * 40, L = len(f.n), c = colors[dir], lab = f.n + " N";
+      if (dir === "right") arrow(ctx, cx + bw / 2 + 4, cy + off, cx + bw / 2 + 4 + L, cy + off, c, 8, lab, [L / 2 - (L / 2) + 0, m > 1 ? (off < 0 ? -20 : 20) : -22]);
+      if (dir === "left") arrow(ctx, cx - bw / 2 - 4, cy + off, cx - bw / 2 - 4 - L, cy + off, c, 8, lab, [0, m > 1 ? (off < 0 ? -20 : 20) : -22]);
+      if (dir === "up") arrow(ctx, cx + off, by - 4, cx + off, Math.max(8, by - 4 - L), c, 8, lab, [48, 0]);
+      if (dir === "down") arrow(ctx, cx + off, by + bh + 4, cx + off, Math.min(H - 8, by + bh + 4 + L), c, 8, lab, [48, 0]);
+    });
+  });
+}
+/* net of forces -> {n, dir} */
+function netForce(forces) {
+  let x = 0, y = 0;
+  forces.forEach(f => { if (f.dir === "right") x += f.n; if (f.dir === "left") x -= f.n; if (f.dir === "up") y += f.n; if (f.dir === "down") y -= f.n; });
+  if (x !== 0) return { n: Math.abs(x), dir: x > 0 ? "right" : "left", axis: "x", s: x };
+  if (y !== 0) return { n: Math.abs(y), dir: y > 0 ? "up" : "down", axis: "y", s: y };
+  return { n: 0, dir: "none", axis: forces.some(f => f.dir === "up" || f.dir === "down") ? "y" : "x", s: 0 };
+}
+const netLabel = r => r.n === 0 ? "0 N (balanced)" : `${r.n} N ${r.dir}`;
+/* generate a force problem. level: 'basic'|'challenge' */
+function makeForceProblem(level, kind) {
+  kind = kind || pickOne(level === "challenge" ? ["opp", "opp", "bal", "same", "three", "three", "vert"] : ["opp", "opp", "bal", "same", "vert"]);
+  const h = Math.random() < .5 ? ["left", "right"] : ["right", "left"];
+  let f;
+  if (kind === "opp") { const a = rint(2, 9) * 5, b = a + rint(1, 6) * (Math.random() < .5 ? 1 : 2); f = [{ dir: h[0], n: a }, { dir: h[1], n: b }]; }
+  else if (kind === "bal") { const a = rint(2, 12) * 5; f = [{ dir: "left", n: a }, { dir: "right", n: a }]; }
+  else if (kind === "same") { const a = rint(2, 8) * 5, b = rint(1, 6) * 5; f = [{ dir: h[0], n: a }, { dir: h[0], n: b }]; }
+  else if (kind === "three") { const a = rint(1, 6) * 5, b = rint(1, 6) * 5, c = rint(2, 12) * 5; f = [{ dir: h[0], n: a }, { dir: h[0], n: b }, { dir: h[1], n: c }]; }
+  else { const w = rint(3, 10) * 10, up = Math.random() < .3 ? w : w + rint(-2, 3) * 10 || w + 10; f = [{ dir: "down", n: w }, { dir: "up", n: Math.max(10, up) }]; }
+  const r = netForce(f);
+  const tot = f.reduce((s, x) => s + x.n, 0);
+  const opp = r.dir === "left" ? "right" : r.dir === "right" ? "left" : r.dir === "up" ? "down" : r.dir === "down" ? "up" : (r.axis === "y" ? "up" : "right");
+  const distract = [netLabel(r), r.n ? `${r.n} N ${opp}` : `${f[0].n} N ${f[0].dir}`, `${tot} N ${r.dir === "none" ? (r.axis === "y" ? "up" : "right") : r.dir}`, r.n ? "0 N (balanced)" : `${tot} N ${r.axis === "y" ? "down" : "left"}`];
+  const extra = [`${Math.abs(f[0].n - (f[1] ? f[1].n : 0)) + 5} N ${r.dir === "none" ? "right" : r.dir}`, `${r.n + 10} N ${r.dir === "none" ? "left" : r.dir}`];
+  let opts = uniq(distract); for (const e of extra) if (opts.length < 4 && !opts.includes(e)) opts.push(e);
+  return { forces: f, net: r, answer: netLabel(r), opts: opts.slice(0, 4), kind };
+}
+function forceExplain(p) {
+  const f = p.forces, r = p.net;
+  const sums = {}; f.forEach(x => sums[x.dir] = (sums[x.dir] || 0) + x.n);
+  const parts = Object.entries(sums).map(([d, n]) => `${n} N ${d}` + (f.filter(x => x.dir === d).length > 1 ? ` (${f.filter(x => x.dir === d).map(x => x.n).join(" + ")})` : ""));
+  if (r.n === 0) return `The forces are equal and opposite (${parts.join(" vs ")}), so they cancel: net force = 0 N. The forces are <b>balanced</b>, so the motion does not change.`;
+  if (parts.length === 1) return `Both forces point the same way, so you <b>add</b> them: ${f.map(x => x.n).join(" + ")} = ${r.n} N ${r.dir}. The forces are <b>unbalanced</b>.`;
+  return `Opposite forces: <b>subtract</b> the smaller total from the larger. ${parts.join(" vs ")} → ${r.n} N toward the ${r.dir === "up" || r.dir === "down" ? r.dir + "ward" : r.dir} (the bigger side). The forces are <b>unbalanced</b>, so the motion changes in that direction.`;
+}
+
+const KEY = "dbaBossBattle_v1";
+const st = loadStore(KEY);
+const qc = $("qCanvas"), qx = qc.getContext("2d"), QW = 800, QH = 340;
+let mode = st.mode || "standard";
+const fmt = n => (Math.round(n * 100) / 100).toString();
+const OBJ = ["A runner", "A cyclist", "A dog", "A skateboarder", "A toy car", "A horse", "A scooter rider"];
+const DIRS = [["north", "south"], ["south", "north"], ["east", "west"], ["west", "east"]];
+const S = (q, a, w, why, hint, extra) => Object.assign({ q, a, opts: [a, ...w], why, hint }, extra || {});
+
+/* ---------- distance-time graph ---------- */
+function drawDT(pts, opts) {
+  opts = opts || {};
+  const c = qx, L = 80, R = QW - 30, T = 24, B = QH - 56;
+  const tMax = opts.tMax || pts[pts.length - 1][0], dMax = opts.dMax;
+  const X = t => L + (R - L) * t / tMax, Y = d => B - (B - T) * d / dMax;
+  c.clearRect(0, 0, QW, QH); c.fillStyle = "#fff"; c.fillRect(0, 0, QW, QH);
+  c.strokeStyle = "#e1e8ee"; c.lineWidth = 1; c.fillStyle = "#516273"; c.font = "14px Arial"; c.textAlign = "center"; c.textBaseline = "top";
+  for (let t = 0; t <= tMax; t += opts.tStep || 2) { c.beginPath(); c.moveTo(X(t), T); c.lineTo(X(t), B); c.stroke(); c.fillText(t, X(t), B + 6); }
+  c.textAlign = "right"; c.textBaseline = "middle";
+  for (let d = 0; d <= dMax; d += opts.dStep) { c.beginPath(); c.moveTo(L, Y(d)); c.lineTo(R, Y(d)); c.stroke(); c.fillText(d, L - 8, Y(d)); }
+  c.strokeStyle = "#153047"; c.lineWidth = 2.5; c.beginPath(); c.moveTo(L, T); c.lineTo(L, B); c.lineTo(R, B); c.stroke();
+  c.fillStyle = "#153047"; c.font = "bold 15px Arial"; c.textAlign = "center"; c.textBaseline = "alphabetic"; c.fillText("Time (s)", (L + R) / 2, QH - 10);
+  c.save(); c.translate(22, (T + B) / 2); c.rotate(-Math.PI / 2); c.fillText("Distance (m)", 0, 0); c.restore();
+  c.strokeStyle = "#287c8e"; c.lineWidth = 5; c.lineJoin = "round"; c.beginPath(); pts.forEach(([t, d], i) => i ? c.lineTo(X(t), Y(d)) : c.moveTo(X(t), Y(d))); c.stroke();
+  c.fillStyle = "#287c8e"; if (!opts.noDots) pts.forEach(([t, d]) => { c.beginPath(); c.arc(X(t), Y(d), 5, 0, 7); c.fill(); });
+  if (opts.labels) opts.labels.forEach((lab, i) => {
+    const [t1, d1] = pts[i], [t2, d2] = pts[i + 1], mx = X((t1 + t2) / 2), my = Y((d1 + d2) / 2) - 22;
+    c.fillStyle = "#f4b942"; c.beginPath(); c.arc(mx, my, 15, 0, 7); c.fill(); c.fillStyle = "#153047"; c.font = "bold 16px Arial"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(lab, mx, my);
+  });
+}
+function makeGraph() {
+  const zeroAt = rint(0, 2), pool = shuffle([1, 2, 3, 4, 5]);
+  const speeds = [0, 1, 2].map(i => i === zeroAt ? 0 : pool.pop());
+  const pts = [[0, 0]]; speeds.forEach((s, i) => pts.push([4 * (i + 1), pts[i][1] + s * 4]));
+  const D = pts[3][1], dMax = Math.max(8, Math.ceil(D / 4) * 4 + 4);
+  return { speeds, pts, D, dMax, draw() { drawDT(pts, { dMax, dStep: 4, labels: ["A", "B", "C"] }); } };
+}
+
+/* ---------- question generators per boss ---------- */
+const GEN = {
+  speed: [
+    () => { const s = rint(2, 12), t = pickOne([5, 10, 15, 20, 25, 30, 40, 50]), d = s * t, o = pickOne(OBJ);
+      return S(`${o} travels ${d} m in ${t} s. What is its average speed?`, `${s} m/s`, uniq([`${d * t} m/s`, `${fmt(t / d)} m/s`, `${d + t} m/s`, `${s * 2} m/s`]).filter(x => x !== `${s} m/s`).slice(0, 3),
+        `Speed = distance ÷ time = ${d} m ÷ ${t} s = <b>${s} m/s</b>.`, "Divide the distance by the time.", { typed: { n: s, unit: "m/s" } }); },
+    () => { const s = rint(3, 25), t = rint(2, 12), d = s * t;
+      return S(`A train moves at ${s} m/s for ${t} s. How far does it travel?`, `${d} m`, uniq([`${s + t} m`, `${fmt(s / t)} m`, `${d * 2} m`, `${d + 10} m`]).filter(x => x !== `${d} m`).slice(0, 3),
+        `Distance = speed × time = ${s} m/s × ${t} s = <b>${d} m</b>.`, "If speed = distance ÷ time, then distance = speed × time.", { typed: { n: d, unit: "m" } }); },
+    () => { let t1, t2, s1, s2, avg, k = 0;
+      do { t1 = pickOne([20, 30, 40, 50]); t2 = pickOne([10, 20, 30]); s1 = rint(1, 4); s2 = rint(5, 9); avg = (s1 * t1 + s2 * t2) / (t1 + t2); k++; } while ((avg % 1 !== 0 || avg === (s1 + s2) / 2) && k < 300);
+      const d1 = s1 * t1, d2 = s2 * t2;
+      return S(`Maya walks ${d1} m in ${t1} s, then jogs ${d2} m in ${t2} s. What is her average speed for the WHOLE trip?`, `${avg} m/s`, uniq([`${fmt((s1 + s2) / 2)} m/s`, `${d1 + d2} m/s`, `${avg + 2} m/s`, `${fmt((d1 + d2) / t1)} m/s`]).filter(x => x !== `${avg} m/s`).slice(0, 3),
+        `Average speed = total distance ÷ total time = (${d1} + ${d2}) m ÷ (${t1} + ${t2}) s = ${d1 + d2} ÷ ${t1 + t2} = <b>${avg} m/s</b>. Don't just average the two speeds!`, "Add up ALL the distance and ALL the time first, then divide.", { typed: { n: avg, unit: "m/s" } }); },
+    () => S("Which formula is used to calculate average speed?", "speed = distance ÷ time", ["speed = distance × time", "speed = time ÷ distance", "speed = force ÷ mass"], "Average speed = total distance ÷ total time.", "Speed tells how much distance is covered in each unit of time."),
+    () => S("Which unit could describe an object's speed?", "km/h", ["kilograms", "meters", "newtons"], "Speed is distance per time, so its unit is a distance unit divided by a time unit, like m/s or km/h.", "Look for a unit that has distance AND time."),
+    () => { const t1 = pickOne([8, 10, 12]), t2 = t1 * 2; return S(`Car A travels 120 m in ${t1} s. Car B travels 120 m in ${t2} s. Which statement is true?`, "Car A is faster", ["Car B is faster", "They have the same speed", "You need to know their mass"], `Same distance, less time = faster. Car A: ${fmt(120 / t1)} m/s; Car B: ${fmt(120 / t2)} m/s.`, "Which car needed less time to go the same distance?"); }
+  ],
+  velocity: [
+    () => { const s = rint(2, 15), t = pickOne([4, 5, 10, 20]), d = s * t, [dir, opp] = pickOne(DIRS);
+      return S(`A bird flies ${d} m ${dir} in ${t} s. What is its velocity?`, `${s} m/s ${dir}`, [`${s} m/s`, `${s} m/s ${opp}`, `${d * t} m/s ${dir}`],
+        `Velocity is speed <b>with a direction</b>: ${d} ÷ ${t} = ${s} m/s, heading ${dir}, so the velocity is <b>${s} m/s ${dir}</b>.`, "Calculate the speed, then add the direction."); },
+    () => S("What makes velocity different from speed?", "Velocity includes a direction", ["Velocity has no units", "Speed includes a direction", "Velocity is only used for cars"], "Speed tells how fast. Velocity tells how fast <b>and in which direction</b>.", "Think: 20 m/s vs. 20 m/s north."),
+    () => { const n = rint(5, 30), [dir] = pickOne(DIRS); return S("Which measurement is a velocity?", `${n} m/s ${dir}`, [`${n} m/s`, `${n} m ${dir}`, `${n} seconds`], `<b>${n} m/s ${dir}</b> has a speed unit AND a direction, so it is a velocity.`, "A velocity needs a speed unit and a direction."); },
+    () => { const n = rint(10, 30); return S(`Car A drives ${n} m/s east. Car B drives ${n} m/s west. Which is true?`, "Same speed, different velocities", ["Same velocity, different speeds", "Same speed and same velocity", "Different speeds and different velocities"], "Both go the same speed, but in opposite directions, so their velocities are different.", "Compare the numbers, then compare the directions."); },
+    () => S("A runner goes around a circular track at a steady 5 m/s. What is true about the runner's velocity?", "It keeps changing because the direction keeps changing", ["It stays the same because the speed is constant", "It is zero", "It is always 5 m/s north"], "On a curve the direction changes every moment, so the velocity changes even though the speed stays 5 m/s.", "Velocity = speed + direction. Is the direction changing?"),
+    () => S("Which change would change an object's velocity but NOT its speed?", "Turning a corner at the same speed", ["Speeding up on a straight road", "Slowing down on a straight road", "Stopping at a red light"], "Turning changes the direction (so velocity changes) while the speed stays the same.", "Which choice changes only the direction?")
+  ],
+  graphs: [
+    () => { const g = makeGraph(), lab = "ABC"[g.speeds.indexOf(0)]; return S("Look at the distance-time graph. During which segment is the object STOPPED?", `Segment ${lab}`, ["A", "B", "C"].filter(x => x !== lab).map(x => `Segment ${x}`).concat(["It never stops"]).slice(0, 3), `Segment ${lab} is flat (horizontal): time passes but the distance doesn't change, so the object is <b>stopped</b>.`, "Look for the flat part of the line.", { draw: g.draw }); },
+    () => { const g = makeGraph(), mx = Math.max(...g.speeds), lab = "ABC"[g.speeds.indexOf(mx)]; return S("During which segment is the object moving FASTEST?", `Segment ${lab}`, ["A", "B", "C"].filter(x => x !== lab).map(x => `Segment ${x}`).concat(["All segments are the same speed"]).slice(0, 3), `Segment ${lab} is the <b>steepest</b>. A steeper line means more distance in the same time, which means greater speed.`, "Find the steepest part of the line.", { draw: g.draw }); },
+    () => { const g = makeGraph(); const i = g.speeds.findIndex(s => s > 0), lab = "ABC"[i], s = g.speeds[i], d = s * 4;
+      return S(`What is the object's speed during segment ${lab}?`, `${s} m/s`, uniq([`${d} m/s`, `${s + 1} m/s`, `${fmt(4 / s)} m/s`, `${s * 2} m/s`]).filter(x => x !== `${s} m/s`).slice(0, 3),
+        `In segment ${lab} the object goes ${d} m in 4 s: ${d} ÷ 4 = <b>${s} m/s</b>.`, `Read how far the line rises during segment ${lab} (distance) and how long it lasts (time), then divide.`, { draw: g.draw, typed: { n: s, unit: "m/s" } }); },
+    () => { const g = makeGraph(); return S("How far did the object travel in total during the 12 seconds?", `${g.D} m`, uniq([`${g.D + 4} m`, `${Math.max(4, g.D - 4)} m`, `12 m`, `${g.dMax} m`]).filter(x => x !== `${g.D} m`).slice(0, 3),
+        `Read the distance at the end of the line (12 s): <b>${g.D} m</b>.`, "Find where the line ends and read across to the distance axis.", { draw: g.draw, typed: { n: g.D, unit: "m" } }); },
+    () => S("On a distance-time graph, a horizontal (flat) line means the object is…", "stopped", ["speeding up", "moving at a constant speed", "moving very fast"], "A flat line means the distance isn't changing as time goes on, so the object is <b>stopped</b>.", "If distance doesn't change, is it moving?"),
+    () => { const pts = []; for (let t = 0; t <= 10; t += .5) pts.push([t, .4 * t * t]); return S("Which description matches this distance-time graph?", "The object is speeding up", ["The object is slowing down", "The object is moving at a constant speed", "The object is stopped"], "The line gets <b>steeper and steeper</b>, so the object covers more distance each second. It is speeding up.", "Is the line getting steeper or flatter as time goes on?", { draw() { drawDT(pts, { dMax: 40, dStep: 5, tStep: 1, noDots: true }); } }); },
+    () => { const s = pickOne([2, 3, 4]); return S("Which description matches this distance-time graph?", "The object is moving at a constant speed", ["The object is speeding up", "The object is stopped", "The object is slowing down"], `A straight, sloped line means the same distance is covered every second (here ${s} m each second). That's <b>constant speed</b>.`, "Is the slope the same everywhere?", { draw() { drawDT([[0, 0], [10, s * 10]], { dMax: 40, dStep: 5, tStep: 1, noDots: true }); } }); }
+  ],
+  force: [
+    () => { const p = makeForceProblem(mode === "advanced" ? "challenge" : "basic"); return S(p.net.axis === "y" ? "A crate hangs from a rope. What is the net force on it?" : "What is the net force on the box?", p.answer, p.opts.filter(o => o !== p.answer), forceExplain(p), "Same direction → add. Opposite directions → subtract and use the bigger side's direction.", { draw() { drawForceDiagram(qx, QW, QH, p.forces, 0, { label: p.net.axis === "y" ? "CRATE" : "BOX" }); } }); },
+    () => { const p = makeForceProblem("basic", "opp"); return S("What is the net force on the box?", p.answer, p.opts.filter(o => o !== p.answer), forceExplain(p), "Opposite directions → subtract.", { draw() { drawForceDiagram(qx, QW, QH, p.forces, 0); } }); },
+    () => { const p = makeForceProblem("basic", pickOne(["bal", "opp", "same"])), bal = p.net.n === 0; return S("Are the forces on this box balanced or unbalanced?", bal ? "Balanced: the motion will not change" : "Unbalanced: the motion will change", [bal ? "Unbalanced: the motion will change" : "Balanced: the motion will not change", "Balanced: the box will speed up", "You can't tell without knowing the mass"], forceExplain(p), "Find the net force. 0 N means balanced.", { draw() { drawForceDiagram(qx, QW, QH, p.forces, 0); } }); },
+    () => S("If the net force on an object is 0 N, the forces are…", "balanced", ["unbalanced", "doubled", "pushing it faster"], "A net force of 0 N means the forces cancel out, so they are <b>balanced</b> and the object's motion doesn't change.", "What does it mean when forces cancel?"),
+    () => S("Which situation has UNBALANCED forces?", "A soccer ball speeding up after a kick", ["A book resting on a desk", "A lamp hanging still from the ceiling", "A car moving at a constant velocity on a straight road"], "Only the soccer ball's motion is <b>changing</b> (speeding up). A change in motion requires an unbalanced force. The others are at rest or at constant velocity, so their forces are balanced.", "Which object's motion is CHANGING?"),
+    () => S("An unbalanced force acts on a box at rest. What happens?", "It starts moving in the direction of the net force", ["Nothing changes", "It moves opposite the net force", "Its mass increases"], "An unbalanced force changes motion, so the box starts moving in the direction of the net force.", "Unbalanced forces change motion. Which way?")
+  ],
+  inertia: [
+    () => S("A book stays on a desk until someone pushes it. This is an example of…", "inertia", ["velocity", "magnetism", "friction"], "Objects at rest stay at rest unless an unbalanced force acts. That tendency is <b>inertia</b>.", "What do we call an object's resistance to changes in motion?"),
+    () => S("A car stops suddenly. Why does an unbelted passenger keep moving forward?", "The passenger's inertia keeps them moving until a force stops them", ["The car pushes the passenger forward", "Gravity pulls the passenger forward", "The passenger has no mass"], "The passenger was moving with the car. <b>Inertia</b> keeps them moving forward until something (like a seatbelt) applies an unbalanced force.", "Objects in motion tend to…?"),
+    () => S("Which has more inertia?", "A bowling ball", ["A soccer ball", "They have the same inertia", "Neither has inertia"], "Inertia depends on <b>mass</b>. The bowling ball has more mass, so it has more inertia and is harder to start or stop.", "Inertia depends on mass."),
+    () => S("A hockey puck slides across smooth ice at a constant velocity. What is the net force on the puck?", "0 N: the forces are balanced", ["A large force forward", "A large force backward", "It is unbalanced, or else it would stop"], "Constant velocity means the motion isn't changing, so the net force is <b>0 N</b> (balanced). No force is needed to keep it moving!", "Is the puck's motion changing?"),
+    () => S("A spacecraft in deep space turns off its engines. What happens to it?", "It keeps moving at the same speed and direction", ["It slowly stops", "It immediately stops", "It falls straight down"], "With no unbalanced force (no friction or air in deep space), Newton's 1st Law says it keeps moving at the <b>same speed and direction</b>.", "With no unbalanced force, does motion change?"),
+    () => S("To change an object's state of motion, it needs…", "an unbalanced net force", ["balanced forces", "less mass", "more inertia"], "Newton's 1st Law: motion changes only when an <b>unbalanced net force</b> acts.", "Balanced forces = no change."),
+    () => S("Newton's 1st Law is also called the Law of…", "Inertia", ["Gravity", "Acceleration", "Friction"], "Newton's 1st Law is called the <b>Law of Inertia</b>.", "It's the word for resisting changes in motion."),
+    () => S("A ball rolling across the grass slows down and stops. Why?", "Friction is an unbalanced force acting on it", ["It runs out of force", "Its inertia disappears", "The forces on it are balanced"], "<b>Friction</b> from the grass acts opposite the motion. That unbalanced force slows the ball. Objects don't \"run out of force.\"", "What force acts against rolling?")
+  ]
+};
+const BOSSES = [
+  { key: "speed", name: "Speed Sprite", e: "🧚", attack: "⚡", skill: "7.7A Average speed", tip: "speed = distance ÷ time. Units: m/s (or km/h). For the WHOLE trip: total distance ÷ total time." },
+  { key: "velocity", name: "Velocity Viper", e: "🐍", attack: "🌀", skill: "7.7B Speed vs. velocity", tip: "Velocity = speed + direction (like 12 m/s west). If the direction changes, the velocity changes, even at the same speed." },
+  { key: "graphs", name: "Graph Golem", e: "🗿", attack: "📉", skill: "7.7C Distance-time graphs", tip: "Flat line = stopped. Steeper line = faster. Straight sloped line = constant speed. Curving steeper = speeding up." },
+  { key: "force", name: "Net Force Knight", e: "🛡️", attack: "🗡️", skill: "7.7D Net force (balanced/unbalanced)", tip: "Same direction → add. Opposite → subtract (net force points toward the bigger side). 0 N = balanced = no change in motion." },
+  { key: "inertia", name: "Inertia Titan", e: "🦍", attack: "🌋", skill: "7.7D Newton's 1st Law", tip: "Objects keep doing what they're doing (resting or moving at constant velocity) unless an unbalanced force acts. More mass = more inertia." }
+];
+
+/* ---------- modes ---------- */
+const MODES = {
+  support: { hearts: 4, hints: 99, fifty: 3, info: "Support: 4 ❤️ per boss, unlimited 💡 hints, and three ✂️ 50/50 power-ups." },
+  standard: { hearts: 3, hints: 1, fifty: 1, info: "Standard: 3 ❤️ per boss, 1 💡 hint per boss, and one ✂️ 50/50 for the whole battle." },
+  advanced: { hearts: 3, hints: 0, fifty: 0, info: "Advanced: 3 ❤️, no hints, and you type your own answers to the calculation questions." }
+};
+function setMode(m) { mode = m; document.querySelectorAll("#modeSeg button").forEach(b => b.classList.toggle("on", b.dataset.mode === m)); $("modeInfo").textContent = MODES[m].info; st.mode = m; saveStore(KEY, st); }
+document.querySelectorAll("#modeSeg button").forEach(b => b.onclick = () => setMode(b.dataset.mode));
+setMode(mode);
+$("sName").value = st.name || ""; $("sPeriod").value = st.period || "";
+["sName", "sPeriod"].forEach(id => $(id).addEventListener("input", () => { st.name = $("sName").value; st.period = $("sPeriod").value; saveStore(KEY, st); }));
+if (st.best) $("bestLine").textContent = `Your best: ${st.best}`;
+
+function renderMap(el) {
+  el.innerHTML = BOSSES.map((b, i) => { const r = G && G.res[i]; const cls = r ? (r.defeated ? "done" : "fail") : (G && G.b === i ? "now" : ""); return `<div class="${cls}"><span>${b.e}</span>${b.name}${r ? (r.defeated ? " ✓" : " ✗") : ""}</div>`; }).join("");
+}
+let G = null;
+renderMap($("introMap"));
+
+function start() {
+  G = { b: 0, res: [], stats: {}, fifty: MODES[mode].fifty, missed: [] };
+  BOSSES.forEach(b => G.stats[b.key] = { right: 0, total: 0 });
+  ["intro", "end", "battle"].forEach(id => $(id).classList.add("hidden"));
+  bossIntro();
+}
+$("startBtn").onclick = start;
+$("againBtn").onclick = () => { $("results").value = ""; start(); window.scrollTo(0, 0); };
+
+function bossIntro() {
+  const b = BOSSES[G.b];
+  $("battle").classList.add("hidden"); $("bossIntro").classList.remove("hidden");
+  renderMap($("map1"));
+  $("biEmoji").textContent = b.e; $("biName").textContent = `Boss ${G.b + 1}: ${b.name}`; $("biSkill").textContent = b.skill; $("biTip").textContent = b.tip;
+  window.scrollTo(0, 0);
+}
+$("fightBtn").onclick = startBoss;
+
+function startBoss() {
+  const b = BOSSES[G.b];
+  G.hp = 100; G.hearts = MODES[mode].hearts; G.hints = MODES[mode].hints; G.attempts = (G.attempts || 0) + 1;
+  G.deck = shuffle(GEN[b.key].map((g, i) => i)); G.deckPos = 0;
+  $("bossIntro").classList.add("hidden"); $("battle").classList.remove("hidden");
+  renderMap($("map2"));
+  $("bossEmoji").textContent = b.e; $("bossEmoji").classList.remove("dead"); $("bossName").textContent = b.name; $("bossSkill").textContent = b.skill;
+  $("skipBtn").classList.add("hidden");
+  updArena(); nextQuestion();
+}
+function updArena() {
+  $("hp").style.width = G.hp + "%"; $("hpLabel").textContent = `${G.hp} / 100 HP`;
+  $("hearts").textContent = "❤️".repeat(G.hearts) + "🖤".repeat(Math.max(0, MODES[mode].hearts - G.hearts));
+  $("powers").innerHTML = mode === "advanced" ? "" : `💡 ${G.hints > 50 ? "∞" : G.hints} &nbsp; ✂️ ${G.fifty}`;
+}
+function nextQuestion() {
+  const b = BOSSES[G.b];
+  if (G.deckPos >= G.deck.length) { G.deck = shuffle(GEN[b.key].map((g, i) => i)); G.deckPos = 0; }
+  const q = GEN[b.key][G.deck[G.deckPos++]]();
+  G.q = q; G.answered = false;
+  $("prompt").textContent = q.q;
+  if (q.draw) { $("qCanvas").classList.remove("hidden"); q.draw(); } else $("qCanvas").classList.add("hidden");
+  $("fb").className = "fb hidden"; $("nextBtn").classList.add("hidden");
+  const typed = mode === "advanced" && q.typed;
+  $("typed").classList.toggle("hidden", !typed); $("choices").innerHTML = "";
+  if (typed) { $("typedIn").value = ""; $("typedIn").disabled = false; $("typedGo").disabled = false; $("typedUnit").textContent = q.typed.unit; }
+  else askMC($("choices"), q.opts, q.a, (ok, chosen) => resolve(ok, chosen));
+  $("hintBtn").classList.toggle("hidden", !(G.hints > 0)); $("hintBtn").disabled = false;
+  $("fiftyBtn").classList.toggle("hidden", !(G.fifty > 0) || typed); $("fiftyBtn").disabled = false;
+}
+$("typedGo").onclick = () => {
+  const v = $("typedIn").value.trim(); if (v === "") { feedback($("fb"), "hint", "Type a number first."); return; }
+  const ok = Math.abs(Number(v) - G.q.typed.n) < 0.011;
+  $("typedIn").disabled = $("typedGo").disabled = true;
+  resolve(ok, `${v} ${G.q.typed.unit}`);
+};
+$("typedIn").addEventListener("keydown", e => { if (e.key === "Enter") $("typedGo").click(); });
+$("hintBtn").onclick = () => { if (G.answered) return; G.hints--; updArena(); $("hintBtn").disabled = true; feedback($("fb"), "hint", "💡 " + G.q.hint); };
+$("fiftyBtn").onclick = () => { if (G.answered || G.fifty <= 0) return; G.fifty--; updArena(); $("fiftyBtn").disabled = true; fiftyFifty($("choices"), G.q.a); };
+
+function resolve(ok, chosen) {
+  G.answered = true;
+  const b = BOSSES[G.b], s = G.stats[b.key]; s.total++; if (ok) s.right++;
+  $("hintBtn").classList.add("hidden"); $("fiftyBtn").classList.add("hidden");
+  if (ok) {
+    G.hp = Math.max(0, G.hp - 25);
+    $("dmg").textContent = "💥 −25"; bump($("dmg"), "go"); bump($("bossEmoji"), "shake");
+    feedback($("fb"), "good", "⚔️ <b>Direct hit!</b> " + G.q.why);
+  } else {
+    G.hearts--; G.missed.push({ boss: b.name, q: G.q.q, chosen, a: G.q.typed && mode === "advanced" ? `${fmt(G.q.typed.n)} ${G.q.typed.unit}` : G.q.a });
+    $("dmg").textContent = b.attack + " −1 ❤️"; bump($("dmg"), "go"); bump($("arena"), "hit"); bump($("hearts"), "shake");
+    feedback($("fb"), "bad", `🛡️ <b>The boss blocked it!</b> Correct answer: <b>${G.q.typed && mode === "advanced" ? fmt(G.q.typed.n) + " " + G.q.typed.unit : G.q.a}</b>. ` + G.q.why);
+  }
+  updArena();
+  if (G.hp <= 0) {
+    setTimeout(() => $("bossEmoji").classList.add("dead"), 500);
+    G.res[G.b] = { defeated: true, attempts: G.attempts };
+    $("fb").innerHTML += `<br><br>🏆 <b>${b.name} DEFEATED!</b>`;
+    $("nextBtn").textContent = G.b === BOSSES.length - 1 ? "See my results →" : "Next boss →";
+    $("nextBtn").dataset.act = "nextBoss";
+  } else if (G.hearts <= 0) {
+    $("fb").innerHTML += `<br><br>💀 <b>${b.name} knocked you out!</b> Read the tip again, then retry with new questions.`;
+    $("nextBtn").textContent = "🔁 Retry this boss"; $("nextBtn").dataset.act = "retry";
+    if (G.attempts >= 2) $("skipBtn").classList.remove("hidden");
+  } else { $("nextBtn").textContent = "Continue →"; $("nextBtn").dataset.act = "next"; }
+  $("nextBtn").classList.remove("hidden");
+}
+$("nextBtn").onclick = () => {
+  const act = $("nextBtn").dataset.act;
+  if (act === "next") { nextQuestion(); $("arena").scrollIntoView({ block: "start" }); }
+  else if (act === "retry") { startBoss(); feedback($("fb"), "hint", "💡 Tip: " + BOSSES[G.b].tip); }
+  else advanceBoss();
+};
+$("skipBtn").onclick = () => { G.res[G.b] = { defeated: false, attempts: G.attempts }; advanceBoss(); };
+function advanceBoss() { G.b++; G.attempts = 0; if (G.b < BOSSES.length) bossIntro(); else finish(); }
+
+function pct(s) { return s.total ? Math.round(s.right / s.total * 100) : 0; }
+function finish() {
+  ["battle", "bossIntro"].forEach(id => $(id).classList.add("hidden")); $("end").classList.remove("hidden");
+  renderMap($("map3"));
+  const all = Object.values(G.stats).reduce((a, s) => ({ right: a.right + s.right, total: a.total + s.total }), { right: 0, total: 0 });
+  const acc = pct(all), defeated = G.res.filter(r => r.defeated).length;
+  G.acc = acc; G.defeated = defeated;
+  const ready = acc >= 85 && defeated === 5 ? "🏆 DBA READY!" : acc >= 70 ? "⚔️ Almost there!" : "🛡️ Keep training!";
+  G.ready = ready;
+  $("endTitle").textContent = ready;
+  $("endMsg").innerHTML = `Bosses defeated: <b>${defeated} / 5</b> · Accuracy: <b>${acc}%</b> (${all.right} of ${all.total} answers correct) · Level: ${mode}`;
+  const best = `${defeated}/5 bosses, ${acc}% accuracy (${mode})`;
+  if (!st.bestAcc || acc > st.bestAcc) { st.bestAcc = acc; st.best = best; saveStore(KEY, st); }
+  $("skillTable").innerHTML = "<tr><th>Skill</th><th>Boss</th><th>Correct</th><th>Accuracy</th></tr>" + BOSSES.map(b => { const s = G.stats[b.key]; return `<tr><td>${b.skill}</td><td>${b.e} ${b.name} ${G.res[BOSSES.indexOf(b)]?.defeated ? "✓" : "✗"}</td><td>${s.right}/${s.total}</td><td>${pct(s)}%</td></tr>`; }).join("");
+  const weak = BOSSES.filter(b => pct(G.stats[b.key]) < 75);
+  $("studyBox").innerHTML = weak.length ? `<div class="fb hint"><b>📚 Study these before the DBA:</b><ul>${weak.map(b => `<li><b>${b.skill}:</b> ${b.tip}</li>`).join("")}</ul></div>` : `<div class="fb good"><b>Every skill is at 75% or higher. Nice!</b> Try ${mode === "advanced" ? "beating your accuracy" : "the next level up"} for an extra challenge.</div>`;
+  if (G.missed.length) $("studyBox").innerHTML += `<h3>Questions you missed</h3><table><tr><th>Boss</th><th>Question</th><th>Correct answer</th></tr>${G.missed.map(m => `<tr><td>${m.boss}</td><td>${m.q}</td><td>${m.a}</td></tr>`).join("")}</table>`;
+  window.scrollTo(0, 0);
+}
+$("compileBtn").onclick = () => {
+  $("results").value = [
+    "DBA BOSS BATTLE RESULTS",
+    `Name: ${$("sName").value}   Period: ${$("sPeriod").value}   Date: ${new Date().toLocaleDateString()}`,
+    `Level: ${mode}   Bosses defeated: ${G.defeated}/5   Accuracy: ${G.acc}%   Result: ${G.ready.replace(/^\S+ /, "")}`,
+    "",
+    "SKILLS:",
+    ...BOSSES.map((b, i) => `${b.skill}: ${G.stats[b.key].right}/${G.stats[b.key].total} (${pct(G.stats[b.key])}%) ${G.res[i]?.defeated ? "defeated" : "not defeated"}`),
+    "",
+    "QUESTIONS I MISSED:",
+    ...(G.missed.length ? G.missed.map(m => `- ${m.q.replace(/<[^>]+>/g, "")} | correct: ${m.a}`) : ["(none!)"])
+  ].join("\n");
+};
+$("copyBtn").onclick = e => { if (!$("results").value) $("compileBtn").click(); copyResults("results", e.target); };
+</script>
+</body>
+</html>
