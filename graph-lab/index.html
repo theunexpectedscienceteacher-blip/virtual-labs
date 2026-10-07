@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Graph Lab</title>
+<style>
+:root{--ink:#153047;--muted:#516273;--line:#c9d6df;--bg:#f3f7fa;--gold:#f4b942;--teal:#287c8e;--good:#1f7a4d;--goodbg:#e3f5ea;--bad:#b3261e;--badbg:#fdeceb;--warnbg:#fff5d6}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);line-height:1.4}
+header{background:var(--ink);color:#fff;padding:18px clamp(16px,4vw,48px);border-bottom:8px solid var(--gold)}
+header a{color:var(--gold);font-weight:700;text-decoration:none}
+header h1{margin:6px 0 4px;font-size:clamp(26px,4.5vw,40px);line-height:1.1}
+header p{margin:0;color:#d8eef4}
+main{max-width:1000px;margin:0 auto;padding:20px 16px 48px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin:0 0 16px;box-shadow:0 6px 20px rgba(21,48,71,.08)}
+h2{margin:0 0 10px}
+h3{margin:14px 0 8px}
+button{font:inherit;font-weight:700;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:10px;padding:10px 16px;cursor:pointer}
+button.primary{background:var(--ink);color:#fff}
+button.gold{background:var(--gold);border-color:#c98f12}
+button:disabled{opacity:.45;cursor:default}
+.big{font-size:1.15rem}
+.small{font-size:.9rem;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.hidden{display:none!important}
+.tag{display:inline-block;background:var(--warnbg);color:#7a5a00;font-size:13px;font-weight:700;padding:3px 8px;border-radius:6px;margin:2px 4px 2px 0}
+.seg{display:inline-flex;border:2px solid var(--ink);border-radius:10px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;border-radius:0;background:#fff}
+.seg button.on{background:var(--ink);color:#fff}
+.choice{display:block;width:100%;text-align:left;margin:8px 0;background:#eef4f8;border-color:transparent;font-weight:600}
+.choice:hover:not(:disabled){border-color:var(--teal)}
+.choice.good{background:var(--goodbg);border-color:var(--good);opacity:1}
+.choice.bad{background:var(--badbg);border-color:var(--bad);opacity:1}
+.choice.gone{visibility:hidden}
+.choice:disabled{cursor:default;opacity:.75}
+.fb{margin-top:12px;padding:12px 14px;border-radius:8px;border-left:5px solid var(--teal);background:#eef6f8}
+.fb.good{background:var(--goodbg);border-color:var(--good)}
+.fb.bad{background:var(--badbg);border-color:var(--bad)}
+.fb.hint{background:var(--warnbg);border-color:var(--gold)}
+canvas{width:100%;height:auto;display:block;border-radius:10px;background:#f7fbfd;border:1px solid var(--line)}
+.bar{height:12px;background:#e3eaf0;border-radius:6px;overflow:hidden}
+.bar>div{height:100%;width:0;background:var(--teal);transition:width .3s}
+input,select,textarea{font:inherit;padding:9px 10px;border:2px solid var(--line);border-radius:8px;color:var(--ink)}
+textarea{width:100%;min-height:90px}
+textarea.results{min-height:200px;font-family:"Courier New",monospace;font-size:.9rem}
+table{border-collapse:collapse;width:100%;margin:8px 0}
+th,td{border:1px solid var(--line);padding:8px;text-align:left}
+th{background:var(--ink);color:#fff}
+.stat{background:#eef4f8;border-radius:10px;padding:10px 14px;min-width:110px}
+.stat span{display:block;font-size:.8rem;color:var(--muted);font-weight:700;text-transform:uppercase}
+.stat strong{font-size:1.4rem}
+.pop{animation:pop .4s}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+.shake{animation:shake .45s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-7px)}80%{transform:translateX(7px)}}
+@media print{header a,.noprint,button{display:none!important}body{background:#fff}.card{box-shadow:none}}
+</style>
+</head>
+<body>
+<header>
+  <a href="../">&larr; All Labs</a>
+  <h1>📈 Graph Lab: Distance-Time Graphs</h1>
+  <p>Move the runner to match a graph, build graphs from stories, and read graphs like a detective.</p>
+</header>
+<main>
+  <section class="card">
+    <span class="tag">7.7C Distance-time graphs</span><span class="tag">7.7A Average speed</span>
+    <div class="row" style="margin:10px 0">
+      <label>Your name <input id="sName" placeholder="First and last name"></label>
+      <label>Period <input id="sPeriod" style="width:80px"></label>
+    </div>
+    <div class="seg" id="tabSeg"><button data-t="matcher" class="on">🏃 1 Motion Matcher</button><button data-t="builder">✏️ 2 Graph Builder</button><button data-t="detective">🔎 3 Graph Detective</button><button data-t="submit">📄 Submit</button></div>
+  </section>
+
+  <section id="matcher" class="card">
+    <h2>🏃 Station 1: Motion Matcher</h2>
+    <p>Press <b>Start</b>, then change the runner's speed so the <b style="color:#287c8e">teal line</b> follows the <b style="color:#c98f12">gold dashed target</b>. A steeper line means faster, and a flat line means stopped. You can also press keys <b>1–4</b>.</p>
+    <div class="row" style="margin-bottom:8px">
+      <label>Challenge: <select id="mChal"><option value="0">Target 1</option><option value="1">Target 2</option><option value="2">Target 3</option><option value="r">🎲 Random target</option><option value="f">Free play (no target)</option></select></label>
+      <button class="primary" id="mGo">▶ Start</button>
+    </div>
+    <canvas id="mCv" width="800" height="440"></canvas>
+    <div class="row" style="margin-top:10px" id="speedBtns">
+      <button data-s="0">1 🧍 Stop<br><small>0 m/s</small></button>
+      <button data-s="1">2 🚶 Walk<br><small>1 m/s</small></button>
+      <button data-s="2">3 🏃 Jog<br><small>2 m/s</small></button>
+      <button data-s="4">4 ⚡ Sprint<br><small>4 m/s</small></button>
+    </div>
+    <div id="mFb" class="fb hidden"></div>
+    <p class="small" id="mBest"></p>
+  </section>
+
+  <section id="builder" class="card hidden">
+    <h2>✏️ Station 2: Graph Builder</h2>
+    <p class="big" id="bStory"></p>
+    <p class="small">Click on the graph to place a point at <b>5 s, 10 s, 15 s, and 20 s</b>. The point at 0 s is already placed. Click again in the same column to move a point. Points snap to the nearest 5 m.</p>
+    <canvas id="bCv" width="800" height="400"></canvas>
+    <div class="row" style="margin-top:10px"><button class="primary" id="bCheck">✔ Check my graph</button><button id="bPlay">▶ Play my graph</button><button id="bClear">Clear points</button><button class="hidden" id="bNext">Next story →</button></div>
+    <div id="bFb" class="fb hidden"></div>
+    <p class="small" id="bProg"></p>
+  </section>
+
+  <section id="detective" class="card hidden">
+    <div class="spread"><h2 style="margin:0">🔎 Station 3: Graph Detective</h2><div class="row"><div class="stat"><span>Question</span><strong id="dNum">1/8</strong></div><div class="stat"><span>Score</span><strong id="dScore">0</strong></div></div></div>
+    <p class="big" id="dPrompt"></p>
+    <canvas id="dCv" width="800" height="340"></canvas>
+    <div id="dChoices"></div>
+    <div id="dTyped" class="row hidden" style="margin:10px 0"><label>Answer: <input id="dIn" type="number" step="any" inputmode="decimal" style="width:120px"> <span id="dUnit"></span></label><button class="primary" id="dGo">Check</button></div>
+    <div id="dFb" class="fb hidden"></div>
+    <div class="row" style="margin-top:10px"><button class="primary hidden" id="dNext">Next →</button><button class="hidden" id="dAgain">🔁 New case file</button></div>
+  </section>
+
+  <section id="submit" class="card hidden">
+    <h2>📄 Submit</h2>
+    <label>Explain how you can tell from a distance-time graph whether an object is stopped, moving slowly, or moving fast.</label>
+    <textarea id="reflect"></textarea>
+    <ol class="small"><li>Finish all three stations.</li><li>Click <b>Make my results</b>, then <b>Copy</b>, and paste it into Schoology.</li></ol>
+    <div class="row noprint"><button class="primary" id="compileBtn">📄 Make my results</button><button id="copyBtn">📋 Copy my results</button></div>
+    <textarea id="results" class="results" readonly placeholder="Your results will appear here." style="margin-top:8px"></textarea>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pickOne = a => a[Math.floor(Math.random() * a.length)];
+const uniq = a => [...new Set(a)];
+function loadStore(key) { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { return {}; } }
+function saveStore(key, d) { try { localStorage.setItem(key, JSON.stringify(d)); } catch (e) {} }
+
+/* Multiple choice: opts = array of strings (answer included). cb(ok, chosen) */
+function askMC(el, opts, answer, cb) {
+  el.innerHTML = ""; let done = false;
+  shuffle(uniq(opts)).forEach(o => {
+    const b = document.createElement("button"); b.className = "choice"; b.textContent = o;
+    b.onclick = () => {
+      if (done) return; done = true; const ok = o === answer;
+      b.classList.add(ok ? "good" : "bad");
+      if (!ok) [...el.children].find(c => c.textContent === answer).classList.add("good");
+      [...el.children].forEach(c => c.disabled = true);
+      cb(ok, o);
+    };
+    el.appendChild(b);
+  });
+}
+function fiftyFifty(el, answer) {
+  const wrong = [...el.querySelectorAll(".choice")].filter(c => c.textContent !== answer && !c.classList.contains("gone"));
+  shuffle(wrong).slice(0, Math.min(2, wrong.length - 1)).forEach(c => c.classList.add("gone"));
+}
+function feedback(el, cls, html) { el.className = "fb " + cls; el.innerHTML = html; el.classList.remove("hidden"); }
+function copyResults(taId, btn) {
+  const ta = $(taId); ta.focus(); ta.select();
+  let ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+  if (navigator.clipboard) navigator.clipboard.writeText(ta.value).catch(() => {});
+  const old = btn.textContent; btn.textContent = "✓ Copied! Now paste it in Schoology"; setTimeout(() => btn.textContent = old, 2500);
+}
+function bump(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+/* ---- canvas helpers ---- */
+function fitCanvas(c) { return c.getContext("2d"); }
+function arrow(ctx, x1, y1, x2, y2, color, w, label, labelPos) {
+  const ang = Math.atan2(y2 - y1, x2 - x1), hl = Math.max(12, w * 2.6);
+  ctx.save(); ctx.strokeStyle = ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(ang) * hl * .8, y2 - Math.sin(ang) * hl * .8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - hl * Math.cos(ang - .45), y2 - hl * Math.sin(ang - .45));
+  ctx.lineTo(x2 - hl * Math.cos(ang + .45), y2 - hl * Math.sin(ang + .45)); ctx.closePath(); ctx.fill();
+  if (label) {
+    ctx.font = "bold 20px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    let lx = (x1 + x2) / 2, ly = (y1 + y2) / 2;
+    if (labelPos) { lx += labelPos[0]; ly += labelPos[1]; } else if (Math.abs(y2 - y1) < 2) ly -= 20; else lx += 34;
+    const tw = ctx.measureText(label).width + 12;
+    ctx.fillStyle = "rgba(255,255,255,.92)"; ctx.fillRect(lx - tw / 2, ly - 13, tw, 26);
+    ctx.fillStyle = color; ctx.fillText(label, lx, ly);
+  }
+  ctx.restore();
+}
+function emoji(ctx, e, x, y, size, flip) { ctx.save(); if (flip) { ctx.translate(x, 0); ctx.scale(-1, 1); x = 0; } ctx.font = size + "px 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(e, x, y); ctx.restore(); }
+function rrect(ctx, x, y, w, h, r, fill, stroke) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); } }
+
+/* Force diagram: forces = [{dir:'left'|'right'|'up'|'down', n:Number}] ; offset = box shift along motion */
+function drawForceDiagram(ctx, W, H, forces, offset, opts) {
+  opts = opts || {};
+  ctx.clearRect(0, 0, W, H);
+  const vertical = forces.some(f => f.dir === "up" || f.dir === "down");
+  const bw = 120, bh = 90;
+  let cx = W / 2, by;
+  if (vertical) {
+    by = (H - bh) / 2 + (offset || 0);
+    ctx.fillStyle = "#eaf3fb"; ctx.fillRect(0, 0, W, H);
+  } else {
+    cx += offset || 0;
+    const gy = H - 60; by = gy - bh;
+    ctx.fillStyle = "#dfe8ee"; ctx.fillRect(0, gy, W, H - gy);
+    ctx.strokeStyle = "#8aa0b0"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+  }
+  const cy = by + bh / 2;
+  rrect(ctx, cx - bw / 2, by, bw, bh, 8, "#c8955c", "#7a5530");
+  ctx.strokeStyle = "#a7763f"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx - bw / 2 + 8, by + bh - 22); ctx.lineTo(cx + bw / 2 - 8, by + bh - 22); ctx.stroke();
+  ctx.fillStyle = "#4a3115"; ctx.font = "bold 20px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(opts.label || "BOX", cx, by + 34);
+  const colors = { left: "#1f5fa8", right: "#c0392b", up: "#1f7a4d", down: "#7b3fa0" };
+  const len = n => 40 + Math.min(n, 120) * 1.6;
+  ["left", "right", "up", "down"].forEach(dir => {
+    const fs = forces.filter(f => f.dir === dir), m = fs.length;
+    fs.forEach((f, k) => {
+      const off = m === 1 ? 0 : (k - (m - 1) / 2) * 40, L = len(f.n), c = colors[dir], lab = f.n + " N";
+      if (dir === "right") arrow(ctx, cx + bw / 2 + 4, cy + off, cx + bw / 2 + 4 + L, cy + off, c, 8, lab, [L / 2 - (L / 2) + 0, m > 1 ? (off < 0 ? -20 : 20) : -22]);
+      if (dir === "left") arrow(ctx, cx - bw / 2 - 4, cy + off, cx - bw / 2 - 4 - L, cy + off, c, 8, lab, [0, m > 1 ? (off < 0 ? -20 : 20) : -22]);
+      if (dir === "up") arrow(ctx, cx + off, by - 4, cx + off, Math.max(8, by - 4 - L), c, 8, lab, [48, 0]);
+      if (dir === "down") arrow(ctx, cx + off, by + bh + 4, cx + off, Math.min(H - 8, by + bh + 4 + L), c, 8, lab, [48, 0]);
+    });
+  });
+}
+/* net of forces -> {n, dir} */
+function netForce(forces) {
+  let x = 0, y = 0;
+  forces.forEach(f => { if (f.dir === "right") x += f.n; if (f.dir === "left") x -= f.n; if (f.dir === "up") y += f.n; if (f.dir === "down") y -= f.n; });
+  if (x !== 0) return { n: Math.abs(x), dir: x > 0 ? "right" : "left", axis: "x", s: x };
+  if (y !== 0) return { n: Math.abs(y), dir: y > 0 ? "up" : "down", axis: "y", s: y };
+  return { n: 0, dir: "none", axis: forces.some(f => f.dir === "up" || f.dir === "down") ? "y" : "x", s: 0 };
+}
+const netLabel = r => r.n === 0 ? "0 N (balanced)" : `${r.n} N ${r.dir}`;
+/* generate a force problem. level: 'basic'|'challenge' */
+function makeForceProblem(level, kind) {
+  kind = kind || pickOne(level === "challenge" ? ["opp", "opp", "bal", "same", "three", "three", "vert"] : ["opp", "opp", "bal", "same", "vert"]);
+  const h = Math.random() < .5 ? ["left", "right"] : ["right", "left"];
+  let f;
+  if (kind === "opp") { const a = rint(2, 9) * 5, b = a + rint(1, 6) * (Math.random() < .5 ? 1 : 2); f = [{ dir: h[0], n: a }, { dir: h[1], n: b }]; }
+  else if (kind === "bal") { const a = rint(2, 12) * 5; f = [{ dir: "left", n: a }, { dir: "right", n: a }]; }
+  else if (kind === "same") { const a = rint(2, 8) * 5, b = rint(1, 6) * 5; f = [{ dir: h[0], n: a }, { dir: h[0], n: b }]; }
+  else if (kind === "three") { const a = rint(1, 6) * 5, b = rint(1, 6) * 5, c = rint(2, 12) * 5; f = [{ dir: h[0], n: a }, { dir: h[0], n: b }, { dir: h[1], n: c }]; }
+  else { const w = rint(3, 10) * 10, up = Math.random() < .3 ? w : w + rint(-2, 3) * 10 || w + 10; f = [{ dir: "down", n: w }, { dir: "up", n: Math.max(10, up) }]; }
+  const r = netForce(f);
+  const tot = f.reduce((s, x) => s + x.n, 0);
+  const opp = r.dir === "left" ? "right" : r.dir === "right" ? "left" : r.dir === "up" ? "down" : r.dir === "down" ? "up" : (r.axis === "y" ? "up" : "right");
+  const distract = [netLabel(r), r.n ? `${r.n} N ${opp}` : `${f[0].n} N ${f[0].dir}`, `${tot} N ${r.dir === "none" ? (r.axis === "y" ? "up" : "right") : r.dir}`, r.n ? "0 N (balanced)" : `${tot} N ${r.axis === "y" ? "down" : "left"}`];
+  const extra = [`${Math.abs(f[0].n - (f[1] ? f[1].n : 0)) + 5} N ${r.dir === "none" ? "right" : r.dir}`, `${r.n + 10} N ${r.dir === "none" ? "left" : r.dir}`];
+  let opts = uniq(distract); for (const e of extra) if (opts.length < 4 && !opts.includes(e)) opts.push(e);
+  return { forces: f, net: r, answer: netLabel(r), opts: opts.slice(0, 4), kind };
+}
+function forceExplain(p) {
+  const f = p.forces, r = p.net;
+  const sums = {}; f.forEach(x => sums[x.dir] = (sums[x.dir] || 0) + x.n);
+  const parts = Object.entries(sums).map(([d, n]) => `${n} N ${d}` + (f.filter(x => x.dir === d).length > 1 ? ` (${f.filter(x => x.dir === d).map(x => x.n).join(" + ")})` : ""));
+  if (r.n === 0) return `The forces are equal and opposite (${parts.join(" vs ")}), so they cancel: net force = 0 N. The forces are <b>balanced</b>, so the motion does not change.`;
+  if (parts.length === 1) return `Both forces point the same way, so you <b>add</b> them: ${f.map(x => x.n).join(" + ")} = ${r.n} N ${r.dir}. The forces are <b>unbalanced</b>.`;
+  return `Opposite forces: <b>subtract</b> the smaller total from the larger. ${parts.join(" vs ")} → ${r.n} N toward the ${r.dir === "up" || r.dir === "down" ? r.dir + "ward" : r.dir} (the bigger side). The forces are <b>unbalanced</b>, so the motion changes in that direction.`;
+}
+
+const KEY = "graphLab_v1";
+const st = loadStore(KEY);
+st.matcher = st.matcher || {}; st.builder = st.builder || null; st.detective = st.detective || null;
+$("sName").value = st.name || ""; $("sPeriod").value = st.period || "";
+["sName", "sPeriod"].forEach(id => $(id).addEventListener("input", () => { st.name = $("sName").value; st.period = $("sPeriod").value; saveStore(KEY, st); }));
+document.querySelectorAll("#tabSeg button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#tabSeg button").forEach(x => x.classList.toggle("on", x === b));
+  ["matcher", "builder", "detective", "submit"].forEach(id => $(id).classList.toggle("hidden", id !== b.dataset.t));
+});
+
+/* ---------- shared drawing ---------- */
+function axes(ctx, B, tMax, dMax, tStep, dStep, small) {
+  const X = t => B.x + B.w * t / tMax, Y = d => B.y + B.h - B.h * d / dMax;
+  ctx.fillStyle = "#fff"; ctx.fillRect(B.x, B.y, B.w, B.h);
+  ctx.strokeStyle = "#e1e8ee"; ctx.lineWidth = 1; ctx.fillStyle = "#516273"; ctx.font = (small ? 11 : 14) + "px Arial";
+  ctx.textAlign = "center"; ctx.textBaseline = "top";
+  for (let t = 0; t <= tMax + 1e-9; t += tStep) { ctx.beginPath(); ctx.moveTo(X(t), B.y); ctx.lineTo(X(t), B.y + B.h); ctx.stroke(); if (!small || t % (tStep * 2) === 0) ctx.fillText(t, X(t), B.y + B.h + 4); }
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  for (let d = 0; d <= dMax + 1e-9; d += dStep) { ctx.beginPath(); ctx.moveTo(B.x, Y(d)); ctx.lineTo(B.x + B.w, Y(d)); ctx.stroke(); if (!small || d % (dStep * 2) === 0) ctx.fillText(d, B.x - 6, Y(d)); }
+  ctx.strokeStyle = "#153047"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(B.x, B.y); ctx.lineTo(B.x, B.y + B.h); ctx.lineTo(B.x + B.w, B.y + B.h); ctx.stroke();
+  if (!small) {
+    ctx.fillStyle = "#153047"; ctx.font = "bold 14px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+    ctx.fillText("Time (s)", B.x + B.w / 2, B.y + B.h + 36);
+    ctx.save(); ctx.translate(B.x - 44, B.y + B.h / 2); ctx.rotate(-Math.PI / 2); ctx.fillText("Distance (m)", 0, 0); ctx.restore();
+  }
+  return { X, Y };
+}
+function line(ctx, pts, X, Y, color, w, dash) { ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = w; ctx.lineJoin = "round"; ctx.lineCap = "round"; if (dash) ctx.setLineDash(dash); ctx.beginPath(); pts.forEach(([t, d], i) => i ? ctx.lineTo(X(t), Y(d)) : ctx.moveTo(X(t), Y(d))); ctx.stroke(); ctx.restore(); }
+function cumPts(speeds, seg) { const p = [[0, 0]]; speeds.forEach((s, i) => p.push([seg * (i + 1), p[i][1] + s * seg])); return p; }
+function track(ctx, x0, x1, y, dMax, d, speed) {
+  ctx.fillStyle = "#e9f2e6"; ctx.fillRect(x0 - 30, y - 50, x1 - x0 + 60, 64);
+  ctx.fillStyle = "#c9a26b"; ctx.fillRect(x0, y, x1 - x0, 8);
+  ctx.fillStyle = "#516273"; ctx.font = "11px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+  for (let m = 0; m <= dMax; m += 5) { const x = x0 + (x1 - x0) * m / dMax; ctx.fillRect(x - 1, y + 8, 2, 6); ctx.fillText(m + " m", x, y + 15); }
+  const x = x0 + (x1 - x0) * Math.min(d, dMax) / dMax;
+  emoji(ctx, speed === 0 ? "🧍" : speed <= 1 ? "🚶" : "🏃", x, y - 22, 40, speed > 0);
+}
+
+/* ================= STATION 1: MOTION MATCHER ================= */
+const mc = $("mCv"), mx = mc.getContext("2d"), MB = { x: 70, y: 110, w: 700, h: 270 };
+const TARGETS = [[2, 2, 0, 4], [1, 4, 0, 1], [4, 0, 2, 1]];
+let Mm = { running: false, countdown: 0, speed: 0, t: 0, d: 0, path: [[0, 0]], target: TARGETS[0], err: 0, n: 0, key: "0" };
+function tgtD(t) { if (!Mm.target) return null; let d = 0; for (let i = 0; i < 4; i++) { const a = i * 5; if (t <= a) break; d += Mm.target[i] * Math.min(5, t - a); } return d; }
+function drawMatcher() {
+  mx.clearRect(0, 0, 800, 440);
+  track(mx, 70, 770, 66, 40, Mm.d, Mm.running ? Mm.speed : 0);
+  const { X, Y } = axes(mx, MB, 20, 40, 1, 5);
+  if (Mm.target) line(mx, cumPts(Mm.target, 5), X, Y, "#e0a526", 5, [10, 8]);
+  line(mx, Mm.path, X, Y, "#287c8e", 5);
+  mx.fillStyle = "#153047"; mx.font = "bold 15px Arial"; mx.textAlign = "right"; mx.textBaseline = "top";
+  mx.fillText(`t = ${Mm.t.toFixed(1)} s   distance = ${Mm.d.toFixed(1)} m   speed = ${Mm.running ? Mm.speed : 0} m/s`, 770, 8);
+  if (Mm.countdown > 0) { mx.fillStyle = "rgba(21,48,71,.75)"; mx.fillRect(MB.x, MB.y, MB.w, MB.h); mx.fillStyle = "#fff"; mx.font = "bold 90px Arial"; mx.textAlign = "center"; mx.textBaseline = "middle"; mx.fillText(Math.ceil(Mm.countdown), MB.x + MB.w / 2, MB.y + MB.h / 2); }
+}
+function setSpeed(s) { Mm.speed = s; document.querySelectorAll("#speedBtns button").forEach(b => b.classList.toggle("primary", Number(b.dataset.s) === s)); }
+document.querySelectorAll("#speedBtns button").forEach(b => b.onclick = () => setSpeed(Number(b.dataset.s)));
+document.addEventListener("keydown", e => { if ($("matcher").classList.contains("hidden") || e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return; const m = { "1": 0, "2": 1, "3": 2, "4": 4 }[e.key]; if (m != null) setSpeed(m); });
+function pickTarget() {
+  const v = $("mChal").value; Mm.key = v;
+  if (v === "f") return null;
+  if (v === "r") { let s; do { s = [0, 1, 2, 3].map(() => pickOne([0, 1, 2, 4])); } while (s.reduce((a, b) => a + b, 0) * 5 > 40 || s.every(x => x === s[0]) || !s.some(x => x > 0)); return s; }
+  return TARGETS[Number(v)];
+}
+$("mChal").onchange = () => { if (!Mm.running) { Mm.target = pickTarget(); Mm.t = 0; Mm.d = 0; Mm.path = [[0, 0]]; drawMatcher(); $("mFb").classList.add("hidden"); } };
+$("mGo").onclick = () => {
+  if (Mm.running || Mm.countdown > 0) return;
+  Mm.target = pickTarget(); Mm.t = 0; Mm.d = 0; Mm.path = [[0, 0]]; Mm.err = 0; Mm.n = 0; setSpeed(0);
+  $("mFb").classList.add("hidden"); $("mGo").disabled = true; $("mChal").disabled = true;
+  Mm.countdown = 3; let last = performance.now();
+  const loop = now => {
+    const dt = Math.min(.1, (now - last) / 1000); last = now;
+    if (Mm.countdown > 0) { Mm.countdown -= dt; if (Mm.countdown <= 0) { Mm.countdown = 0; Mm.running = true; } }
+    else if (Mm.running) {
+      Mm.t = Math.min(20, Mm.t + dt); Mm.d = Math.min(40, Mm.d + Mm.speed * dt); Mm.path.push([Mm.t, Mm.d]);
+      const td = tgtD(Mm.t); if (td != null) { Mm.err += Math.abs(Mm.d - td); Mm.n++; }
+      if (Mm.t >= 20) { Mm.running = false; drawMatcher(); finishMatcher(); return; }
+    }
+    drawMatcher(); requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+};
+function finishMatcher() {
+  $("mGo").disabled = false; $("mChal").disabled = false; $("mGo").textContent = "🔁 Try again";
+  const blocks = [0, 1, 2, 3].map(i => { const a = Mm.path.find(p => p[0] >= i * 5) || [0, 0], b = [...Mm.path].reverse().find(p => p[0] <= (i + 1) * 5 + 1e-6) || a; return (b[1] - a[1]) / 5; });
+  if (!Mm.target) { feedback($("mFb"), "", `🏁 Free play done! You traveled <b>${Mm.d.toFixed(1)} m in 20 s</b>, so your average speed = ${Mm.d.toFixed(1)} ÷ 20 = <b>${(Mm.d / 20).toFixed(2)} m/s</b>.<br>Your speed in each 5-second section: ${blocks.map((s, i) => `${i * 5}–${i * 5 + 5} s: ${s.toFixed(1)} m/s`).join(" · ")}`); return; }
+  const mean = Mm.err / Math.max(1, Mm.n), score = Math.max(0, Math.round(100 - mean * 6));
+  const stars = score >= 90 ? "⭐⭐⭐" : score >= 75 ? "⭐⭐" : score >= 50 ? "⭐" : "";
+  const name = Mm.key === "r" ? "Random" : `Target ${Number(Mm.key) + 1}`;
+  if (Mm.key !== "r") { const k = name; if (!st.matcher[k] || score > st.matcher[k]) st.matcher[k] = score; } else { if (!st.matcher.Random || score > st.matcher.Random) st.matcher.Random = score; }
+  saveStore(KEY, st); showBest();
+  const rows = Mm.target.map((s, i) => `<tr><td>${i * 5}–${i * 5 + 5} s</td><td>${s} m/s ${s === 0 ? "(flat line)" : ""}</td><td>${blocks[i].toFixed(1)} m/s</td></tr>`).join("");
+  feedback($("mFb"), score >= 75 ? "good" : "bad", `🏁 <b>Match score: ${score}%</b> ${stars}<br>${score >= 90 ? "Amazing match!" : score >= 75 ? "Nice! Try for 90%+." : "Tip: watch the slope of the gold line. Steeper means pick a faster speed, and flat means Stop. Switch speeds right at 5, 10 and 15 s."}<table><tr><th>Time</th><th>Target speed (slope)</th><th>Your speed</th></tr>${rows}</table>`);
+}
+function showBest() { const e = Object.entries(st.matcher); $("mBest").textContent = e.length ? "Best scores: " + e.map(([k, v]) => `${k} ${v}%`).join(" · ") : ""; }
+Mm.target = TARGETS[0]; drawMatcher(); showBest();
+
+/* ================= STATION 2: GRAPH BUILDER ================= */
+const bc = $("bCv"), bx = bc.getContext("2d"), BB = { x: 70, y: 90, w: 700, h: 250 };
+const NAMES = ["Maya", "Leo", "Ava", "Diego", "Zoe", "Mateo", "Lily", "Jayden"];
+const STOPS = ["stops to tie a shoe", "waits at a crosswalk", "stops to talk to a friend", "stops for a water break"];
+function segText(s, first) {
+  if (s === 0) return `${pickOne(STOPS)} for 5 seconds`;
+  const verb = { 1: "walks", 2: "jogs", 3: "runs", 4: "sprints" }[s];
+  return Math.random() < .5 ? `${verb} at ${s} m/s for 5 seconds` : `${verb} ${s * 5} m in 5 seconds`;
+}
+function makeStory() {
+  let s; do { s = [0, 1, 2, 3].map(() => rint(0, 4)); } while (!s.includes(0) || new Set(s.filter(x => x)).size < 2 || s.reduce((a, b) => a + b, 0) > 8 || s[0] === 0);
+  const n = pickOne(NAMES), parts = s.map((v, i) => segText(v, i === 0));
+  return { speeds: s, text: `${n} ${parts[0]}, then ${parts[1]}, then ${parts[2]}, and finally ${parts[3]}.`, name: n };
+}
+let Bd = { story: null, pts: [0, null, null, null, null], checks: 0, done: 0, firstTry: 0, playing: false, showAns: false };
+function newStory() { Bd.story = makeStory(); Bd.pts = [0, null, null, null, null]; Bd.checks = 0; Bd.showAns = false; Bd.marks = null; $("bStory").textContent = `📖 ${Bd.story.text}`; $("bFb").classList.add("hidden"); $("bNext").classList.add("hidden"); $("bCheck").disabled = false; drawBuilder(0, null); bProg(); }
+function bProg() { $("bProg").textContent = `Stories completed: ${Bd.done} / 3 · Correct on the first try: ${Bd.firstTry}`; }
+function truth() { return cumPts(Bd.story.speeds, 5).map(p => p[1]); }
+function drawBuilder(walkD, walkT) {
+  bx.clearRect(0, 0, 800, 400);
+  track(bx, 70, 770, 52, 40, walkD || 0, walkT == null ? 0 : 1);
+  const { X, Y } = axes(bx, BB, 20, 40, 5, 5);
+  if (Bd.showAns) line(bx, cumPts(Bd.story.speeds, 5), X, Y, "#e0a526", 4, [8, 6]);
+  const placed = Bd.pts.map((d, i) => d == null ? null : [i * 5, d]);
+  let run = []; placed.forEach(p => { if (p) run.push(p); else { if (run.length > 1) line(bx, run, X, Y, "#287c8e", 4); run = []; } }); if (run.length > 1) line(bx, run, X, Y, "#287c8e", 4);
+  placed.forEach((p, i) => { if (!p) return; bx.fillStyle = Bd.marks ? (Bd.marks[i] ? "#1f7a4d" : "#b3261e") : "#287c8e"; bx.beginPath(); bx.arc(X(p[0]), Y(p[1]), 8, 0, 7); bx.fill(); if (Bd.marks && i > 0) { bx.fillStyle = "#fff"; bx.font = "bold 11px Arial"; bx.textAlign = "center"; bx.textBaseline = "middle"; bx.fillText(Bd.marks[i] ? "✓" : "✗", X(p[0]), Y(p[1])); } });
+  if (walkT != null) { bx.strokeStyle = "#c0392b"; bx.lineWidth = 2; bx.beginPath(); bx.moveTo(X(walkT), BB.y); bx.lineTo(X(walkT), BB.y + BB.h); bx.stroke(); }
+}
+bc.addEventListener("click", e => {
+  if (Bd.playing) return;
+  const r = bc.getBoundingClientRect(), x = (e.clientX - r.left) * 800 / r.width, y = (e.clientY - r.top) * 400 / r.height;
+  const t = (x - BB.x) / BB.w * 20, d = (BB.y + BB.h - y) / BB.h * 40;
+  const col = Math.round(t / 5); if (col < 1 || col > 4 || Math.abs(t - col * 5) > 2.6 || d < -3 || d > 43) return;
+  Bd.pts[col] = Math.max(0, Math.min(40, Math.round(d / 5) * 5)); Bd.marks = null; drawBuilder(0, null);
+});
+$("bClear").onclick = () => { Bd.pts = [0, null, null, null, null]; Bd.marks = null; drawBuilder(0, null); };
+$("bCheck").onclick = () => {
+  if (Bd.pts.slice(1).some(p => p == null)) { feedback($("bFb"), "hint", "Place a point at 5, 10, 15, and 20 seconds first."); return; }
+  const T = truth(); Bd.checks++; Bd.marks = Bd.pts.map((d, i) => d === T[i]);
+  const allOk = Bd.marks.every(Boolean); drawBuilder(0, null);
+  if (allOk) {
+    Bd.done++; if (Bd.checks === 1) Bd.firstTry++; $("bCheck").disabled = true;
+    st.builder = { done: Bd.done, firstTry: Bd.firstTry }; saveStore(KEY, st); bProg();
+    feedback($("bFb"), "good", `✅ <b>Perfect graph!</b> Press <b>▶ Play my graph</b> to watch ${Bd.story.name} move. Notice the flat part is where ${Bd.story.name} stopped.`);
+    if (Bd.done < 3) $("bNext").classList.remove("hidden"); else $("bFb").innerHTML += "<br>🎉 You finished all 3 stories! Go on to Station 3.";
+  } else {
+    const i = Bd.marks.findIndex((m, k) => k > 0 && !m), s = Bd.story.speeds[i - 1];
+    let hint = `Check the point at <b>${i * 5} s</b>. From ${(i - 1) * 5} to ${i * 5} s, ${Bd.story.name} ${s === 0 ? "was <b>stopped</b>, so the distance should stay the same (flat line)" : `moved at ${s} m/s, so the distance goes up by ${s} × 5 = <b>${s * 5} m</b>`}. Remember, each point is the <b>total</b> distance so far.`;
+    if (Bd.checks >= 2) { Bd.showAns = true; drawBuilder(0, null); hint += "<br>The correct graph is shown as a gold dashed line. Move your points onto it and check again."; }
+    feedback($("bFb"), "bad", "❌ Not quite. " + hint);
+  }
+};
+$("bNext").onclick = newStory;
+$("bPlay").onclick = () => {
+  if (Bd.playing) return; const P = Bd.pts.map((d, i) => d == null ? null : [i * 5, d]).filter(Boolean);
+  if (P.length < 2) { feedback($("bFb"), "hint", "Place some points first."); return; }
+  Bd.playing = true; const t0 = performance.now(), end = P[P.length - 1][0];
+  const f = now => { const t = Math.min(end, (now - t0) / 1000 * 2.5); let d = 0; for (let i = 1; i < P.length; i++) if (t <= P[i][0]) { const [ta, da] = P[i - 1], [tb, db] = P[i]; d = da + (db - da) * (t - ta) / (tb - ta); break; } else d = P[i][1];
+    drawBuilder(d, t); if (t < end) requestAnimationFrame(f); else { Bd.playing = false; } };
+  requestAnimationFrame(f);
+};
+newStory();
+
+/* ================= STATION 3: GRAPH DETECTIVE ================= */
+const dc = $("dCv"), dx = dc.getContext("2d");
+const WORD = { 0: "stops", 1: "walks slowly", 2: "jogs", 3: "runs", 4: "sprints" };
+function makeG() { let s; do { s = [0, 1, 2, 3].map(() => rint(0, 4)); } while (s.filter(x => x === 0).length !== 1 || s.reduce((a, b) => a + b, 0) > 8 || new Set(s).size < 3); return s; }
+const story = s => s.map(v => WORD[v]).join(" → ");
+function drawBig(s) { dx.clearRect(0, 0, 800, 340); const B = { x: 80, y: 20, w: 690, h: 260 }; const { X, Y } = axes(dx, B, 20, 40, 5, 5); const P = cumPts(s, 5); line(dx, P, X, Y, "#287c8e", 5); P.forEach(([t, d]) => { dx.fillStyle = "#287c8e"; dx.beginPath(); dx.arc(X(t), Y(d), 5, 0, 7); dx.fill(); });
+  ["A", "B", "C", "D"].forEach((l, i) => { const mx2 = X(i * 5 + 2.5), my = Y((P[i][1] + P[i + 1][1]) / 2) - 22; dx.fillStyle = "#f4b942"; dx.beginPath(); dx.arc(mx2, my, 14, 0, 7); dx.fill(); dx.fillStyle = "#153047"; dx.font = "bold 15px Arial"; dx.textAlign = "center"; dx.textBaseline = "middle"; dx.fillText(l, mx2, my); }); }
+function drawFour(list) { dx.clearRect(0, 0, 800, 340); list.forEach((s, i) => { const B = { x: 50 + (i % 2) * 390, y: 18 + Math.floor(i / 2) * 165, w: 320, h: 120 }; const { X, Y } = axes(dx, B, 20, 40, 5, 10, true); line(dx, cumPts(s, 5), X, Y, "#287c8e", 3.5); dx.fillStyle = "#153047"; dx.font = "bold 18px Arial"; dx.textAlign = "left"; dx.textBaseline = "top"; dx.fillText("Graph " + "ABCD"[i], B.x + 8, B.y + 4); }); }
+function variants(s) { const out = [s]; const cand = [[...s].reverse(), [s[1], s[0], s[2], s[3]], [s[0], s[2], s[1], s[3]], [s[0], s[1], s[3], s[2]], [s[3], s[1], s[2], s[0]], s.map(v => v === 0 ? 2 : v === 4 ? 0 : v)]; for (const c of shuffle(cand)) if (out.length < 4 && !out.some(o => o.join() === c.join())) out.push(c); while (out.length < 4) { const r = makeG(); if (!out.some(o => o.join() === r.join())) out.push(r); } return out; }
+const DQ = [
+  () => { const s = makeG(), L = "ABCD"[s.indexOf(0)]; return { prompt: "During which segment is the runner <b>stopped</b>?", draw: () => drawBig(s), opts: ["A", "B", "C", "D"].map(x => "Segment " + x), a: "Segment " + L, why: `Segment ${L} is <b>flat</b>: time passes, but the distance stays the same.` }; },
+  () => { let s; do { s = makeG(); } while (s.filter(v => v === Math.max(...s)).length > 1); const L = "ABCD"[s.indexOf(Math.max(...s))]; return { prompt: "During which segment is the runner moving <b>fastest</b>?", draw: () => drawBig(s), opts: ["A", "B", "C", "D"].map(x => "Segment " + x), a: "Segment " + L, why: `Segment ${L} is the <b>steepest</b>, with the most distance covered in 5 s (${Math.max(...s) * 5} m).` }; },
+  () => { let s, mn; do { s = makeG(); mn = Math.min(...s.filter(v => v)); } while (s.filter(v => v === mn).length > 1); const L = "ABCD"[s.indexOf(mn)]; return { prompt: "Which segment shows the runner moving, but <b>slowest</b>?", draw: () => drawBig(s), opts: ["A", "B", "C", "D"].map(x => "Segment " + x), a: "Segment " + L, why: `Segment ${L} has the gentlest slope that is not flat. A flat segment is <b>stopped</b>, not slow.` }; },
+  () => { const s = makeG(), i = s.findIndex(v => v > 0) , L = "ABCD"[i]; return { prompt: `What is the runner's speed during segment <b>${L}</b>?`, draw: () => drawBig(s), typed: { n: s[i], unit: "m/s" }, why: `In segment ${L} the distance rises ${s[i] * 5} m in 5 s: ${s[i] * 5} ÷ 5 = <b>${s[i]} m/s</b>.` }; },
+  () => { const s = makeG(), D = s.reduce((a, b) => a + b, 0) * 5; return { prompt: "What total distance did the runner travel in 20 seconds?", draw: () => drawBig(s), typed: { n: D, unit: "m" }, why: `Read the distance where the line ends at 20 s: <b>${D} m</b>.` }; },
+  () => { const s = makeG(), D = s.reduce((a, b) => a + b, 0) * 5; return { prompt: "What was the runner's <b>average speed</b> for the whole 20 seconds? (Round to the hundredths place.)", draw: () => drawBig(s), typed: { n: Math.round(D / 20 * 100) / 100, unit: "m/s", tol: .011 }, why: `Average speed = total distance ÷ total time = ${D} ÷ 20 = <b>${(D / 20).toFixed(2)} m/s</b>.` }; },
+  () => { const s = makeG(), list = shuffle(variants(s)), L = "ABCD"[list.findIndex(x => x.join() === s.join())]; return { prompt: `Which graph matches this story? <b>The runner ${story(s)}</b> (5 seconds each).`, draw: () => drawFour(list), opts: ["A", "B", "C", "D"].map(x => "Graph " + x), a: "Graph " + L, why: `Graph ${L} matches: ${s.map(v => v === 0 ? "flat" : v >= 3 ? "steep" : "gentle").join(", then ")}.` }; },
+  () => { const s = makeG(), list = variants(s); return { prompt: "Which story matches the graph? (Each part lasts 5 seconds.)", draw: () => drawBig(s), opts: list.map(x => "The runner " + story(x)), a: "The runner " + story(s), why: `Flat = stops, gentle = walks/jogs, steep = runs/sprints. The correct order is ${story(s)}.` }; }
+];
+let Dd;
+function startD() { Dd = { i: 0, score: 0, missed: [] }; $("dAgain").classList.add("hidden"); showD(); }
+function showD() {
+  const q = DQ[Dd.i](); Dd.q = q;
+  $("dNum").textContent = `${Dd.i + 1}/${DQ.length}`; $("dScore").textContent = Dd.score; $("dPrompt").innerHTML = q.prompt; q.draw();
+  $("dFb").classList.add("hidden"); $("dNext").classList.add("hidden"); $("dChoices").innerHTML = "";
+  $("dTyped").classList.toggle("hidden", !q.typed);
+  if (q.typed) { $("dIn").value = ""; $("dIn").disabled = false; $("dGo").disabled = false; $("dUnit").textContent = q.typed.unit; }
+  else askMC($("dChoices"), q.opts, q.a, ok => dAns(ok, q.a));
+}
+$("dGo").onclick = () => { const v = $("dIn").value.trim(); if (v === "") { feedback($("dFb"), "hint", "Type a number first."); return; } const q = Dd.q, ok = Math.abs(Number(v) - q.typed.n) <= (q.typed.tol || .001); $("dIn").disabled = $("dGo").disabled = true; dAns(ok, `${q.typed.n} ${q.typed.unit}`); };
+$("dIn").addEventListener("keydown", e => { if (e.key === "Enter") $("dGo").click(); });
+function dAns(ok, a) {
+  if (ok) Dd.score++; else Dd.missed.push(Dd.i + 1);
+  $("dScore").textContent = Dd.score; bump($("dScore"), "pop");
+  feedback($("dFb"), ok ? "good" : "bad", (ok ? "✅ <b>Correct!</b> " : `❌ <b>Not quite.</b> Answer: <b>${a}</b>. `) + Dd.q.why);
+  if (Dd.i < DQ.length - 1) $("dNext").classList.remove("hidden");
+  else { st.detective = { score: Dd.score, of: DQ.length }; if (!st.detBest || Dd.score > st.detBest) st.detBest = Dd.score; saveStore(KEY, st); $("dFb").innerHTML += `<br><br>🔎 <b>Case file complete: ${Dd.score} / ${DQ.length}.</b>`; $("dAgain").classList.remove("hidden"); }
+}
+$("dNext").onclick = () => { Dd.i++; showD(); };
+$("dAgain").onclick = startD;
+startD();
+
+/* ---------- results ---------- */
+$("compileBtn").onclick = () => {
+  const m = Object.entries(st.matcher);
+  $("results").value = [
+    "GRAPH LAB RESULTS",
+    `Name: ${$("sName").value}   Period: ${$("sPeriod").value}   Date: ${new Date().toLocaleDateString()}`,
+    "",
+    "Station 1 Motion Matcher (best match %): " + (m.length ? m.map(([k, v]) => `${k} ${v}%`).join(", ") : "not done"),
+    "Station 2 Graph Builder: " + (st.builder ? `${st.builder.done}/3 stories, ${st.builder.firstTry} correct on first try` : "not done"),
+    "Station 3 Graph Detective: " + (st.detective ? `latest ${st.detective.score}/${st.detective.of}, best ${st.detBest}/${st.detective.of}` : "not done"),
+    "",
+    "MY EXPLANATION:",
+    $("reflect").value || "(not answered)"
+  ].join("\n");
+};
+$("copyBtn").onclick = e => { $("compileBtn").click(); copyResults("results", e.target); };
+</script>
+</body>
+</html>
