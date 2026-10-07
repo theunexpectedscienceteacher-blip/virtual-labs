@@ -79,7 +79,7 @@ th{background:var(--ink);color:#fff}
 </header>
 <main>
   <section class="card">
-    <span class="tag">Force &amp; Motion 7.7</span><span class="tag">Thermal Energy 7.8</span><span class="tag">Solutions 7.6D–E</span>
+    <span class="tag">Force &amp; Motion 7.7 / 6.7</span><span class="tag">Matter &amp; Solutions 7.6A–E</span>
     <div class="spread" style="margin-top:10px">
       <div class="row">
         <label>Your name <input id="sName" placeholder="First and last name"></label>
@@ -87,7 +87,7 @@ th{background:var(--ink);color:#fff}
       </div>
     </div>
     <p style="margin:12px 0 6px"><b>1. Choose a unit:</b></p>
-    <div class="seg" id="unitSeg"><button data-u="all" class="on">All units</button><button data-u="motion">🚗 Force &amp; Motion</button><button data-u="thermal">🔥 Thermal Energy</button><button data-u="solutions">🧪 Solutions</button></div>
+    <div class="seg" id="unitSeg"><button data-u="all" class="on">All DBA units</button><button data-u="motion">🚗 Force &amp; Motion</button><button data-u="solutions">🧪 Matter &amp; Solutions</button><button data-u="thermal">🔥 Thermal (coming later)</button></div>
     <p style="margin:12px 0 6px"><b>2. Choose an activity:</b></p>
     <div class="seg" id="modeSeg"><button data-m="cards" class="on">🃏 Flashcards</button><button data-m="match">⚡ Match Race</button><button data-m="quiz">✅ Quiz (10)</button></div>
   </section>
@@ -263,7 +263,7 @@ const TERMS = [
   ["motion", "Distance", "The total length of the path an object travels."],
   ["motion", "Displacement", "How far an object ends up from its starting point, in a straight line, with a direction."],
   ["motion", "Distance-time graph", "A graph that shows how far an object has traveled at each moment; a steeper line means faster."],
-  ["motion", "Force", "A push or a pull, measured in newtons (N)."],
+  ["motion", "Force", "Any push or pull; it has a size (measured in newtons) and a direction."],
   ["motion", "Newton (N)", "The unit used to measure force."],
   ["motion", "Net force", "The total of all forces acting on an object once you add or subtract them."],
   ["motion", "Balanced forces", "Forces that cancel out (net force = 0 N), so the object's motion does not change."],
@@ -273,6 +273,16 @@ const TERMS = [
   ["motion", "Friction", "A force between surfaces that rub together; it acts opposite the direction of motion."],
   ["motion", "Gravity", "A non-contact force that pulls objects toward each other, such as toward Earth."],
   ["motion", "Mass", "The amount of matter in an object."],
+  ["motion", "Motion", "An object's change in position compared to a reference point."],
+  ["motion", "Linear", "Moving in a straight line."],
+  ["motion", "Cardinal directions", "North, east, south, and west."],
+  ["motion", "Slope", "The steepness of a line on a graph; on a distance-time graph, steeper means faster."],
+  ["motion", "Constant speed", "Moving at the same speed the whole time, with no speeding up or slowing down."],
+  ["motion", "Contact force", "A force that happens when two objects are touching, like friction, applied force, or normal force."],
+  ["motion", "Resting position", "An object staying in the same spot relative to another object."],
+  ["motion", "Applied force", "A push or pull given directly by a person or object, like kicking a ball or pushing a cart."],
+  ["motion", "Normal force", "The support force a surface pushes up with on an object resting on it."],
+  ["motion", "Magnetism", "A force that makes magnets pull certain metals or push other magnets, even without touching."],
   // thermal
   ["thermal", "Thermal energy", "The total kinetic energy of all the particles in a substance."],
   ["thermal", "Temperature", "A measure of the average kinetic energy (motion) of the particles in a substance."],
@@ -284,6 +294,13 @@ const TERMS = [
   ["thermal", "Conductor", "A material, like metal, that transfers thermal energy easily."],
   ["thermal", "Insulator", "A material, like foam, wood, or air, that slows down the transfer of thermal energy."],
   // solutions
+  ["solutions", "Atom", "The smallest unit of an element."],
+  ["solutions", "Element", "A pure substance made of only one kind of atom, like iron (Fe) or oxygen (O₂)."],
+  ["solutions", "Compound", "A substance made of two or more different elements chemically combined, like H₂O."],
+  ["solutions", "Chemical formula", "Symbols and subscripts that show which elements and how many atoms are in a substance, like CO₂."],
+  ["solutions", "Subscript", "The small number after a chemical symbol that tells how many of that atom there are."],
+  ["solutions", "Physical change", "A change in size, shape, or state where no new substance forms, like melting ice."],
+  ["solutions", "Chemical change", "A change that makes a new substance, like burning or rusting; signs include gas, color change, or light."],
   ["solutions", "Solution", "A mixture where one substance is evenly dissolved in another."],
   ["solutions", "Solute", "The substance that gets dissolved, like salt or sugar."],
   ["solutions", "Solvent", "The substance that does the dissolving, like water."],
@@ -299,7 +316,7 @@ const TERMS = [
 ].map(([u, t, d]) => ({ u, t, d }));
 
 let unit = "all", mode = "cards";
-const pool = () => TERMS.filter(x => unit === "all" || x.u === unit);
+const pool = () => TERMS.filter(x => unit === "all" ? x.u !== "thermal" : x.u === unit);
 $("sName").value = st.name || ""; $("sPeriod").value = st.period || "";
 ["sName", "sPeriod"].forEach(id => $(id).addEventListener("input", () => { st.name = $("sName").value; st.period = $("sPeriod").value; saveStore(KEY, st); }));
 st.quiz = st.quiz || []; st.match = st.match || []; st.best = st.best || {};
@@ -333,7 +350,7 @@ $("learnBtn").onclick = () => { if (!C.deck.length) return; const c = C.deck.shi
 /* ---------- match race ---------- */
 let Mt, timer = null;
 function resetMatch() { if (timer) clearInterval(timer); timer = null; $("mGrid").classList.add("hidden"); $("mFb").classList.add("hidden"); $("mStart").classList.remove("hidden"); $("mTime").textContent = "0.0"; $("mMiss").textContent = "0"; $("mRound").textContent = "1/3"; const b = st.best[unit]; $("mBest").textContent = b ? `Your best (${unitName()}): ${b.toFixed(1)} s` : ""; }
-function unitName() { return { all: "All units", motion: "Force & Motion", thermal: "Thermal Energy", solutions: "Solutions" }[unit]; }
+function unitName() { return { all: "All DBA units", motion: "Force & Motion", thermal: "Thermal Energy", solutions: "Matter & Solutions" }[unit]; }
 $("mStart").onclick = () => {
   const rounds = [], p = shuffle(pool()); for (let r = 0; r < 3; r++) rounds.push(p.slice(r * 6, r * 6 + 6).length === 6 ? p.slice(r * 6, r * 6 + 6) : shuffle(pool()).slice(0, 6));
   Mt = { rounds, r: 0, miss: 0, t0: performance.now(), sel: null, left: 6 };
